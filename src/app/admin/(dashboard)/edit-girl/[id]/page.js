@@ -159,14 +159,14 @@ const EditGirlForm = () => {
   };
 
   // Auto-generate permalink on name change
-  useEffect(() => {
-    if (formData.name && isDataLoaded) {
-      setFormData((prev) => ({
-        ...prev,
-        permalink: prev.name.toLowerCase().trim().replace(/\s+/g, "-"),
-      }));
-    }
-  }, [formData.name, isDataLoaded]);
+  // useEffect(() => {
+  //   if (formData.name && isDataLoaded) {
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       permalink: prev.name.toLowerCase().trim().replace(/\s+/g, "-"),
+  //     }));
+  //   }
+  // }, [formData.name, isDataLoaded]);
 
   if (!isDataLoaded && loading) {
     return (

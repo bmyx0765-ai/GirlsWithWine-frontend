@@ -6,17 +6,17 @@ export const metadata = {
   metadataBase: new URL("https://girlswithwine.com"),
 
   title:
-    "India’s Trusted Adult Classifieds for Verified Call Girls & Escort Services - Girls With Wine",
+    "VIP Escort Girls in India | Professional Call Girls Services Across India| GirlsWithWine",
 
   description:
-    "Girls With Wine is India’s trusted adult classifieds platform to find verified call girls and escort services. Browse local listings, massage ads, and connect securely.",
+    "Search for VIP escort services near you. 💕 Browse verified profiles with real photos, reviews, pricing, and location details. Discover trusted and professional call girls across India and worldwide on GirlsWithWine.",
 
-  keywords: [
-    "escort services India",
-    "call girls India",
-    "adult classifieds",
-    "massage services",
-  ],
+  // keywords: [
+  //   "escort services India",
+  //   "call girls India",
+  //   "adult classifieds",
+  //   "massage services",
+  // ],
 
   robots: {
     index: true,
@@ -35,10 +35,10 @@ export const metadata = {
 
   openGraph: {
     title:
-      "India’s Trusted Adult Classifieds for Verified Call Girls & Escort Services - Girls With Wine",
+      "VIP Escort Girls in India | Professional Call Girls Services Across India| GirlsWithWine",
 
     description:
-      "Girls With Wine is India’s trusted adult classifieds platform to find verified call girls and escort services.",
+      "Search for VIP escort services near you. 💕 Browse verified profiles with real photos, reviews, pricing, and location details. Discover trusted and professional call girls across India and worldwide on GirlsWithWine.",
 
     url: "https://girlswithwine.com",
 
@@ -60,9 +60,9 @@ export const metadata = {
   twitter: {
     card: "summary_large_image",
     title:
-      "India’s Trusted Adult Classifieds for Verified Call Girls & Escort Services",
+      "VIP Escort Girls in India | Professional Call Girls Services Across India| GirlsWithWine",
     description:
-      "Browse verified listings and connect securely.",
+      "Search for VIP escort services near you. 💕 Browse verified profiles with real photos, reviews, pricing, and location details. Discover trusted and professional call girls across India and worldwide on GirlsWithWine.",
     images: ["/icon.png"],
   },
 };

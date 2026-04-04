@@ -73,14 +73,11 @@ const Footer = () => {
               </li>
 
               <li>
-                <a
-                  href="https://blog.girlswithwine.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-gray-300"
-                >
+
+                <Link href="/blog" className="hover:text-gray-300">
                   Blog
-                </a>
+                </Link>
+
               </li>
             </ul>
 

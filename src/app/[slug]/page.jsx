@@ -120,14 +120,46 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  if (result.type === "girl") {
-    const girl = result.data;
+ if (result.type === "girl") {
+  const girl = result.data;
 
-    return {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://girlswithwine.com";
+
+  const slug = girl?.permalink || "";
+
+  return {
+    title: girl?.seoTitle || girl?.heading,
+    description: girl?.seoDescription || girl?.heading,
+
+    // ✅ SAFE KEYWORDS (NO CRASH)
+    keywords:
+      Array.isArray(girl?.seoKeywords) && girl.seoKeywords.length > 0
+        ? girl.seoKeywords
+        : typeof girl?.seoKeywords === "string"
+        ? girl.seoKeywords.split(",").map((k) => k.trim())
+        : [
+            girl?.name,
+            girl?.city?.[0]?.mainCity,
+            "escort service",
+            "call girls",
+          ].filter(Boolean),
+
+    // ✅ FIXED CANONICAL (IMPORTANT)
+    alternates: {
+      canonical:
+        girl?.canonicalLink || `${baseUrl}/${slug}`,
+    },
+
+    // ✅ EXTRA SEO BOOST
+    openGraph: {
       title: girl?.seoTitle || girl?.heading,
-      description: girl?.seoDescription,
-    };
-  }
+      description: girl?.seoDescription || girl?.heading,
+      url: girl?.canonicalLink || `${baseUrl}/${slug}`,
+      type: "website",
+    },
+  };
+}
 }
 
 /* ===============================

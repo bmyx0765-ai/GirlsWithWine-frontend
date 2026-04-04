@@ -3,8 +3,14 @@
 import { useEffect, useState } from "react";
 
 const images = [
-  "/images/call-girls-India.webp",
-  "/images/call-girls-girlswithwine-banner.webp",
+  {
+    src: "/images/call-girls-India.webp",
+    alt: "Call girls in India - premium escort service",
+  },
+  {
+    src: "/images/call-girls-girlswithwine-banner.webp",
+    alt: "Girls With Wine escort service banner - verified profiles",
+  },
 ];
 
 export default function ZoomSlider() {
@@ -21,22 +27,22 @@ export default function ZoomSlider() {
   }, []);
 
   return (
-    <div className="relative w-full h-[400px] overflow-hidden">
+    <div className="relative w-full overflow-hidden flex items-center justify-center">
       
-      {/* Image */}
+      {/* IMAGE */}
       <img
         key={index}
-        src={images[index]}
-        alt="slider"
-        className="w-full h-full object-cover zoom-animation"
+        src={images[index].src}
+        alt={images[index].alt}  // ✅ dynamic alt
+        className="max-w-full max-h-full object-contain zoom-animation"
       />
 
-      {/* Internal CSS */}
+      {/* CSS */}
       <style jsx>{`
         @keyframes zoomFade {
           0% {
-            transform: scale(1.2);
-            opacity: 0.7;
+            transform: scale(1.15);
+            opacity: 0.8;
           }
           100% {
             transform: scale(1);
@@ -48,7 +54,6 @@ export default function ZoomSlider() {
           animation: zoomFade 4s ease-in-out;
         }
       `}</style>
-
     </div>
   );
 }
