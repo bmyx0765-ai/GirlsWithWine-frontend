@@ -1,3 +1,5 @@
+"use client";
+
 import HeroSection from "@/components/HeroSection";
 import CitySection from "@/components/CitySection";
 import FeaturedModelsSection from "@/components/FeaturedModelsSection";
@@ -8,23 +10,34 @@ import MostSearchedLocations from "@/components/MostSearchedLocations";
 import TopReviewsSlider from "@/components/TopReviewsSlider";
 import LatestBlogsSection from "@/components/LatestBlogsSection";
 import ZoomSlider from "@/components/ZoomSlider";
+import { useEffect } from "react";
 
 export default function Home() {
-    return (
-        <>
+  
+  useEffect(() => {
+    // Force scroll to top on initial page load
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
-        {/* <ZoomSlider /> */}
-            
+  return (
+    <>
+      {/* Top Banner with the 'Browse Profiles' button linked to #featured-models */}
+      <ZoomSlider />
 
-            {/* <CitySection /> */}
+      {/* Target for the ZoomSlider redirect */}
+      <div id="featured-models" className="scroll-mt-20">
+        <FeaturedModelsSection />
+      </div>
 
-            <FeaturedModelsSection />
-            {/* <ServicesSection />
-            <ModelAboutSection />
-            <MostSearchedLocations /> */}
-            <AboutAndReviewsSection />
-            <TopReviewsSlider/>
-            <LatestBlogsSection />
-        </>
-    );
+      {/* Hidden sections can be toggled back on by uncommenting below */}
+      {/* <CitySection /> */}
+      {/* <ServicesSection /> */}
+      {/* <ModelAboutSection /> */}
+      {/* <MostSearchedLocations /> */}
+
+      <AboutAndReviewsSection />
+      <TopReviewsSlider />
+      <LatestBlogsSection />
+    </>
+  );
 }
