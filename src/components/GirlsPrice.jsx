@@ -15,7 +15,7 @@ const GirlsPrice = () => {
   ];
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-gray-50 to-white">
+    <section className="py-20 px-4 ">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold text-center text-[#A3195B] mb-12">
           Pricing Transparency

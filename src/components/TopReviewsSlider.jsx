@@ -32,10 +32,10 @@ export default function TopReviewsSlider() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div className="max-w-xl">
             <h2 className="text-3xl md:text-4xl font-extrabold text-[#A3195B] tracking-tight">
-              Client Experiences <span className="text-gray-400">💬</span>
+             WHAT CLIENTS ACROSS INDIA SAY <span className="text-gray-400">💬</span>
             </h2>
             <p className="mt-2 text-gray-600">
-              Discover why our clients trust us for premium services.
+             Our clients from major cities across India appreciate privacy, comfort and genuine companionship. Here’s what they share about their experience
             </p>
           </div>
 

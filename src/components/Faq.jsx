@@ -5,51 +5,74 @@ import React from "react";
 const Faq = () => {
   const faqs = [
     {
-      q: "How Do I Book Escort Services Quickly?",
-      a: "Clients can contact our support team directly to book a service instantly.",
+      q: "How do I book an escort in India?",
+      a: "You can browse profiles of Indian call girls and independent escorts, select your preferred option, and contact directly for booking. The process is simple and available across India anytime.",
     },
     {
-      q: "Are My Details Confidential?",
-      a: "Absolutely. Girls With Wine never exposes a client’s information publicly. It is always kept private.",
+      q: "Is escort service in India private and safe?",
+      a: "Absolutely. Escort services focus on maintaining complete confidentiality while ensuring safe and private communication throughout your experience.",
     },
     {
-      q: "Are the Escort Profiles 100% Verified?",
-      a: "Yes, all companions are listed after a verification process. Their photos and details are authentic.",
+      q: "Are the escort profiles real and verified?",
+      a: "Yes, all profiles Indian call girls and escorts are verified with real photos and updated details, ensuring authenticity and helping you choose with complete confidence.",
     },
     {
-      q: "Can I Make a Payment in Cash?",
-      a: "We offer flexible booking and payment options for clients that are safe to make.",
-    },
-    {
-      q: "Can Tourists Book an Escort Service with Girls With Wine Platform?",
-      a: "Yes, bookings are available late at night, early mornings, evenings, or any day.",
+      q: "Can I book escorts for travel or events in India?",
+      a: "Yes, many independent escorts in India are available for travel, private events, and social occasions. You can easily mention your requirements during the booking process.",
     },
   ];
+
+  // ===============================
+  // ✅ FAQ SCHEMA (SEO)
+  // ===============================
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map((faq) => ({
+      "@type": "Question",
+      "name": faq.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.a,
+      },
+    })),
+  };
 
   return (
     <section className="py-20 px-4">
       <div className="max-w-6xl mx-auto">
+
         <h2 className="text-3xl md:text-4xl font-bold text-center text-[#A3195B] mb-16">
           FAQs – Girls With Wine Escort Services
         </h2>
 
+        {/* ================= UI ================= */}
         <div className="space-y-4">
           {faqs.map((faq, idx) => (
             <div
               key={idx}
               className="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100"
             >
-              <h4 className="text-2xl font-bold text-[#00B9BE] mb-4">
+              <h4 className="text-xl md:text-2xl font-bold text-[#00B9BE] mb-3">
                 {faq.q}
               </h4>
 
-              <p className="text-gray-700 leading-relaxed">{faq.a}</p>
+              <p className="text-gray-700 leading-relaxed text-sm md:text-base">
+                {faq.a}
+              </p>
             </div>
           ))}
         </div>
+
       </div>
+
+      {/* ================= 🔥 SEO SCHEMA ================= */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
     </section>
   );
 };
 
-export default Faq; 
+export default Faq;

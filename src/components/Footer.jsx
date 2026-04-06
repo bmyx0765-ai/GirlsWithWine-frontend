@@ -1,122 +1,126 @@
 "use client";
 
 import React from "react";
-import { FaArrowUp } from "react-icons/fa";
+import { FaArrowUp, FaWhatsapp, FaInstagram, FaFacebookF, FaTwitter } from "react-icons/fa";
 import Link from "next/link";
 import Image from "next/image";
 
 const Footer = () => {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Fixed the syntax error here by removing 'rel="nofollow"' from the object definition
+  const socialLinks = [
+    { icon: <FaWhatsapp />, href: "https://wa.me/91XXXXXXXXXX", color: "hover:bg-green-500", label: "WhatsApp" },
+    { icon: <FaInstagram />, href: "https://www.instagram.com/girlswithwine01/", color: "hover:bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500", label: "Instagram" },
+    { icon: <FaFacebookF />, href: "https://www.facebook.com/share/1CUFEsWxLk/", color: "hover:bg-blue-600", label: "Facebook" },
+    { icon: <FaTwitter />, href: "https://x.com/GirlsWithWine0", color: "hover:bg-sky-500", label: "Twitter" },
+  ];
+
   return (
-    <footer className="bg-black text-white pt-20 pb-10 relative">
+    <footer className="bg-[#0a0a0a] text-white pt-24 pb-12 relative border-t border-white/5">
       <div className="max-w-7xl mx-auto px-6">
-
-        {/* TOP GRID */}
-        <div className="grid md:grid-cols-4 gap-16">
-
-          {/* COLUMN 1 */}
-          <div className="pr-8">
-            <Link href="/">
+        
+        {/* MAIN CONTENT GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+          
+          {/* COLUMN 1: BRANDING & SOCIALS */}
+          <div className="space-y-8">
+            <Link href="/" className="inline-block transition-transform hover:scale-105">
               <Image
                 src="/images/LOGO.PNG"
-                alt="Girls with Wine Logo"
-                width={240}
-                height={80}
-                className="w-60 object-contain mb-5"
+                alt="Logo"
+                width={200}
+                height={60}
+                className="w-48 object-contain"
               />
             </Link>
-
-            <p className="text-[15px] leading-relaxed opacity-90 max-w-sm">
-              The number 1 website for Adult ADS in India for Female Escorts
-              and massage ads.
+            <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
+              India&apos;s premier destination for adult classifieds. 
+              We provide a safe, discreet, and premium platform.
             </p>
+            
+            {/* SOCIAL MEDIA ICONS */}
+            <div className="flex items-center gap-3">
+              {socialLinks.map((social, index) => (
+                <Link
+                  key={index}
+                  href={social.href}
+                  aria-label={social.label}
+                  rel="nofollow" // Applied correctly as a prop
+                  target="_blank" // Added for external links
+                  className={`w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-lg transition-all duration-300 ${social.color} hover:text-white hover:border-transparent hover:-translate-y-1`}
+                >
+                  {social.icon}
+                </Link>
+              ))}
+            </div>
           </div>
 
-          {/* COLUMN 2 */}
+          {/* COLUMN 2: QUICK LINKS */}
           <div>
-            <h2 className="font-semibold text-[20px] mb-6">Girls With Wine</h2>
-            <ul className="space-y-3 text-[15px] opacity-90">
-              <li>
-                <Link href="/" className="hover:text-gray-300">Home</Link>
-              </li>
-              <li>
-                <Link href="/about" className="hover:text-gray-300">About Us</Link>
-              </li>
+            <h3 className="text-white font-bold text-lg mb-6 tracking-tight">Company</h3>
+            <ul className="space-y-4">
+              <li><Link href="/" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Home</Link></li>
+              <li><Link href="/about" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">About Us</Link></li>
+              <li><Link href="/blog" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Our Blog</Link></li>
             </ul>
           </div>
 
-          {/* COLUMN 3 */}
+          {/* COLUMN 3: SUPPORT */}
           <div>
-            <h2 className="font-semibold text-[20px] mb-6">HELP / INFO</h2>
-            <ul className="space-y-3 text-[15px] opacity-90">
-              <li>
-                <Link href="/terms" className="hover:text-gray-300">
-                  Terms And Conditions
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="hover:text-gray-300">
-                  Privacy Policy
-                </Link>
-              </li>
+            <h3 className="text-white font-bold text-lg mb-6 tracking-tight">Support</h3>
+            <ul className="space-y-4">
+              <li><Link href="/contact" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Contact Us</Link></li>
+              <li><Link href="/faq" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Help & FAQ</Link></li>
+              <li><Link href="/safety" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Safety Tips</Link></li>
             </ul>
           </div>
 
-          {/* COLUMN 4 */}
+          {/* COLUMN 4: LEGAL */}
           <div>
-            <h2 className="font-semibold text-[20px] mb-6">USEFUL LINKS</h2>
-
-            <ul className="space-y-3 text-[15px] opacity-90">
-              <li>
-                <Link href="/contact" className="hover:text-gray-300">
-                  Contact Us
-                </Link>
-              </li>
-
-              <li>
-
-                <Link href="/blog" className="hover:text-gray-300">
-                  Blog
-                </Link>
-
-              </li>
+            <h3 className="text-white font-bold text-lg mb-6 tracking-tight">Legal</h3>
+            <ul className="space-y-4">
+              <li><Link href="/terms" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Terms & Conditions</Link></li>
+              <li><Link href="/privacy" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Privacy Policy</Link></li>
+              <li><Link href="/cookies" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Cookie Policy</Link></li>
             </ul>
-
-            <Image
-              src="/images/RTA.png"
-              alt="RTA Badge"
-              width={220}
-              height={100}
-              className="w-56 mt-3 ml-2"
-            />
           </div>
         </div>
 
-        {/* DISCLAIMER */}
-        <p className="text-center text-[14px] mt-16 leading-relaxed opacity-60 max-w-4xl mx-auto">
-          Girls With Wine facilitates connections strictly for individuals who
-          are above 18 years. We never promote or get involved in illegal
-          activities. Coupling is based on mutual consent without emotional
-          pressure.
-        </p>
+        {/* DISCLAIMER BOX */}
+        <div className="mt-20 p-6 bg-white/5 rounded-2xl border border-white/10 text-center">
+          <p className="text-xs md:text-sm text-gray-500 leading-relaxed max-w-4xl mx-auto italic">
+            Disclaimer: Girls With Wine facilitates connections strictly for individuals 18+. 
+            We maintain a zero-tolerance policy for illegal activities. All interactions are 
+            governed by mutual consent and adult autonomy.
+          </p>
+        </div>
 
-        {/* COPYRIGHT */}
-        <div className="mt-12 border-t border-white/20 pt-6 flex flex-col md:flex-row justify-between items-center gap-5">
-          <p className="text-sm opacity-70">
-            © {new Date().getFullYear()} Girls with Wine — All Rights Reserved
+        {/* BOTTOM BAR */}
+        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
+          <p className="text-xs text-gray-500 tracking-wider uppercase">
+            © {new Date().getFullYear()} GIRLS WITH WINE. ALL RIGHTS RESERVED.
           </p>
 
-          <button className="flex items-center gap-2 bg-pink-700 hover:bg-pink-600 px-5 py-2 rounded-full text-sm font-medium">
-            🌐 Girls with Wine Network
+          <button className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white px-6 py-2.5 rounded-full text-xs font-bold transition-all hover:shadow-[0_0_20px_rgba(219,39,119,0.4)]">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-300 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+            </span>
+            NETWORK STATUS
           </button>
         </div>
       </div>
 
-      {/* SCROLL TO TOP */}
+      {/* FLOATING ACTION BUTTON */}
       <button
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="fixed bottom-6 right-6 bg-pink-700 hover:bg-pink-600 text-white p-3 rounded-full shadow-lg"
+        onClick={scrollToTop}
+        aria-label="Scroll to top"
+        className="fixed bottom-8 right-8 bg-pink-600 hover:bg-pink-500 text-white p-4 rounded-xl shadow-2xl transition-all hover:-translate-y-1 active:scale-95 group z-50"
       >
-        <FaArrowUp />
+        <FaArrowUp className="text-lg group-hover:animate-bounce" />
       </button>
     </footer>
   );
