@@ -31,12 +31,9 @@ export default function FeaturedModelsSection() {
 
         {/* HEADING */}
         <div className="mb-10 text-center">
-          <h2 className="text-xl md:text-3xl font-bold text-[#A3195B] tracking-wide">
-           OUR ESCORTS & Call Girls 
-          </h2>
-          <p className="text-gray-600 mt-2">
-           Browse our premium selection of verified Call Girls profiles, offering a refined and exclusive experience.
-          </p>
+          <h1 className="text-xl md:text-3xl font-bold text-[#A3195B] tracking-wide">
+            Escort Services | 100% Verified Profiles | 24/7 Support | Confidential Booking
+          </h1>
         </div>
 
         {/* LOADING */}
