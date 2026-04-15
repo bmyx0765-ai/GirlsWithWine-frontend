@@ -81,6 +81,12 @@ export default function ContactPage() {
   };
 
   return (
+    <>
+    <div className="w-full bg-gray-200 py-10 px-6 md:px-16">
+  <h1 className="text-5xl md:text-7xl font-extrabold text-[#9C0A3D]">
+    Contact Us
+  </h1>
+</div>
     <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-2 gap-10">
 
       {/* LEFT INFO BOX */}
@@ -208,6 +214,8 @@ export default function ContactPage() {
         </button>
       </form>
     </div>
+    </>
+    
   );
 }
 
