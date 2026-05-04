@@ -1,7 +1,13 @@
 "use client";
 
 import React from "react";
-import { FaArrowUp, FaWhatsapp, FaInstagram, FaFacebookF, FaTwitter } from "react-icons/fa";
+import { 
+  FaArrowUp, 
+  FaWhatsapp, 
+  FaInstagram, 
+  FaFacebookF, 
+  FaTwitter 
+} from "react-icons/fa";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -10,22 +16,47 @@ const Footer = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Fixed the syntax error here by removing 'rel="nofollow"' from the object definition
+  // The phone number must include the country code without '+' or '00'
+  const whatsappNumber = "91XXXXXXXXXX"; // Replace with your actual number
+
   const socialLinks = [
-    { icon: <FaWhatsapp />, href: "https://wa.me/91XXXXXXXXXX", color: "hover:bg-green-500", label: "WhatsApp" },
-    { icon: <FaInstagram />, href: "https://www.instagram.com/girlswithwine01/", color: "hover:bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500", label: "Instagram" },
-    { icon: <FaFacebookF />, href: "https://www.facebook.com/share/1CUFEsWxLk/", color: "hover:bg-blue-600", label: "Facebook" },
-    { icon: <FaTwitter />, href: "https://x.com/GirlsWithWine0", color: "hover:bg-sky-500", label: "Twitter" },
+    { 
+      icon: <FaWhatsapp />, 
+      // Using direct WhatsApp API link with a standard <a> tag
+      href: `https://wa.me/${whatsappNumber}`, 
+      label: "WhatsApp",
+      hoverClass: "hover:bg-green-500 hover:border-green-500",
+      isExternal: true 
+    },
+    { 
+      icon: <FaInstagram />, 
+      href: "https://www.instagram.com/girlswithwine01/", 
+      label: "Instagram",
+      hoverClass: "hover:bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 hover:border-transparent",
+      isExternal: true
+    },
+    { 
+      icon: <FaFacebookF />, 
+      href: "https://www.facebook.com/share/1CUFEsWxLk/", 
+      label: "Facebook",
+      hoverClass: "hover:bg-blue-600 hover:border-blue-600",
+      isExternal: true
+    },
+    { 
+      icon: <FaTwitter />, 
+      href: "https://x.com/GirlsWithWine0", 
+      label: "Twitter",
+      hoverClass: "hover:bg-sky-500 hover:border-sky-500",
+      isExternal: true
+    },
   ];
 
   return (
     <footer className="bg-[#0a0a0a] text-white pt-24 pb-12 relative border-t border-white/5">
       <div className="max-w-7xl mx-auto px-6">
         
-        {/* MAIN CONTENT GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           
-          {/* COLUMN 1: BRANDING & SOCIALS */}
           <div className="space-y-8">
             <Link href="/" className="inline-block transition-transform hover:scale-105">
               <Image
@@ -40,56 +71,50 @@ const Footer = () => {
               India&apos;s premier destination for adult classifieds. 
               We provide a safe, discreet, and premium platform.
             </p>
-            
-            {/* SOCIAL MEDIA ICONS */}
+
+            {/* SOCIAL ICONS ROW */}
             <div className="flex items-center gap-3">
               {socialLinks.map((social, index) => (
-                <Link
+                <a
                   key={index}
                   href={social.href}
                   aria-label={social.label}
-                  rel="nofollow" // Applied correctly as a prop
-                  target="_blank" // Added for external links
-                  className={`w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-lg transition-all duration-300 ${social.color} hover:text-white hover:border-transparent hover:-translate-y-1`}
+                  rel="nofollow"
+                  target="_blank"
+                 
+                  className={`w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-lg transition-all duration-300 bg-white/5 ${social.hoverClass} hover:text-white hover:-translate-y-1 shadow-lg`}
                 >
                   {social.icon}
-                </Link>
+                </a>
               ))}
             </div>
           </div>
 
-          {/* COLUMN 2: QUICK LINKS */}
           <div>
             <h3 className="text-white font-bold text-lg mb-6 tracking-tight">Company</h3>
             <ul className="space-y-4">
               <li><Link href="/" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Home</Link></li>
               <li><Link href="/about" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">About Us</Link></li>
-              <li><Link href="/blog" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Our Blog</Link></li>
             </ul>
           </div>
 
-          {/* COLUMN 3: SUPPORT */}
           <div>
             <h3 className="text-white font-bold text-lg mb-6 tracking-tight">Support</h3>
             <ul className="space-y-4">
-              <li><Link href="/contact" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Contact Us</Link></li>
-              <li><Link href="/faq" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Help & FAQ</Link></li>
-              <li><Link href="/safety" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Safety Tips</Link></li>
+              <li><Link href="/terms" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Terms & Conditions</Link></li>
+              <li><Link href="/privacy" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Privacy Policy</Link></li>
             </ul>
           </div>
 
-          {/* COLUMN 4: LEGAL */}
           <div>
-            <h3 className="text-white font-bold text-lg mb-6 tracking-tight">Legal</h3>
+            <h3 className="text-white font-bold text-lg mb-6 tracking-tight">Useful Links</h3>
             <ul className="space-y-4">
-              <li><Link href="/terms" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Terms & Conditions</Link></li>
-              <li><Link href="/privacy" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Privacy Policy</Link></li>
-              <li><Link href="/cookies" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Cookie Policy</Link></li>
+              <li><Link href="/contact" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Contact Support</Link></li>
+              <li><Link href="/blog" className="text-gray-400 hover:text-pink-500 transition-colors duration-300 text-[15px]">Latest Blog</Link></li>
             </ul>
           </div>
         </div>
 
-        {/* DISCLAIMER BOX */}
         <div className="mt-20 p-6 bg-white/5 rounded-2xl border border-white/10 text-center">
           <p className="text-xs md:text-sm text-gray-500 leading-relaxed max-w-4xl mx-auto italic">
             Disclaimer: Girls With Wine facilitates connections strictly for individuals 18+. 
@@ -98,9 +123,8 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* BOTTOM BAR */}
-        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
-          <p className="text-xs text-gray-500 tracking-wider uppercase">
+        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-xs text-gray-500 tracking-wider">
             © {new Date().getFullYear()} GIRLS WITH WINE. ALL RIGHTS RESERVED.
           </p>
 
@@ -114,7 +138,6 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* FLOATING ACTION BUTTON */}
       <button
         onClick={scrollToTop}
         aria-label="Scroll to top"
