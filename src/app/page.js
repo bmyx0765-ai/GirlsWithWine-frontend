@@ -22,11 +22,11 @@ export default function Home() {
   return (
     <>
       {/* Top Banner with the 'Browse Profiles' button linked to #featured-models */}
-      <ZoomSlider />
+      {/* <ZoomSlider /> */}
 
       {/* Target for the ZoomSlider redirect */}
       <div id="featured-models" className="scroll-mt-20">
-        <FeaturedModelsSection />
+        {/* <FeaturedModelsSection /> */}
       </div>
 
       {/* Hidden sections can be toggled back on by uncommenting below */}

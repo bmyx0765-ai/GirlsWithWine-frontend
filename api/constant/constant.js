@@ -30,13 +30,6 @@ export const GET_CITY_BY_ID_URL = "/api/cities/admin";
 export const GET_CITY_PAGE_URL = "/api/cities";
 
 
-
-
-
-
-
-
-
 // ================= GIRL APIs =================
 
 // CREATE
@@ -104,3 +97,35 @@ export const UPDATE_BLOG_URL = "/api/blogs/update/:id";
 
 // DELETE
 export const DELETE_BLOG_URL = "/api/blogs/delete/:id";
+
+
+// ================= SUB-CITY =================
+
+// CREATE
+export const ADD_SUBCITY_URL = "/api/subcities/create";
+
+// GET ALL
+export const GET_SUBCITIES_URL = "/api/subcities";
+
+// GET BY CITY (filter)
+export const GET_SUBCITIES_BY_CITY_URL = "/api/subcities/city"; 
+// 👉 use: /city/:cityId
+
+// DELETE
+export const DELETE_SUBCITY_URL = "/api/subcities/delete";
+
+// STATUS UPDATE
+export const SUBCITY_STATUS_URL = "/api/subcities/status";
+
+// UPDATE (FULL UPDATE)
+export const UPDATE_SUBCITY_URL = "/api/subcities/update";
+
+// UPDATE IMAGE
+export const UPDATE_SUBCITY_IMAGE_URL = "/api/subcities/image";
+
+// GET BY ID (ADMIN)
+export const GET_SUBCITY_BY_ID_URL = "/api/subcities/admin";
+
+// SEO PAGE (PUBLIC via slug)
+export const GET_SUBCITY_PAGE_URL = "/api/subcities";
+

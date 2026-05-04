@@ -114,6 +114,12 @@ export default function CityGirlsPage({ params }) {
     });
   }, [cityObj?.updatedAt]);
 
+    useEffect(() => {
+    // Force scroll to top on initial page load
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+
   return (
     <>
       <div className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto mb-20">
@@ -147,73 +153,74 @@ export default function CityGirlsPage({ params }) {
               );
 
               return (
-                <div
-                  key={girl._id}
-                  onClick={() =>
-                    router.push(`/${girl.permalink}`)
-                  }
-                  className="cursor-pointer bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition border flex flex-col sm:flex-row gap-4"
-                >
-                  {/* IMAGE */}
-                  <div className="w-full sm:w-40 h-52 sm:h-40 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                    <img
-                      src={girl.imageUrl || "/placeholder.jpg"}
-                      alt={girl.imageAlt}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                // <div
+                //   key={girl._id}
+                //   onClick={() =>
+                //     router.push(`/${girl.permalink}`)
+                //   }
+                //   className="cursor-pointer bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition border flex flex-col sm:flex-row gap-4"
+                // >
+                //   {/* IMAGE */}
+                //   <div className="w-full sm:w-40 h-52 sm:h-40 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                //     <img
+                //       src={girl.imageUrl || "/placeholder.jpg"}
+                //       alt={girl.imageAlt}
+                //       className="w-full h-full object-cover"
+                //     />
+                //   </div>
 
-                  {/* CONTENT */}
-                  <div className="flex-1 flex flex-col justify-between">
+                //   {/* CONTENT */}
+                //   <div className="flex-1 flex flex-col justify-between">
 
-                    {/* TEXT */}
-                    <div>
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                        {girl.heading}
-                      </h3>
+                //     {/* TEXT */}
+                //     <div>
+                //       <h3 className="text-lg sm:text-xl font-bold text-gray-900">
+                //         {girl.heading}
+                //       </h3>
 
-                      <div
-                        className="text-sm text-gray-600 mt-2 line-clamp-2"
-                        dangerouslySetInnerHTML={{
-                          __html: cleanHTML(girl.description),
-                        }}
-                      />
+                //       <div
+                //         className="text-sm text-gray-600 mt-2 line-clamp-2"
+                //         dangerouslySetInnerHTML={{
+                //           __html: cleanHTML(girl.description),
+                //         }}
+                //       />
 
-                      <div className="flex flex-wrap gap-3 text-[15px] mt-3 font-semibold text-[#B30059]">
-                        {girl.age && <span>{girl.age} Years</span>}
-                        <span>|</span>
-                        <span>Call Girls</span>
-                        <span>|</span>
-                        <span>{finalName}</span>
-                      </div>
-                    </div>
+                //       <div className="flex flex-wrap gap-3 text-[15px] mt-3 font-semibold text-[#B30059]">
+                //         {girl.age && <span>{girl.age} Years</span>}
+                //         <span>|</span>
+                //         <span>Call Girls</span>
+                //         <span>|</span>
+                //         <span>{finalName}</span>
+                //       </div>
+                //     </div>
 
-                    {/* BUTTONS */}
-                    <div className="flex gap-3 mt-4 justify-end flex-wrap">
-                      {wp && (
-                        <a
-                          onClick={(e) => e.stopPropagation()}
-                          href={createWhatsAppURL(girl.name, wp)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-4 py-2 bg-[#25D366] text-white text-sm rounded-lg font-medium hover:opacity-90 whitespace-nowrap"
-                        >
-                          WhatsApp
-                        </a>
-                      )}
+                //     {/* BUTTONS */}
+                //     <div className="flex gap-3 mt-4 justify-end flex-wrap">
+                //       {wp && (
+                //         <a
+                //           onClick={(e) => e.stopPropagation()}
+                //           href={createWhatsAppURL(girl.name, wp)}
+                //           target="_blank"
+                //           rel="noreferrer"
+                //           className="px-4 py-2 bg-[#25D366] text-white text-sm rounded-lg font-medium hover:opacity-90 whitespace-nowrap"
+                //         >
+                //           WhatsApp
+                //         </a>
+                //       )}
 
-                      {call && (
-                        <a
-                          onClick={(e) => e.stopPropagation()}
-                          href={`tel:${cleanNumber(call)}`}
-                          className="px-4 py-2 bg-[#B30059] text-white text-sm rounded-lg font-medium hover:opacity-90 whitespace-nowrap"
-                        >
-                          Call
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                //       {call && (
+                //         <a
+                //           onClick={(e) => e.stopPropagation()}
+                //           href={`tel:${cleanNumber(call)}`}
+                //           className="px-4 py-2 bg-[#B30059] text-white text-sm rounded-lg font-medium hover:opacity-90 whitespace-nowrap"
+                //         >
+                //           Call
+                //         </a>
+                //       )}
+                //     </div>
+                //   </div>
+                // </div>
+                <></>
               );
             })
           ) : (
@@ -266,6 +273,8 @@ export default function CityGirlsPage({ params }) {
           />
         </div>
       </div>
+
+      
 
       {/* ================= CITY SECTION ================= */}
       <CitySection

@@ -28,6 +28,7 @@ export default function AdminLayout({ children }) {
   };
 
   const navItems = [
+    {href: "/admin/sub-city", icon: <FiMapPin />, label: "Sub Cities" },
     { href: "/admin/all-cities", icon: <FiMapPin />, label: "Cities" },
     { href: "/admin/model-girl", icon: <FiUsers />, label: "Model Girl" },
     { href: "/admin/all-contacts", icon: <FiMail />, label: "Messages" },

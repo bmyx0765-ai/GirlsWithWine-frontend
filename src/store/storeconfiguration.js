@@ -7,6 +7,9 @@ import stateReducer from "./slices/stateSlice";
 import contactReducer from "./slices/contactSlice";
 import reviewReducer from "./slices/reviewSlice";
 import blogReducer from "./slices/blogSlice";
+import subCityReducer from "./slices/subCitySlice";
+
+
 export const store = configureStore({
   reducer: {
     adminAuth: adminAuthReducer,
@@ -15,6 +18,7 @@ export const store = configureStore({
     states: stateReducer,
     contacts: contactReducer,
     review: reviewReducer,
-    blog : blogReducer
+    blog : blogReducer,
+     subCity: subCityReducer
   },
 });
