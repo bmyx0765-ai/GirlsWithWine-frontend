@@ -33,6 +33,7 @@ export default function AdminLayout({ children }) {
     { href: "/admin/model-girl", icon: <FiUsers />, label: "Model Girl" },
     { href: "/admin/all-contacts", icon: <FiMail />, label: "Messages" },
     { href: "/admin/all-reviews", icon: <FiStar />, label: "Reviews" },
+    { href: "/admin/all-faq", icon: <FiFileText />, label: "FAQ" },
     { href: "/admin/all-blog", icon: <FiFileText />, label: "Blogs" },
     { href: "/admin/all-images", icon: <FiFileText />, label: "Images" },
   ];

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { FiUpload, FiMapPin, FiSearch, FiType, FiCheckCircle, FiChevronLeft } from "react-icons/fi";
+import { FiMapPin, FiSearch, FiType, FiCheckCircle, FiChevronLeft, FiTag } from "react-icons/fi";
 
 import { createSubCity } from "@/store/slices/subCitySlice";
 import { getCitiesThunk } from "@/store/slices/citySlice";
@@ -27,12 +27,8 @@ const AddSubCity = () => {
     seoTitle: "",
     seoDescription: "",
     seoKeywords: "",
-    imageAlt: "",
     tags: "",
   });
-
-  const [image, setImage] = useState(null);
-  const [preview, setPreview] = useState(null);
 
   useEffect(() => {
     dispatch(getCitiesThunk());
@@ -47,14 +43,6 @@ const AddSubCity = () => {
     setForm((prev) => ({ ...prev, description: val }));
   };
 
-  const handleImage = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImage(file);
-      setPreview(URL.createObjectURL(file));
-    }
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.cityId) return toast.error("Select City");
@@ -62,7 +50,6 @@ const AddSubCity = () => {
 
     const fd = new FormData();
     Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-    if (image) fd.append("image", image);
 
     dispatch(createSubCity(fd)).then((res) => {
       if (res.meta.requestStatus === "fulfilled") {
@@ -73,9 +60,9 @@ const AddSubCity = () => {
   };
 
   return (
-    <div className=" pb-20">
+    <div className="pb-20 bg-slate-50 min-h-screen">
       {/* Top Header Bar */}
-      <div className=" top-0 z-30 bg-white border-b border-slate-200 px-6 py-4">
+      <div className="sticky top-0 z-30 bg-white border-b border-slate-200 px-6 py-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button 
@@ -86,13 +73,13 @@ const AddSubCity = () => {
             </button>
             <div>
               <h1 className="text-xl font-bold text-slate-900">Add New SubCity</h1>
-              <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Location Management</p>
+              <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold tracking-tight">Location Management</p>
             </div>
           </div>
           <button 
             onClick={handleSubmit}
             disabled={loading}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-md transition-all disabled:opacity-70"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-md transition-all active:scale-95 disabled:opacity-70"
           >
             {loading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <FiCheckCircle />}
             {loading ? "Publishing..." : "Publish SubCity"}
@@ -107,8 +94,8 @@ const AddSubCity = () => {
           <div className="lg:col-span-8 space-y-6">
             
             {/* Basic Info Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2 font-bold text-slate-700">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2 font-bold text-slate-700 bg-slate-50/50">
                 <FiMapPin className="text-blue-500" /> Location Details
               </div>
               <div className="p-6 grid md:grid-cols-2 gap-5">
@@ -120,8 +107,8 @@ const AddSubCity = () => {
             </div>
 
             {/* Editor Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2 font-bold text-slate-700">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2 font-bold text-slate-700 bg-slate-50/50">
                 <FiType className="text-blue-500" /> Main Content
               </div>
               <div className="p-6 space-y-5">
@@ -135,7 +122,7 @@ const AddSubCity = () => {
                 />
                 <div className="space-y-2">
                   <label className="text-[11px] uppercase tracking-widest font-black text-slate-400 ml-1">Page Body Content</label>
-                  <div className="rounded-lg border border-slate-200 focus-within:border-blue-400 transition-colors">
+                  <div className="rounded-lg border border-slate-200 focus-within:border-blue-400 transition-colors bg-white">
                     <RichTextEditor value={form.description} onChange={handleEditor} />
                   </div>
                 </div>
@@ -146,40 +133,25 @@ const AddSubCity = () => {
           {/* Sidebar Area */}
           <div className="lg:col-span-4 space-y-6">
             
-            {/* Image & Tags Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-              <div className="px-6 py-4 border-b border-slate-100 font-bold text-slate-700 flex items-center gap-2">
-                <FiUpload className="text-blue-500" /> Media & Tags
-              </div>
-              <div className="p-6 space-y-5">
-                <div className="space-y-2">
-                  <label className="text-[11px] uppercase tracking-widest font-black text-slate-400 ml-1">Featured Image</label>
-                  <label className="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition-all overflow-hidden group">
-                    {preview ? (
-                      <img src={preview} className="h-full w-full object-cover" alt="Preview" />
-                    ) : (
-                      <div className="text-center p-4">
-                        <FiUpload className="mx-auto text-2xl text-slate-300 mb-2 group-hover:text-blue-500 transition-colors" />
-                        <p className="text-xs text-slate-400 font-medium">Click to upload image</p>
-                      </div>
-                    )}
-                    <input type="file" className="hidden" onChange={handleImage} />
-                  </label>
-                </div>
-                <Input label="Image Alt Text" name="imageAlt" value={form.imageAlt} onChange={handleChange} placeholder="SEO description for image" />
-                <Input label="Search Tags" name="tags" value={form.tags} onChange={handleChange} placeholder="Comma separated tags..." />
-              </div>
-            </div>
-
             {/* SEO Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-              <div className="px-6 py-4 border-b border-slate-100 font-bold text-slate-700 flex items-center gap-2">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 font-bold text-slate-700 flex items-center gap-2 bg-slate-50/50">
                 <FiSearch className="text-blue-500" /> Search Optimization
               </div>
               <div className="p-6 space-y-5">
                 <Input label="Meta Title" name="seoTitle" value={form.seoTitle} onChange={handleChange} placeholder="Search engine title" />
                 <Textarea label="Meta Description" name="seoDescription" value={form.seoDescription} onChange={handleChange} placeholder="Brief meta description..." />
                 <Textarea label="Meta Keywords" name="seoKeywords" value={form.seoKeywords} onChange={handleChange} placeholder="SEO keywords..." />
+              </div>
+            </div>
+
+            {/* Classification Card */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 font-bold text-slate-700 flex items-center gap-2 bg-slate-50/50">
+                <FiTag className="text-blue-500" /> Classification
+              </div>
+              <div className="p-6">
+                <Input label="Search Tags" name="tags" value={form.tags} onChange={handleChange} placeholder="Comma separated tags..." />
               </div>
             </div>
 
@@ -197,7 +169,7 @@ const Input = ({ label, ...props }) => (
     <label className="text-[11px] uppercase tracking-widest font-black text-slate-400 ml-1">{label}</label>
     <input 
       {...props} 
-      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none text-slate-700 placeholder:text-slate-300 text-sm" 
+      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none text-slate-700 placeholder:text-slate-300 text-sm font-medium" 
     />
   </div>
 );
@@ -219,7 +191,7 @@ const SelectCity = ({ cities, value, onChange }) => (
       name="cityId"
       value={value}
       onChange={onChange}
-      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none text-slate-700 appearance-none text-sm cursor-pointer"
+      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none text-slate-700 appearance-none text-sm cursor-pointer font-medium"
       style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23cbd5e1'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1em' }}
     >
       <option value="">Choose a city</option>

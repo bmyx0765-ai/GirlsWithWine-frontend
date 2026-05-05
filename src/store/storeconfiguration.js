@@ -8,7 +8,7 @@ import contactReducer from "./slices/contactSlice";
 import reviewReducer from "./slices/reviewSlice";
 import blogReducer from "./slices/blogSlice";
 import subCityReducer from "./slices/subCitySlice";
-
+import faqReducer from "./slices/faqSlice";
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +19,7 @@ export const store = configureStore({
     contacts: contactReducer,
     review: reviewReducer,
     blog : blogReducer,
-     subCity: subCityReducer
+     subCity: subCityReducer,
+     faq: faqReducer,
   },
 });

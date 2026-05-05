@@ -10,25 +10,18 @@ import {
 } from "api/constant/constant";
 import { axiosInstance } from "api/axiosInstance";
 
-
-
 // ================= CREATE =================
 export const createSubCity = createAsyncThunk(
   "subCity/create",
   async (formData, { rejectWithValue }) => {
     try {
-      const res = await axiosInstance.post(
-        ADD_SUBCITY_URL,
-        formData,
-        true
-      );
+      const res = await axiosInstance.post(ADD_SUBCITY_URL, formData, true);
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
-
 
 // ================= GET ALL =================
 export const fetchSubCities = createAsyncThunk(
@@ -42,7 +35,6 @@ export const fetchSubCities = createAsyncThunk(
     }
   }
 );
-
 
 // ================= GET BY CITY =================
 export const fetchSubCitiesByCity = createAsyncThunk(
@@ -59,23 +51,23 @@ export const fetchSubCitiesByCity = createAsyncThunk(
   }
 );
 
-
 // ================= GET BY ID =================
 export const fetchSubCityById = createAsyncThunk(
   "subCity/fetchById",
   async (id, { rejectWithValue }) => {
     try {
-      const res = await axiosInstance.get(
-        `${GET_SUBCITY_BY_ID_URL}/${id}`,
-        true
-      );
+      const url = `${GET_SUBCITY_BY_ID_URL}/${id}`;
+
+      console.log("API URL 👉", url);  // 🔥 IMPORTANT
+
+      const res = await axiosInstance.get(url);
+
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
-
 
 // ================= UPDATE =================
 export const updateSubCity = createAsyncThunk(
@@ -94,23 +86,18 @@ export const updateSubCity = createAsyncThunk(
   }
 );
 
-
 // ================= DELETE =================
 export const deleteSubCity = createAsyncThunk(
   "subCity/delete",
   async (id, { rejectWithValue }) => {
     try {
-      await axiosInstance.delete(
-        `${DELETE_SUBCITY_URL}/${id}`,
-        true
-      );
+      await axiosInstance.delete(`${DELETE_SUBCITY_URL}/${id}`, true);
       return id;
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
-
 
 // ================= STATUS =================
 export const toggleSubCityStatus = createAsyncThunk(
@@ -128,7 +115,6 @@ export const toggleSubCityStatus = createAsyncThunk(
     }
   }
 );
-
 
 // ================= SLICE =================
 const subCitySlice = createSlice({
@@ -148,58 +134,73 @@ const subCitySlice = createSlice({
 
   extraReducers: (builder) => {
 
-    // CREATE
+    // ================= CREATE =================
     builder.addCase(createSubCity.pending, (state) => {
       state.loading = true;
     });
+
     builder.addCase(createSubCity.fulfilled, (state, action) => {
       state.loading = false;
-      state.subCities.unshift(action.payload.data);
+      state.subCities.unshift(action.payload?.data || action.payload);
     });
+
     builder.addCase(createSubCity.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload;
     });
 
-
-    // GET ALL
+    // ================= GET ALL =================
     builder.addCase(fetchSubCities.fulfilled, (state, action) => {
       state.subCities = action.payload;
     });
 
-
-    // GET BY CITY
+    // ================= GET BY CITY =================
     builder.addCase(fetchSubCitiesByCity.fulfilled, (state, action) => {
       state.subCities = action.payload;
     });
 
-
-    // GET BY ID
-    builder.addCase(fetchSubCityById.fulfilled, (state, action) => {
-      state.selectedSubCity = action.payload;
+    // ================= GET BY ID =================
+    builder.addCase(fetchSubCityById.pending, (state) => {
+      state.loading = true;
+      state.error = null;
     });
 
+    builder.addCase(fetchSubCityById.fulfilled, (state, action) => {
+      console.log("API RESPONSE 👉", action.payload);
 
-    // UPDATE
+      state.loading = false;
+
+      // 🔥 FINAL FIX (MOST IMPORTANT)
+      state.selectedSubCity =
+        action.payload?.data || action.payload || null;
+    });
+
+    builder.addCase(fetchSubCityById.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+
+    // ================= UPDATE =================
     builder.addCase(updateSubCity.fulfilled, (state, action) => {
+      const updated = action.payload?.data || action.payload;
+
       const index = state.subCities.findIndex(
-        item => item._id === action.payload.data._id
+        item => item._id === updated._id
       );
+
       if (index !== -1) {
-        state.subCities[index] = action.payload.data;
+        state.subCities[index] = updated;
       }
     });
 
-
-    // DELETE
+    // ================= DELETE =================
     builder.addCase(deleteSubCity.fulfilled, (state, action) => {
       state.subCities = state.subCities.filter(
         item => item._id !== action.payload
       );
     });
 
-
-    // STATUS
+    // ================= STATUS =================
     builder.addCase(toggleSubCityStatus.fulfilled, (state, action) => {
       const item = state.subCities.find(
         i => i._id === action.payload.id

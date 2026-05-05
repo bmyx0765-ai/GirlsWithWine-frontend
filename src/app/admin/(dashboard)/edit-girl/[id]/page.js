@@ -4,8 +4,10 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter, useParams } from "next/navigation";
 
-import { updateGirlThunk, getAllGirlsThunk } from "@/store/slices/girlSlice";
+// Thunks
+import { updateGirlThunk, getGirlByIdThunk } from "@/store/slices/girlSlice";
 import { getCitiesThunk } from "@/store/slices/citySlice";
+import { fetchSubCities } from "@/store/slices/subCitySlice";
 import RichTextEditor from "@/components/RichTextEditor";
 
 import { FormControl, Select, MenuItem, Checkbox, ListItemText, OutlinedInput } from "@mui/material";
@@ -16,15 +18,16 @@ const EditGirlForm = () => {
   const params = useParams();
   const id = params?.id;
 
-  const { girls = [], loading } = useSelector((state) => state.girls);
+  const { singleGirl, loading } = useSelector((state) => state.girls);
   const { cities = [] } = useSelector((state) => state.city);
+  const { subCities = [] } = useSelector((state) => state.subCity);
 
-  /* ================= STATE ================= */
   const [formData, setFormData] = useState({
     name: "",
     age: "",
     heading: "",
     city: [],
+    subCity: [], // Keep as array for Multi-select UI compatibility
     description: "",
     priceDetails: "",
     aboutGirlInformation: "",
@@ -45,39 +48,50 @@ const EditGirlForm = () => {
   const [existingGallery, setExistingGallery] = useState([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  /* ================= FETCH DATA ================= */
   useEffect(() => {
-    dispatch(getAllGirlsThunk());
+    if (id) {
+      dispatch(getGirlByIdThunk(id));
+    }
     dispatch(getCitiesThunk());
-  }, [dispatch]);
+    dispatch(fetchSubCities());
+  }, [dispatch, id]);
 
   useEffect(() => {
-    const girl = girls.find((g) => g._id === id);
-    if (girl) {
+    if (singleGirl && (singleGirl._id === id || singleGirl.id === id)) {
+      // FIX: Handle subCity as Object or Array based on API response
+      const normalizedSubCity = singleGirl.subCity 
+        ? (Array.isArray(singleGirl.subCity) 
+            ? singleGirl.subCity.map(sc => sc._id || sc) 
+            : [singleGirl.subCity._id || singleGirl.subCity])
+        : [];
+
       setFormData({
-        name: girl.name || "",
-        age: girl.age || "",
-        heading: girl.heading || "",
-        city: Array.isArray(girl.city) ? girl.city.map((c) => c._id || c) : [],
-        description: girl.description || "",
-        priceDetails: girl.priceDetails || "",
-        aboutGirlInformation: girl.aboutGirlInformation || "",
-        phoneNumber: girl.phoneNumber || "",
-        whatsappNumber: girl.whatsappNumber || "",
-        imageAlt: girl.imageAlt || "",
-        seoTitle: girl.seoTitle || "",
-        seoDescription: girl.seoDescription || "",
-        seoKeywords: Array.isArray(girl.seoKeywords) ? girl.seoKeywords.join(", ") : girl.seoKeywords || "",
-        showOnHomepage: girl.showOnHomepage || false,
-        permalink: girl.permalink || "",
+        name: singleGirl.name || "",
+        age: singleGirl.age || "",
+        heading: singleGirl.heading || "",
+        city: Array.isArray(singleGirl.city) ? singleGirl.city.map((c) => c._id || c) : [],
+        subCity: normalizedSubCity, // Synced with API Object structure
+        description: singleGirl.description || "",
+        priceDetails: singleGirl.priceDetails || "",
+        aboutGirlInformation: singleGirl.aboutGirlInformation || "",
+        phoneNumber: singleGirl.phoneNumber || "",
+        whatsappNumber: singleGirl.whatsappNumber || "",
+        imageAlt: singleGirl.imageAlt || "",
+        seoTitle: singleGirl.seoTitle || "",
+        seoDescription: singleGirl.seoDescription || "",
+        // SEO Keywords handling for Array vs String
+        seoKeywords: Array.isArray(singleGirl.seoKeywords) 
+          ? singleGirl.seoKeywords.join(", ") 
+          : singleGirl.seoKeywords || "",
+        showOnHomepage: singleGirl.showOnHomepage || false,
+        permalink: singleGirl.permalink || "",
       });
-      setPreviewImage(girl.imageUrl);
-      setExistingGallery(girl.images || []);
+      setPreviewImage(singleGirl.imageUrl);
+      setExistingGallery(singleGirl.images || []);
       setIsDataLoaded(true);
     }
-  }, [girls, id]);
+  }, [singleGirl, id]);
 
-  /* ================= HANDLERS ================= */
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -86,11 +100,11 @@ const EditGirlForm = () => {
     }));
   };
 
-  const handleCityChange = (event) => {
-    const { value } = event.target;
+  const handleMultiSelectChange = (event) => {
+    const { name, value } = event.target;
     setFormData((prev) => ({
       ...prev,
-      city: typeof value === "string" ? value.split(",") : value,
+      [name]: typeof value === "string" ? value.split(",") : value,
     }));
   };
 
@@ -99,21 +113,16 @@ const EditGirlForm = () => {
     if (file && file.type.startsWith("image/")) {
       setImageFile(file);
       setPreviewImage(URL.createObjectURL(file));
-    } else if (file) {
-      alert("Please select a valid image file.");
     }
   };
 
   const handleImagesChange = (e) => {
     const files = Array.from(e.target.files);
     const validImages = files.filter(file => file.type.startsWith("image/"));
-    
-    if (validImages.length === 0) return;
-
     setImagesFiles((prev) => [...prev, ...validImages]);
     const newPreviews = validImages.map((f) => URL.createObjectURL(f));
     setPreviewGallery((prev) => [...prev, ...newPreviews]);
-    e.target.value = null; // Clear input to allow re-uploading same files
+    e.target.value = null; 
   };
 
   const removeNewGalleryImage = (index) => {
@@ -125,24 +134,18 @@ const EditGirlForm = () => {
     setExistingGallery((prev) => prev.filter((item) => item !== url));
   };
 
-  /* ================= SUBMIT ================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
     const fd = new FormData();
 
-    const formatPhone = (val) => {
-      if (!val) return "";
-      const cleaned = val.toString().replace(/\D/g, "");
-      return cleaned.startsWith("91") ? `+${cleaned}` : `+91${cleaned}`;
-    };
-
     Object.entries(formData).forEach(([key, value]) => {
-      if (key === "city") {
-        value.forEach((cityId) => fd.append("city", cityId));
-      } else if (key === "phoneNumber" || key === "whatsappNumber") {
-        fd.append(key, formatPhone(value));
+      if (key === "city" || key === "subCity") {
+        if (Array.isArray(value)) {
+          value.forEach((val) => fd.append(key, val));
+        }
       } else if (key === "seoKeywords") {
-        fd.append("seoKeywords", value || "");
+        // Convert comma string back to array if backend expects array
+        fd.append(key, value); 
       } else {
         fd.append(key, value);
       }
@@ -150,23 +153,15 @@ const EditGirlForm = () => {
 
     if (imageFile) fd.append("image", imageFile);
     imagesFiles.forEach((file) => fd.append("images", file));
-    existingGallery.forEach((url) => fd.append("existingImages", url));
+    fd.append("existingImages", JSON.stringify(existingGallery));
 
-    const res = await dispatch(updateGirlThunk({ id, formData: fd }));
-    if (!res.error) {
+    try {
+      await dispatch(updateGirlThunk({ id, formData: fd })).unwrap();
       router.push("/admin/model-girl");
+    } catch (err) {
+      alert(err || "Failed to update profile");
     }
   };
-
-  // Auto-generate permalink on name change
-  // useEffect(() => {
-  //   if (formData.name && isDataLoaded) {
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       permalink: prev.name.toLowerCase().trim().replace(/\s+/g, "-"),
-  //     }));
-  //   }
-  // }, [formData.name, isDataLoaded]);
 
   if (!isDataLoaded && loading) {
     return (
@@ -178,213 +173,175 @@ const EditGirlForm = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-3xl overflow-hidden border border-gray-100 relative">
-        
-        {/* HEADER */}
+      <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-3xl overflow-hidden border border-gray-100">
         <div className="bg-white border-b border-gray-100 px-10 py-8 flex justify-between items-center">
           <div>
             <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Edit Profile</h2>
-            <p className="text-gray-500 text-sm mt-1">Update model information and media.</p>
           </div>
-          <button 
-            type="button"
-            onClick={() => router.back()}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-pink-600 font-medium transition-colors"
-          >
-            <span className="text-xl">←</span> Back
-          </button>
+          <button type="button" onClick={() => router.back()} className="text-gray-600 font-medium">← Back</button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-10 space-y-12">
-
-          {/* Identity Section */}
-          <Section title="Identity" subtitle="Essential public details">
+          <Section title="Identity & Location">
             <div className="grid md:grid-cols-2 gap-8">
-              <Input label="Name" name="name" value={formData.name} onChange={handleChange} required />
-              <Input label="Age" name="age" type="number" value={formData.age} onChange={handleChange} required />
-              
-              <Input label="Phone Number" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="9876543210" required />
-              <Input label="WhatsApp Number" name="whatsappNumber" value={formData.whatsappNumber} onChange={handleChange} placeholder="Optional" />
+              <Input label="NAME" name="name" value={formData.name} onChange={handleChange} required />
+              <Input label="AGE" name="age" type="number" value={formData.age} onChange={handleChange} required />
+              <Input label="PHONE" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} required />
+              <Input label="WHATSAPP" name="whatsappNumber" value={formData.whatsappNumber} onChange={handleChange} />
 
-              <div className="md:col-span-2">
-                <Input label="Profile Heading" name="heading" value={formData.heading} onChange={handleChange} required />
-                <Input
-                  label="Permalink (SEO URL)"
-                  name="permalink"
-                  value={formData.permalink}
-                  onChange={handleChange}
-                  placeholder="e.g. best-girl-in-india"
-                  required
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Select Cities</label>
-                <FormControl fullWidth size="small">
-                  <Select
-                    multiple
-                    value={formData.city}
-                    onChange={handleCityChange}
-                    input={<OutlinedInput className="bg-gray-50 rounded-xl" />}
-                    renderValue={(selected) => (
-                      <div className="flex flex-wrap gap-1">
-                        {selected.map((value) => {
-                          const cityName = cities.find(c => c._id === value)?.mainCity;
-                          return (
-                            <span key={value} className="bg-pink-100 text-pink-700 text-xs px-2 py-1 rounded-full font-semibold">
-                              {cityName}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
-                  >
-                    {cities.map((c) => (
-                      <MenuItem key={c._id} value={c._id}>
-                        <Checkbox checked={formData.city.indexOf(c._id) > -1} size="small" color="secondary" />
-                        <ListItemText primary={c.mainCity} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </div>
-            </div>
-          </Section>
-
-          <hr className="border-gray-100" />
-
-          {/* Bio Section */}
-          <Section title="Bio & Pricing" subtitle="Detailed information and rates">
-            <div className="space-y-8">
-              <div className="grid md:grid-cols-2 gap-8">
-                <Textarea label="Short Description" name="description" value={formData.description} onChange={handleChange} rows={4} />
-                <Textarea label="Pricing Details" name="priceDetails" value={formData.priceDetails} onChange={handleChange} rows={4} />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Detailed Bio (Rich Text)</label>
-                <div className="rounded-xl overflow-hidden border border-gray-200">
-                  {isDataLoaded && (
-                    <RichTextEditor
-                      value={formData.aboutGirlInformation}
-                      onChange={(val) => setFormData((prev) => ({ ...prev, aboutGirlInformation: val }))}
-                    />
+              {/* Main Cities */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-bold text-gray-700">MAIN CITIES</label>
+                <Select
+                  name="city"
+                  multiple
+                  value={formData.city}
+                  onChange={handleMultiSelectChange}
+                  input={<OutlinedInput className="bg-gray-50 rounded-xl" />}
+                  renderValue={(selected) => (
+                    <div className="flex flex-wrap gap-1">
+                      {selected.map((val) => (
+                        <span key={val} className="bg-pink-100 text-pink-700 text-xs px-2 py-1 rounded-full">
+                          {cities.find((c) => c._id === val)?.mainCity || "City"}
+                        </span>
+                      ))}
+                    </div>
                   )}
-                </div>
-              </div>
-            </div>
-          </Section>
-
-          <hr className="border-gray-100" />
-
-          {/* Media Section */}
-          <Section title="Media" subtitle="Update profile and gallery images">
-            <div className="grid md:grid-cols-2 gap-10">
-              {/* Profile Image with accept="image/*" */}
-              <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-                <label className="block text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">Main Image</label>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleImageChange} 
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-600 file:text-white hover:file:bg-pink-700 cursor-pointer" 
-                />
-                <div className="mt-4">
-                  <Input label="Image Alt Text (SEO)" name="imageAlt" value={formData.imageAlt} onChange={handleChange} />
-                </div>
-                {previewImage && (
-                  <div className="mt-4 relative group w-32 h-40">
-                    <img src={previewImage} className="w-full h-full object-cover rounded-xl shadow-lg border-2 border-white" alt="Preview" />
-                  </div>
-                )}
-              </div>
-
-              {/* Gallery with accept="image/*" */}
-              <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-                <label className="block text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">Gallery Images</label>
-                <input 
-                  type="file" 
-                  multiple 
-                  accept="image/*" 
-                  onChange={handleImagesChange} 
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-white hover:file:bg-black cursor-pointer" 
-                />
-                
-                <div className="grid grid-cols-3 gap-3 mt-6">
-                  {/* Existing Images */}
-                  {existingGallery.map((img, i) => (
-                    <div key={`exist-${i}`} className="relative group aspect-square">
-                      <img src={img} className="w-full h-full object-cover rounded-xl border border-white opacity-80" />
-                      <button type="button" onClick={() => removeExistingGalleryImage(img)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md">✕</button>
-                    </div>
+                >
+                  {cities.map((c) => (
+                    <MenuItem key={c._id} value={c._id}>
+                      <Checkbox checked={formData.city.indexOf(c._id) > -1} />
+                      <ListItemText primary={c.mainCity} />
+                    </MenuItem>
                   ))}
-                  {/* Newly Selected Previews */}
-                  {previewGallery.map((img, i) => (
-                    <div key={`new-${i}`} className="relative group aspect-square">
-                      <img src={img} className="w-full h-full object-cover rounded-xl shadow-sm border-2 border-pink-200" />
-                      <button type="button" onClick={() => removeNewGalleryImage(i)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center shadow-md">✕</button>
-                    </div>
-                  ))}
-                </div>
+                </Select>
               </div>
-            </div>
-          </Section>
 
-          <hr className="border-gray-100" />
+              {/* Sub Cities */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-bold text-gray-700">SUB CITIES</label>
+                <Select
+                  name="subCity"
+                  multiple
+                  value={formData.subCity}
+                  onChange={handleMultiSelectChange}
+                  input={<OutlinedInput className="bg-gray-50 rounded-xl" />}
+                  renderValue={(selected) => (
+                    <div className="flex flex-wrap gap-1">
+                      {selected.map((val) => (
+                        <span key={val} className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+                          {subCities.find((sc) => sc._id === val)?.name || "Sub City"}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                >
+                  {subCities.map((sc) => (
+                    <MenuItem key={sc._id} value={sc._id}>
+                      <Checkbox checked={formData.subCity.indexOf(sc._id) > -1} />
+                      <ListItemText primary={`${sc.name} (${sc.mainCity?.mainCity || 'N/A'})`} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </div>
 
-          {/* SEO Section */}
-          <Section title="Search Engine" subtitle="Optimize for Google ranking">
-            <div className="grid md:grid-cols-2 gap-8">
-              <Input label="SEO Title" name="seoTitle" value={formData.seoTitle} onChange={handleChange} />
-              <Input label="SEO Keywords" name="seoKeywords" value={formData.seoKeywords} onChange={handleChange} placeholder="model, delhi, independent" />
               <div className="md:col-span-2">
-                <Textarea label="SEO Description" name="seoDescription" value={formData.seoDescription} onChange={handleChange} rows={3} />
+                <Input label="HEADING" name="heading" value={formData.heading} onChange={handleChange} required />
+                <Input label="PERMALINK" name="permalink" value={formData.permalink} onChange={handleChange} required />
               </div>
             </div>
           </Section>
 
-          <div className="pt-8 border-t border-gray-100 flex justify-end items-center gap-6">
-            <div className="flex items-center gap-3">
-              <input type="checkbox" name="showOnHomepage" checked={formData.showOnHomepage} onChange={handleChange} className="w-5 h-5 accent-pink-600 cursor-pointer" />
-              <span className="text-sm font-medium text-gray-600">Pin to Homepage</span>
+         {/* Bio & Pricing Section */}
+<Section title="Bio & Pricing">
+  <div className="space-y-8">
+    <div className="grid md:grid-cols-2 gap-8">
+      <Textarea label="SHORT BIO" name="description" value={formData.description} onChange={handleChange} />
+      <Textarea label="RATES" name="priceDetails" value={formData.priceDetails} onChange={handleChange} />
+    </div>
+
+    {/* Yahan fix hai: Jab tak data load na ho, editor render mat karein */}
+    <div className="flex flex-col gap-1.5">
+      <label className="text-sm font-bold text-gray-700">DETAILED BIO (RICH TEXT)</label>
+      <div className="rounded-xl overflow-hidden border">
+        {isDataLoaded ? (
+          <RichTextEditor
+            value={formData.aboutGirlInformation}
+            onChange={(val) => setFormData(p => ({ ...p, aboutGirlInformation: val }))}
+          />
+        ) : (
+          <div className="p-10 text-center text-gray-400">Loading editor content...</div>
+        )}
+      </div>
+    </div>
+  </div>
+</Section>
+
+          <Section title="Media">
+             <div className="grid md:grid-cols-2 gap-10">
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <label className="block text-sm font-bold mb-2">MAIN IMAGE</label>
+                  <input type="file" onChange={handleImageChange} />
+                  {previewImage && <img src={previewImage} className="mt-4 w-32 rounded-lg" />}
+                </div>
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <label className="block text-sm font-bold mb-2">GALLERY</label>
+                  <input type="file" multiple onChange={handleImagesChange} />
+                  <div className="grid grid-cols-3 gap-2 mt-4">
+                    {existingGallery.map((img, i) => (
+                      <div key={i} className="relative">
+                        <img src={img} className="w-full h-20 object-cover rounded" />
+                        <button type="button" onClick={() => removeExistingGalleryImage(img)} className="absolute top-0 right-0 bg-red-500 text-white p-0.5 rounded-full text-xs">✕</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+             </div>
+          </Section>
+
+          <Section title="SEO">
+            <div className="grid md:grid-cols-2 gap-8">
+              <Input label="SEO TITLE" name="seoTitle" value={formData.seoTitle} onChange={handleChange} />
+              <Input label="SEO KEYWORDS" name="seoKeywords" value={formData.seoKeywords} onChange={handleChange} />
+              <div className="md:col-span-2">
+                <Textarea label="SEO DESCRIPTION" name="seoDescription" value={formData.seoDescription} onChange={handleChange} />
+              </div>
             </div>
-            <button 
-              type="submit"
-              disabled={loading}
-              className="bg-pink-600 hover:bg-pink-700 text-white font-bold py-4 px-12 rounded-2xl shadow-lg shadow-pink-200 transition-all active:scale-95 disabled:opacity-50"
-            >
+          </Section>
+
+          <div className="flex justify-end items-center gap-6">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" name="showOnHomepage" checked={formData.showOnHomepage} onChange={handleChange} />
+              Pin to Homepage
+            </label>
+            <button type="submit" disabled={loading} className="bg-pink-600 text-white px-10 py-3 rounded-xl font-bold">
               {loading ? "Updating..." : "Update Profile"}
             </button>
           </div>
-
         </form>
       </div>
     </div>
   );
 };
 
-/* DESIGN SUB-COMPONENTS */
-const Section = ({ title, subtitle, children }) => (
+const Section = ({ title, children }) => (
   <div className="grid lg:grid-cols-4 gap-6">
-    <div className="lg:col-span-1">
-      <h3 className="text-xl font-bold text-gray-900 tracking-tight">{title}</h3>
-      <p className="text-gray-400 text-sm mt-1">{subtitle}</p>
-    </div>
+    <div className="lg:col-span-1"><h3 className="text-xl font-bold">{title}</h3></div>
     <div className="lg:col-span-3">{children}</div>
   </div>
 );
 
 const Input = ({ label, ...props }) => (
   <div className="flex flex-col gap-1.5">
-    <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">{label}</label>
-    <input {...props} className="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none transition-all placeholder:text-gray-300" />
+    <label className="text-sm font-bold text-gray-700">{label}</label>
+    <input {...props} className="w-full bg-gray-50 border p-3 rounded-xl outline-none focus:ring-2 focus:ring-pink-500" />
   </div>
 );
 
 const Textarea = ({ label, ...props }) => (
   <div className="flex flex-col gap-1.5">
-    <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">{label}</label>
-    <textarea {...props} className="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none transition-all placeholder:text-gray-300" />
+    <label className="text-sm font-bold text-gray-700">{label}</label>
+    <textarea {...props} className="w-full bg-gray-50 border p-3 rounded-xl outline-none focus:ring-2 focus:ring-pink-500" />
   </div>
 );
 

@@ -30,6 +30,11 @@ export const GET_CITY_BY_ID_URL = "/api/cities/admin";
 export const GET_CITY_PAGE_URL = "/api/cities";
 
 
+
+
+
+
+
 // ================= GIRL APIs =================
 
 // CREATE
@@ -37,18 +42,41 @@ export const ADD_GIRL_URL = "/api/girls/add";
 
 // READ
 export const GET_ALL_GIRLS_URL = "/api/girls/all";
-export const GET_GIRLS_BY_CITY_URL = "/api/girls/city"; // /city/:cityId
-export const GET_SINGLE_GIRL_URL = "/api/girls"; // /:id
-export const GET_GIRL_BY_SLUG_URL = "/api/girls/:citySlug/:girlSlug "; // /slug/:seoSlug
+
+// BY CITY
+export const GET_GIRLS_BY_CITY_URL = "/api/girls/city";
+
+// BY SUBCITY (🔥 NEW)
+export const GET_GIRLS_BY_SUBCITY_URL = "/api/girls/subcity";
+
+// BY ID (ADMIN / FALLBACK)
+export const GET_SINGLE_GIRL_URL = "/api/girls/details";
+
+// 🔥 MAIN SEO API
+export const GET_GIRL_BY_SLUG_URL = "/api/girls";
 
 // UPDATE
-export const UPDATE_GIRL_URL = "/api/girls"; // /:id
+export const UPDATE_GIRL_URL = "/api/girls/update";
 
 // DELETE
-export const DELETE_GIRL_URL = "/api/girls"; // /:id
+export const DELETE_GIRL_URL = "/api/girls/delete";
 
 // STATUS
-export const TOGGLE_GIRL_STATUS_URL = "/api/girls/status"; // /status/:id
+export const TOGGLE_GIRL_STATUS_URL = "/api/girls/status";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ================= STATE =================
 export const ADD_STATE_URL = "/api/states/create";
@@ -98,7 +126,6 @@ export const UPDATE_BLOG_URL = "/api/blogs/update/:id";
 // DELETE
 export const DELETE_BLOG_URL = "/api/blogs/delete/:id";
 
-
 // ================= SUB-CITY =================
 
 // CREATE
@@ -107,25 +134,56 @@ export const ADD_SUBCITY_URL = "/api/subcities/create";
 // GET ALL
 export const GET_SUBCITIES_URL = "/api/subcities";
 
-// GET BY CITY (filter)
-export const GET_SUBCITIES_BY_CITY_URL = "/api/subcities/city"; 
-// 👉 use: /city/:cityId
-
-// DELETE
-export const DELETE_SUBCITY_URL = "/api/subcities/delete";
-
-// STATUS UPDATE
-export const SUBCITY_STATUS_URL = "/api/subcities/status";
-
-// UPDATE (FULL UPDATE)
-export const UPDATE_SUBCITY_URL = "/api/subcities/update";
-
-// UPDATE IMAGE
-export const UPDATE_SUBCITY_IMAGE_URL = "/api/subcities/image";
+// GET BY CITY
+export const GET_SUBCITIES_BY_CITY_URL = "/api/subcities/city";
 
 // GET BY ID (ADMIN)
 export const GET_SUBCITY_BY_ID_URL = "/api/subcities/admin";
 
-// SEO PAGE (PUBLIC via slug)
+// UPDATE
+export const UPDATE_SUBCITY_URL = "/api/subcities/update";
+
+// DELETE
+export const DELETE_SUBCITY_URL = "/api/subcities/delete";
+
+// STATUS
+export const SUBCITY_STATUS_URL = "/api/subcities/status";
+
+// SEO PAGE
 export const GET_SUBCITY_PAGE_URL = "/api/subcities";
 
+
+
+
+
+
+
+
+// ================= FAQ =================
+
+// CREATE
+export const ADD_FAQ_URL = "/api/faqs/add";
+
+// GET ALL
+export const GET_FAQS_URL = "/api/faqs";
+
+// GET BY TYPE (homepage, city, subcity, girl)
+export const GET_FAQS_BY_TYPE_URL = "/api/faqs/type";
+
+// GET BY CITY
+export const GET_FAQS_BY_CITY_URL = "/api/faqs/city";
+
+// GET BY SUBCITY
+export const GET_FAQS_BY_SUBCITY_URL = "/api/faqs/subcity";
+
+// GET BY GIRL
+export const GET_FAQS_BY_GIRL_URL = "/api/faqs/girl";
+
+// UPDATE
+export const UPDATE_FAQ_URL = "/api/faqs/update";
+
+// DELETE
+export const DELETE_FAQ_URL = "/api/faqs/delete";
+
+// STATUS
+export const TOGGLE_FAQ_STATUS_URL = "/api/faqs/status";

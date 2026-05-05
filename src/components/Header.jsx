@@ -22,12 +22,12 @@ export default function Navbar() {
           {/* LOGO */}
           <Link href="/" className="flex items-center transition-transform hover:scale-105 active:scale-95">
             <Image
-              src="/images/logo1.png"
+              src="/images/girlswithwine.jpg"
               alt="logo"
               width={160}
               height={45}
               className="object-contain"
-              priority
+              unoptimized
             />
           </Link>
 
