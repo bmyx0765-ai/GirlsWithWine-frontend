@@ -59,8 +59,8 @@ const CityMetaSection = ({
               {uniqueTags.map((tag, index) => (
 
                 <div
-  key={index}
-  className="
+                  key={index}
+                  className="
     bg-white
     text-slate-600
     text-sm
@@ -78,9 +78,9 @@ const CityMetaSection = ({
     transition-all
     duration-300
   "
->
-  #{tag.toLowerCase()}
-</div>
+                >
+                  #{tag.toLowerCase()}
+                </div>
 
               ))}
 
