@@ -138,18 +138,61 @@ export const deleteGirlThunk = createAsyncThunk(
 // UPDATE
 export const updateGirlThunk = createAsyncThunk(
   "girls/update",
-  async ({ id, formData }, { rejectWithValue }) => {
+
+  async (
+    { id, formData },
+    { rejectWithValue }
+  ) => {
+
     try {
-      const token = localStorage.getItem("adminToken");
-      const res = await axiosInstance.put(`${UPDATE_GIRL_URL}/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return res.data.data;
+
+      const token =
+        localStorage.getItem(
+          "adminToken"
+        );
+
+      const res =
+        await axiosInstance.put(
+
+          `${UPDATE_GIRL_URL}/${id}`,
+
+          formData,
+
+          {
+            headers: {
+
+              "Content-Type":
+                "multipart/form-data",
+
+              Authorization:
+                `Bearer ${token}`,
+
+            },
+          }
+        );
+
+      console.log(
+        "UPDATE API RESPONSE 👉",
+        res.data
+      );
+
+      return (
+        res.data.girl ||
+        res.data.data ||
+        res.data
+      );
+
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Update failed");
+
+      return rejectWithValue(
+
+        err.response?.data
+          ?.message ||
+
+          "Update failed"
+
+      );
+
     }
   }
 );

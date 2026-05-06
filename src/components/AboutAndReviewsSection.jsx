@@ -8,6 +8,7 @@ import Faq from "@/components/Faq";
 import GirlsPrice from "@/components/GirlsPrice";
 
 import { getCitiesThunk } from "@/store/slices/citySlice";
+import CommonFaq from "./CommonFaq";
 
 export default function AboutAndReviewsSection() {
   const dispatch = useDispatch();
@@ -146,7 +147,11 @@ export default function AboutAndReviewsSection() {
 
           {/* FAQ Section */}
           <div className="bg-white rounded-[2.5rem] p-6 sm:p-12 shadow-sm border border-gray-100">
-            <Faq />
+            {/* <Faq /> */}
+            <CommonFaq
+              type="homepage"
+              title="FAQs – Girls With Wine Escort Services"
+            />
           </div>
 
           {/* CitySection Section */}
