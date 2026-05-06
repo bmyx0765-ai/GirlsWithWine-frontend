@@ -1,6 +1,7 @@
 import "./globals.css";
 import ReduxProvider from "@/store/provider";
 import LayoutWrapper from "@/components/LayoutWrapper";
+import Script from "next/script";
 
 export const metadata = {
   metadataBase: new URL("https://girlswithwine.com"),
@@ -10,13 +11,6 @@ export const metadata = {
 
   description:
     "Search for VIP escort services near you. 💕 Browse verified profiles with real photos, reviews, pricing, and location details. Discover trusted and professional call girls across India and worldwide on GirlsWithWine.",
-
-  // keywords: [
-  //   "escort services India",
-  //   "call girls India",
-  //   "adult classifieds",
-  //   "massage services",
-  // ],
 
   robots: {
     index: true,
@@ -71,6 +65,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        {/* Google Search Console Verification */}
+        <meta
+          name="google-site-verification"
+          content="6PpNrg602Hl3OS-KhALWSVUL-xf5JuUpDT76QM0QhLo"
+        />
+
         {/* External CSS */}
         <link
           rel="stylesheet"
@@ -82,6 +82,7 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
           href="https://unpkg.com/jodit@4.7.6/es2021/jodit.min.css"
         />
+
         <script
           src="https://unpkg.com/jodit@4.7.6/es2021/jodit.min.js"
           defer
@@ -109,6 +110,22 @@ export default function RootLayout({ children }) {
             }),
           }}
         />
+
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-3GDW8E8RJD"
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-3GDW8E8RJD');
+          `}
+        </Script>
       </head>
 
       <body>
