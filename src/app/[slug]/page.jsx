@@ -80,6 +80,70 @@ function getApiUrl() {
 }
 
 /* ================================================= */
+/* ================= FAQ SCHEMA ==================== */
+/* ================================================= */
+
+async function getFaqSchema(type, id) {
+
+  try {
+
+    if (!id) return null;
+
+    let url = "";
+
+    if (type === "city") {
+      url = `${getApiUrl()}/api/faqs/city/${id}`;
+    }
+
+    else if (type === "subcity") {
+      url = `${getApiUrl()}/api/faqs/subcity/${id}`;
+    }
+
+    else if (type === "girl") {
+      url = `${getApiUrl()}/api/faqs/girl/${id}`;
+    }
+
+    const res = await fetch(url, {
+      cache: "no-store",
+    });
+
+    const data = await res.json();
+
+    const faqList = data?.[0]?.faqs || [];
+
+    if (!faqList?.length) {
+      return null;
+    }
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+
+      mainEntity: faqList.map((faq) => ({
+        "@type": "Question",
+
+        name: faq?.question || "",
+
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: faq?.answer || "",
+        },
+      })),
+    };
+
+  } catch (error) {
+
+    console.log(
+      "FAQ SCHEMA ERROR:",
+      error
+    );
+
+    return null;
+
+  }
+}
+
+/* ================================================= */
 /* ================= CHECK SLUG ==================== */
 /* ================================================= */
 
@@ -87,9 +151,7 @@ async function checkSlug(slug) {
 
   try {
 
-    /* ================================================= */
-    /* ================= GIRL ========================== */
-    /* ================================================= */
+    /* ================= GIRL ================= */
 
     const girlRes = await fetch(
       `${getApiUrl()}/api/girls/${slug}`,
@@ -103,11 +165,6 @@ async function checkSlug(slug) {
       const girlData =
         await girlRes.json();
 
-      console.log(
-        "GIRL RESPONSE 👉",
-        girlData
-      );
-
       if (girlData?._id) {
 
         return {
@@ -118,9 +175,7 @@ async function checkSlug(slug) {
       }
     }
 
-    /* ================================================= */
-    /* ================= CITY ========================== */
-    /* ================================================= */
+    /* ================= CITY ================= */
 
     const cityRes = await fetch(
       `${getApiUrl()}/api/cities/${slug}`,
@@ -134,8 +189,6 @@ async function checkSlug(slug) {
       const cityData =
         await cityRes.json();
 
-      
-
       if (cityData?.city) {
 
         return {
@@ -146,12 +199,10 @@ async function checkSlug(slug) {
       }
     }
 
-    /* ================================================= */
-    /* ================= SUBCITY ======================= */
-    /* ================================================= */
+    /* ================= SUBCITY ================= */
 
     const subCityRes = await fetch(
-       `${getApiUrl()}/api/subcities/${slug}`,
+      `${getApiUrl()}/api/subcities/${slug}`,
       {
         cache: "no-store",
       }
@@ -161,8 +212,6 @@ async function checkSlug(slug) {
 
       const subCityData =
         await subCityRes.json();
-
-     
 
       if (
         subCityData?.subCity?._id
@@ -225,10 +274,6 @@ export async function generateMetadata({
 
   }
 
-  /* ================================================= */
-  /* ================= CITY SEO ====================== */
-  /* ================================================= */
-
   if (result.type === "city") {
 
     const { city, seo } =
@@ -258,99 +303,31 @@ export async function generateMetadata({
           seo?.canonical,
       },
 
-      openGraph: {
-
-        title:
-          seo?.title ||
-          city?.heading,
-
-        description:
-          seo?.description ||
-          city?.subDescription,
-
-        url:
-          seo?.canonical,
-
-        type: "website",
-
-      },
-
     };
   }
-
-  /* ================================================= */
-  /* ================= SUBCITY SEO =================== */
-  /* ================================================= */
 
   if (result.type === "subcity") {
 
     const subCity =
       result.data;
 
-    const baseUrl =
-      process.env
-        .NEXT_PUBLIC_BASE_URL ||
-      "https://girlswithwine.com";
-
     return {
 
       title:
         subCity?.seoTitle ||
-        subCity?.heading ||
-        subCity?.name,
+        subCity?.heading,
 
       description:
         subCity?.seoDescription ||
-        subCity?.subDescription ||
-        subCity?.name,
-
-      keywords:
-        Array.isArray(
-          subCity?.tags
-        )
-          ? subCity.tags
-          : [],
-
-      alternates: {
-
-        canonical:
-          `https://girlswithwine.com/${subCity?.slug}`,
-
-      },
-
-      openGraph: {
-
-        title:
-          subCity?.seoTitle ||
-          subCity?.heading,
-
-        description:
-          subCity?.seoDescription ||
-          subCity?.subDescription,
-
-        url:
-          `https://girlswithwine.com/${subCity?.slug}`,
-
-        type: "website",
-
-      },
+        subCity?.subDescription,
 
     };
   }
-
-  /* ================================================= */
-  /* ================= GIRL SEO ====================== */
-  /* ================================================= */
 
   if (result.type === "girl") {
 
     const girl =
       result.data;
-
-    const baseUrl =
-      process.env
-        .NEXT_PUBLIC_BASE_URL ||
-      "https://girlswithwine.com";
 
     return {
 
@@ -361,46 +338,6 @@ export async function generateMetadata({
       description:
         girl?.seoDescription ||
         girl?.heading,
-
-      keywords:
-        Array.isArray(
-          girl?.seoKeywords
-        )
-          ? girl.seoKeywords
-          : typeof girl?.seoKeywords ===
-            "string"
-          ? girl.seoKeywords
-              .split(",")
-              .map((k) =>
-                k.trim()
-              )
-          : [],
-
-      alternates: {
-
-        canonical:
-          girl?.canonicalLink ||
-          `https://girlswithwine.com/${girl?.permalink}`,
-
-      },
-
-      openGraph: {
-
-        title:
-          girl?.seoTitle ||
-          girl?.heading,
-
-        description:
-          girl?.seoDescription ||
-          girl?.heading,
-
-        url:
-          girl?.canonicalLink ||
-          `https://girlswithwine.com/${girl?.permalink}`,
-
-        type: "website",
-
-      },
 
     };
   }
@@ -421,9 +358,7 @@ export default async function Page({
   const result =
     await checkSlug(slug);
 
-  /* ================================================= */
-  /* ================= 404 =========================== */
-  /* ================================================= */
+  /* ================= 404 ================= */
 
   if (!result) {
 
@@ -449,6 +384,12 @@ export default async function Page({
 
     const { city } =
       result.data;
+
+    const faqSchema =
+      await getFaqSchema(
+        "city",
+        city?._id
+      );
 
     let latitude =
       city?.latitude;
@@ -485,7 +426,21 @@ export default async function Page({
     return (
       <>
 
-        {/* GEO TAGS */}
+        {/* FAQ SCHEMA */}
+
+        {faqSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html:
+                JSON.stringify(
+                  faqSchema
+                ),
+            }}
+          />
+        )}
+
+        {/* GEO */}
 
         {latitude &&
           longitude && (
@@ -514,23 +469,6 @@ export default async function Page({
             </>
           )}
 
-        {/* SCHEMA */}
-
-        {result.data
-          ?.schema && (
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html:
-                JSON.stringify(
-                  result
-                    .data
-                    .schema
-                ),
-            }}
-          />
-        )}
-
         <CityGirlsPage
           params={{
             cityName:
@@ -551,12 +489,32 @@ export default async function Page({
     "subcity"
   ) {
 
+    const faqSchema =
+      await getFaqSchema(
+        "subcity",
+        result.data?._id
+      );
+
     return (
-      <SubCityGirlsPage
-        data={
-          result.data
-        }
-      />
+      <>
+        {faqSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html:
+                JSON.stringify(
+                  faqSchema
+                ),
+            }}
+          />
+        )}
+
+        <SubCityGirlsPage
+          data={
+            result.data
+          }
+        />
+      </>
     );
 
   }
@@ -570,12 +528,32 @@ export default async function Page({
     "girl"
   ) {
 
+    const faqSchema =
+      await getFaqSchema(
+        "girl",
+        result.data?._id
+      );
+
     return (
-      <GirlDetailsPage
-        data={
-          result.data
-        }
-      />
+      <>
+        {faqSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html:
+                JSON.stringify(
+                  faqSchema
+                ),
+            }}
+          />
+        )}
+
+        <GirlDetailsPage
+          data={
+            result.data
+          }
+        />
+      </>
     );
 
   }

@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import React, { useEffect } from "react";
@@ -19,6 +21,7 @@ const CommonFaq = ({
   title = "",
   className = "",
 }) => {
+
   const dispatch = useDispatch();
 
   const {
@@ -30,6 +33,7 @@ const CommonFaq = ({
   /* ================= FETCH FAQS ================= */
 
   useEffect(() => {
+
     if (type === "homepage") {
       dispatch(getFaqsByTypeThunk("homepage"));
     }
@@ -52,13 +56,17 @@ const CommonFaq = ({
 
   }, [dispatch, type, cityId, subCityId, girlId]);
 
-  /* ================= EXTRACT FAQ ARRAY ================= */
+  /* ================= FAQ LIST ================= */
 
   let faqList = [];
 
   if (Array.isArray(faqs)) {
     faqList = faqs?.[0]?.faqs || [];
   }
+
+  /* ================= ADD FAQ SCHEMA ================= */
+
+ 
 
   /* ================= LOADING ================= */
 
@@ -84,31 +92,23 @@ const CommonFaq = ({
     );
   }
 
-  /* ================= HIDE COMPLETE SECTION ================= */
+  /* ================= HIDE SECTION ================= */
 
   if (!faqList?.length) {
     return null;
   }
 
-  /* ================= UI ================= */
-
   return (
     <section className={`w-full py-12 ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
-        {/* ================= HEADER ================= */}
-
         {title && (
           <div className="mb-14">
-
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 leading-tight mb-5">
               {title}
             </h2>
-
           </div>
         )}
-
-        {/* ================= FAQ LIST ================= */}
 
         <div className="space-y-8">
 
@@ -130,8 +130,6 @@ const CommonFaq = ({
               "
             >
 
-              {/* QUESTION */}
-
               <h3
                 className="
                   text-2xl
@@ -144,8 +142,6 @@ const CommonFaq = ({
               >
                 {faq?.question}
               </h3>
-
-              {/* ANSWER */}
 
               <p
                 className="
