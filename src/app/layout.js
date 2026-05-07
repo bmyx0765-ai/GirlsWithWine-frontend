@@ -39,6 +39,7 @@ export const metadata = {
     siteName: "Girls With Wine",
 
     locale: "en_IN",
+
     type: "website",
 
     images: [
@@ -53,31 +54,38 @@ export const metadata = {
 
   twitter: {
     card: "summary_large_image",
+
     title:
       "VIP Escort Girls in India | Professional Call Girls Services Across India| GirlsWithWine",
+
     description:
       "Search for VIP escort services near you. 💕 Browse verified profiles with real photos, reviews, pricing, and location details. Discover trusted and professional call girls across India and worldwide on GirlsWithWine.",
+
     images: ["/icon.png"],
   },
 };
 
 export default function RootLayout({ children }) {
+
   return (
+
     <html lang="en">
+
       <head>
-        {/* Google Search Console Verification */}
+
+        {/* GOOGLE SEARCH CONSOLE */}
         <meta
           name="google-site-verification"
           content="c09IAF3PnXkZnpQ57WLvYg8oXUsrQRuOZ5phxQS07Bs"
         />
 
-        {/* External CSS */}
+        {/* FONT AWESOME */}
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
         />
 
-        {/* Jodit Editor */}
+        {/* JODIT EDITOR */}
         <link
           rel="stylesheet"
           href="https://unpkg.com/jodit@4.7.6/es2021/jodit.min.css"
@@ -88,7 +96,11 @@ export default function RootLayout({ children }) {
           defer
         ></script>
 
-        {/* JSON-LD Schema */}
+
+      
+
+
+        {/* JSON-LD SCHEMA */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -111,28 +123,52 @@ export default function RootLayout({ children }) {
           }}
         />
 
-        {/* Google Analytics */}
+
+        {/* GOOGLE ANALYTICS */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-3GDW8E8RJD"
           strategy="afterInteractive"
         />
 
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+        >
           {`
             window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
+
+            function gtag(){
+              dataLayer.push(arguments);
+            }
+
             gtag('js', new Date());
 
             gtag('config', 'G-3GDW8E8RJD');
           `}
         </Script>
+
       </head>
 
       <body>
+
         <ReduxProvider>
-          <LayoutWrapper>{children}</LayoutWrapper>
+
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
+
         </ReduxProvider>
+
       </body>
+
     </html>
+
   );
+
 }
+
+
+
+
+
+
