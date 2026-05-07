@@ -314,7 +314,7 @@ export async function generateMetadata({
       alternates: {
 
         canonical:
-          `${baseUrl}/${subCity?.slug}`,
+          `https://girlswithwine.com/${subCity?.slug}`,
 
       },
 
@@ -329,7 +329,7 @@ export async function generateMetadata({
           subCity?.subDescription,
 
         url:
-          `${baseUrl}/${subCity?.slug}`,
+          `https://girlswithwine.com/${subCity?.slug}`,
 
         type: "website",
 
@@ -380,7 +380,7 @@ export async function generateMetadata({
 
         canonical:
           girl?.canonicalLink ||
-          `${baseUrl}/${girl?.permalink}`,
+          `https://girlswithwine.com/${girl?.permalink}`,
 
       },
 
@@ -396,7 +396,7 @@ export async function generateMetadata({
 
         url:
           girl?.canonicalLink ||
-          `${baseUrl}/${girl?.permalink}`,
+          `https://girlswithwine.com/${girl?.permalink}`,
 
         type: "website",
 
