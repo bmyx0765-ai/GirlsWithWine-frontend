@@ -68,7 +68,7 @@ export default function RootLayout({ children }) {
         {/* Google Search Console Verification */}
         <meta
           name="google-site-verification"
-          content="6PpNrg602Hl3OS-KhALWSVUL-xf5JuUpDT76QM0QhLo"
+          content="c09IAF3PnXkZnpQ57WLvYg8oXUsrQRuOZ5phxQS07Bs"
         />
 
         {/* External CSS */}
