@@ -1,6 +1,11 @@
+
 import CityGirlsPage from "@/components/CityGirlsPage";
 import GirlDetailsPage from "@/components/GirlDetailsPage";
+import Hash404 from "@/components/Hash404";
 import SubCityGirlsPage from "@/components/SubCityGirlsPage";
+
+
+
 
 /* ================================================= */
 /* ================= LAT LONG ====================== */
@@ -165,7 +170,11 @@ async function checkSlug(slug) {
       const girlData =
         await girlRes.json();
 
-      if (girlData?._id) {
+      if (
+        girlData &&
+        girlData._id &&
+        !girlData.message
+      ) {
 
         return {
           type: "girl",
@@ -173,6 +182,7 @@ async function checkSlug(slug) {
         };
 
       }
+
     }
 
     /* ================= CITY ================= */
@@ -189,7 +199,11 @@ async function checkSlug(slug) {
       const cityData =
         await cityRes.json();
 
-      if (cityData?.city) {
+      if (
+        cityData &&
+        cityData.city &&
+        cityData.city._id
+      ) {
 
         return {
           type: "city",
@@ -197,6 +211,7 @@ async function checkSlug(slug) {
         };
 
       }
+
     }
 
     /* ================= SUBCITY ================= */
@@ -214,20 +229,21 @@ async function checkSlug(slug) {
         await subCityRes.json();
 
       if (
-        subCityData?.subCity?._id
+        subCityData &&
+        subCityData.subCity &&
+        subCityData.subCity._id
       ) {
 
         return {
-
           type: "subcity",
-
-          data:
-            subCityData.subCity,
-
+          data: subCityData.subCity,
         };
 
       }
+
     }
+
+    /* ================= INVALID ================= */
 
     return null;
 
@@ -241,15 +257,13 @@ async function checkSlug(slug) {
     return null;
 
   }
+
 }
 
 /* ================================================= */
 /* ================= SEO =========================== */
 /* ================================================= */
 
-/* ================================================= */
-/* ================= SEO =========================== */
-/* ================================================= */
 
 export async function generateMetadata({
   params,
@@ -588,14 +602,45 @@ export async function generateMetadata({
 /* ================= PAGE ========================== */
 /* ================================================= */
 
+
+
+
 export default async function Page({
   params,
 }) {
 
   const { slug } = await params;
 
+  /* ================= INVALID URL ================= */
+
+  const decodedSlug =
+    decodeURIComponent(slug || "");
+
+  if (
+    decodedSlug.includes("#") ||
+    decodedSlug.includes("%23") ||
+    decodedSlug.includes("?") ||
+    decodedSlug.includes("&")
+  ) {
+
+    return (
+
+      <div className="min-h-screen flex items-center justify-center bg-white">
+
+        <h1 className="text-4xl md:text-6xl font-black text-slate-900">
+          404 Not Found
+        </h1>
+
+      </div>
+
+    );
+
+  }
+
+  /* ================= CHECK SLUG ================= */
+
   const result =
-    await checkSlug(slug);
+    await checkSlug(decodedSlug);
 
   /* ================= 404 ================= */
 
@@ -620,231 +665,231 @@ export default async function Page({
   /* ================================================= */
 
 
- if (result.type === "city") {
+  if (result.type === "city") {
 
-  const { city } =
-    result.data;
+    const { city } =
+      result.data;
 
-  /* ================================================= */
-  /* ================= DEBUG RESPONSE ================ */
-  /* ================================================= */
+    /* ================================================= */
+    /* ================= DEBUG RESPONSE ================ */
+    /* ================================================= */
 
 
 
-  const faqSchema =
-    await getFaqSchema(
-      "city",
-      city?._id
-    );
-
-  let latitude =
-    city?.latitude;
-
-  let longitude =
-    city?.longitude;
-
-  const cityNameRaw =
-    city?.mainCity ||
-    city?.name ||
-    slug;
-
-  const cityName =
-    cityNameRaw
-      ?.split(" ")
-      ?.map(
-        (word) =>
-          word.charAt(0).toUpperCase() +
-          word.slice(1).toLowerCase()
-      )
-      ?.join(" ");
-
-  if (
-    !latitude ||
-    !longitude
-  ) {
-
-    const geo =
-      await getLatLong(
-        cityName
+    const faqSchema =
+      await getFaqSchema(
+        "city",
+        city?._id
       );
 
-    if (geo) {
+    let latitude =
+      city?.latitude;
 
-      latitude =
-        geo.latitude;
+    let longitude =
+      city?.longitude;
 
-      longitude =
-        geo.longitude;
+    const cityNameRaw =
+      city?.mainCity ||
+      city?.name ||
+      slug;
 
+    const cityName =
+      cityNameRaw
+        ?.split(" ")
+        ?.map(
+          (word) =>
+            word.charAt(0).toUpperCase() +
+            word.slice(1).toLowerCase()
+        )
+        ?.join(" ");
+
+    if (
+      !latitude ||
+      !longitude
+    ) {
+
+      const geo =
+        await getLatLong(
+          cityName
+        );
+
+      if (geo) {
+
+        latitude =
+          geo.latitude;
+
+        longitude =
+          geo.longitude;
+
+      }
     }
-  }
 
-  /* ================================================= */
-  /* ================= URL =========================== */
-  /* ================================================= */
+    /* ================================================= */
+    /* ================= URL =========================== */
+    /* ================================================= */
 
-  const pageUrl =
-    `https://girlswithwine.com/${slug}`;
+    const pageUrl =
+      `https://girlswithwine.com/${slug}`;
 
-  /* ================================================= */
-  /* ================= IMAGE ========================= */
-  /* ================================================= */
+    /* ================================================= */
+    /* ================= IMAGE ========================= */
+    /* ================================================= */
 
-  const imageUrl =
-    city?.imageUrl ||
-    city?.image ||
-    "";
+    const imageUrl =
+      city?.imageUrl ||
+      city?.image ||
+      "";
 
-  /* ================================================= */
-  /* ================= SEO DATA ====================== */
-  /* ================================================= */
+    /* ================================================= */
+    /* ================= SEO DATA ====================== */
+    /* ================================================= */
 
-  const canonicalUrl =
-    city?.seo?.canonical ||
-    city?.canonical ||
-    pageUrl ||
-    "";
+    const canonicalUrl =
+      city?.seo?.canonical ||
+      city?.canonical ||
+      pageUrl ||
+      "";
 
-  const seoTitle =
-    city?.seo?.title ||
-    city?.seoTitle ||
-    city?.heading ||
-    "";
+    const seoTitle =
+      city?.seo?.title ||
+      city?.seoTitle ||
+      city?.heading ||
+      "";
 
-  const seoDescription =
-    city?.seo?.description ||
-    city?.seoDescription ||
-    city?.subDescription ||
-    "";
+    const seoDescription =
+      city?.seo?.description ||
+      city?.seoDescription ||
+      city?.subDescription ||
+      "";
 
-  const seoKeywords =
-    city?.seo?.seoKeywords ||
-    city?.seoKeywords ||
-    "";
+    const seoKeywords =
+      city?.seo?.seoKeywords ||
+      city?.seoKeywords ||
+      "";
 
- /* ================================================= */
-/* ================= SERVICE TYPE ================== */
-/* ================================================= */
+    /* ================================================= */
+    /* ================= SERVICE TYPE ================== */
+    /* ================================================= */
 
-const serviceTypes =
-  city?.serviceType ||
-  city?.seo?.serviceType ||
-  "";
+    const serviceTypes =
+      city?.serviceType ||
+      city?.seo?.serviceType ||
+      "";
 
 
-  /* ================================================= */
-  /* ================= BREADCRUMB ==================== */
-  /* ================================================= */
+    /* ================================================= */
+    /* ================= BREADCRUMB ==================== */
+    /* ================================================= */
 
-  const breadcrumbSchema = {
+    const breadcrumbSchema = {
 
-    "@context":
-      "https://schema.org",
+      "@context":
+        "https://schema.org",
 
-    "@type":
-      "BreadcrumbList",
+      "@type":
+        "BreadcrumbList",
 
-    itemListElement: [
+      itemListElement: [
 
-      {
+        {
+          "@type":
+            "ListItem",
+
+          position: 1,
+
+          name: "Home",
+
+          item:
+            "https://girlswithwine.com/",
+        },
+
+        {
+          "@type":
+            "ListItem",
+
+          position: 2,
+
+          ...(cityName && {
+            name:
+              cityName,
+          }),
+
+          ...(canonicalUrl && {
+            item:
+              canonicalUrl,
+          }),
+        },
+      ],
+    };
+
+    /* ================================================= */
+    /* ================= LOCAL BUSINESS ================ */
+    /* ================================================= */
+
+    const localBusinessSchema = {
+
+      "@context":
+        "https://schema.org",
+
+      "@type":
+        "LocalBusiness",
+
+      ...(seoTitle && {
+        name:
+          seoTitle,
+      }),
+
+      ...(canonicalUrl && {
+        url:
+          canonicalUrl,
+      }),
+
+      ...(imageUrl && {
+        image:
+          imageUrl,
+      }),
+
+      telephone:
+        "+91-XXXXXXXXXX",
+
+      priceRange:
+        "₹2999 - ₹19999",
+
+      ...(seoDescription && {
+        description:
+          seoDescription,
+      }),
+
+      ...(seoKeywords && {
+        keywords:
+          seoKeywords,
+      }),
+
+      address: {
+
         "@type":
-          "ListItem",
-
-        position: 1,
-
-        name: "Home",
-
-        item:
-          "https://girlswithwine.com/",
-      },
-
-      {
-        "@type":
-          "ListItem",
-
-        position: 2,
+          "PostalAddress",
 
         ...(cityName && {
-          name:
+          addressLocality:
             cityName,
         }),
 
-        ...(canonicalUrl && {
-          item:
-            canonicalUrl,
-        }),
+        ...(city?.state ||
+          city?.stateName
+          ? {
+            addressRegion:
+              city?.state ||
+              city?.stateName,
+          }
+          : {}),
+
+        addressCountry:
+          "IN",
       },
-    ],
-  };
 
-  /* ================================================= */
-  /* ================= LOCAL BUSINESS ================ */
-  /* ================================================= */
-
-  const localBusinessSchema = {
-
-    "@context":
-      "https://schema.org",
-
-    "@type":
-      "LocalBusiness",
-
-    ...(seoTitle && {
-      name:
-        seoTitle,
-    }),
-
-    ...(canonicalUrl && {
-      url:
-        canonicalUrl,
-    }),
-
-    ...(imageUrl && {
-      image:
-        imageUrl,
-    }),
-
-    telephone:
-      "+91-XXXXXXXXXX",
-
-    priceRange:
-      "₹2999 - ₹19999",
-
-    ...(seoDescription && {
-      description:
-        seoDescription,
-    }),
-
-    ...(seoKeywords && {
-      keywords:
-        seoKeywords,
-    }),
-
-    address: {
-
-      "@type":
-        "PostalAddress",
-
-      ...(cityName && {
-        addressLocality:
-          cityName,
-      }),
-
-      ...(city?.state ||
-        city?.stateName
-        ? {
-          addressRegion:
-            city?.state ||
-            city?.stateName,
-        }
-        : {}),
-
-      addressCountry:
-        "IN",
-    },
-
-    ...(latitude &&
-      longitude && {
+      ...(latitude &&
+        longitude && {
         geo: {
 
           "@type":
@@ -856,184 +901,187 @@ const serviceTypes =
         },
       }),
 
-    openingHours:
-      "Mo-Su 00:00-23:59",
+      openingHours:
+        "Mo-Su 00:00-23:59",
 
-    ...(canonicalUrl && {
-      sameAs: [
-        canonicalUrl,
-      ],
-    }),
-  };
-
-  /* ================================================= */
-  /* ================= SERVICE SCHEMA ================ */
-  /* ================================================= */
-
-  const serviceSchema = {
-
-    "@context":
-      "https://schema.org",
-
-    "@type":
-      "Service",
-
-    ...(seoTitle && {
-      name:
-        seoTitle,
-    }),
-
-    provider: {
-
-      "@type":
-        "Organization",
-
-      name:
-        "Girls With Wine",
-
-      url:
-        "https://girlswithwine.com/",
-    },
-
-    ...(canonicalUrl && {
-      url:
-        canonicalUrl,
-    }),
-
-    areaServed: {
-
-      "@type":
-        "City",
-
-      ...(cityName && {
-        name:
-          cityName,
+      ...(canonicalUrl && {
+        sameAs: [
+          canonicalUrl,
+        ],
       }),
-    },
+    };
 
-    ...(serviceTypes && {
-      serviceType:
-        serviceTypes,
-    }),
+    /* ================================================= */
+    /* ================= SERVICE SCHEMA ================ */
+    /* ================================================= */
 
-    ...(seoDescription && {
-      description:
-        seoDescription,
-    }),
+    const serviceSchema = {
 
-    ...(seoKeywords && {
-      keywords:
-        seoKeywords,
-    }),
-
-    offers: {
+      "@context":
+        "https://schema.org",
 
       "@type":
-        "AggregateOffer",
+        "Service",
 
-      priceCurrency:
-        "INR",
+      ...(seoTitle && {
+        name:
+          seoTitle,
+      }),
 
-      lowPrice:
-        "2999",
+      provider: {
 
-      highPrice:
-        "19999",
-    },
-  };
+        "@type":
+          "Organization",
 
-  return (
-    <>
+        name:
+          "Girls With Wine",
 
-      {/* FAQ SCHEMA */}
+        url:
+          "https://girlswithwine.com/",
+      },
 
-      {faqSchema && (
+      ...(canonicalUrl && {
+        url:
+          canonicalUrl,
+      }),
+
+      areaServed: {
+
+        "@type":
+          "City",
+
+        ...(cityName && {
+          name:
+            cityName,
+        }),
+      },
+
+      ...(serviceTypes && {
+        serviceType:
+          serviceTypes,
+      }),
+
+      ...(seoDescription && {
+        description:
+          seoDescription,
+      }),
+
+      ...(seoKeywords && {
+        keywords:
+          seoKeywords,
+      }),
+
+      offers: {
+
+        "@type":
+          "AggregateOffer",
+
+        priceCurrency:
+          "INR",
+
+        lowPrice:
+          "2999",
+
+        highPrice:
+          "19999",
+      },
+    };
+
+    return (
+      <>
+       <Hash404 />
+
+        {/* FAQ SCHEMA */}
+
+        {faqSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html:
+                JSON.stringify(
+                  faqSchema
+                ),
+            }}
+          />
+        )}
+
+        {/* BREADCRUMB SCHEMA */}
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html:
               JSON.stringify(
-                faqSchema
+                breadcrumbSchema
               ),
           }}
         />
-      )}
 
-      {/* BREADCRUMB SCHEMA */}
+        {/* LOCAL BUSINESS SCHEMA */}
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              breadcrumbSchema
-            ),
-        }}
-      />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html:
+              JSON.stringify(
+                localBusinessSchema
+              ),
+          }}
+        />
 
-      {/* LOCAL BUSINESS SCHEMA */}
+        {/* SERVICE SCHEMA */}
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              localBusinessSchema
-            ),
-        }}
-      />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html:
+              JSON.stringify(
+                serviceSchema
+              ),
+          }}
+        />
 
-      {/* SERVICE SCHEMA */}
+        {/* GEO */}
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(
-              serviceSchema
-            ),
-        }}
-      />
+        {latitude &&
+          longitude && (
+            <>
+              <meta
+                name="geo.region"
+                content="IN"
+              />
 
-      {/* GEO */}
+              <meta
+                name="geo.placename"
+                content={
+                  cityName
+                }
+              />
 
-      {latitude &&
-        longitude && (
-          <>
-            <meta
-              name="geo.region"
-              content="IN"
-            />
+              <meta
+                name="geo.position"
+                content={`${latitude};${longitude}`}
+              />
 
-            <meta
-              name="geo.placename"
-              content={
-                cityName
-              }
-            />
+              <meta
+                name="ICBM"
+                content={`${latitude}, ${longitude}`}
+              />
+            </>
+          )}
 
-            <meta
-              name="geo.position"
-              content={`${latitude};${longitude}`}
-            />
+          
 
-            <meta
-              name="ICBM"
-              content={`${latitude}, ${longitude}`}
-            />
-          </>
-        )}
+        <CityGirlsPage
+          params={{
+            cityName:
+              decodedSlug,
+          }}
+        />
 
-      <CityGirlsPage
-        params={{
-          cityName:
-            slug,
-        }}
-      />
-
-    </>
-  );
-}
+      </>
+    );
+  }
 
   /* ================================================= */
   /* ================= SUBCITY PAGE ================== */
@@ -1052,6 +1100,7 @@ const serviceTypes =
 
     return (
       <>
+      <Hash404 />
         {faqSchema && (
           <script
             type="application/ld+json"
@@ -1091,6 +1140,7 @@ const serviceTypes =
 
     return (
       <>
+      <Hash404 />
         {faqSchema && (
           <script
             type="application/ld+json"
@@ -1113,6 +1163,22 @@ const serviceTypes =
 
   }
 
+
+  if (!result) {
+
+    return (
+
+      <div className="min-h-screen flex items-center justify-center bg-white">
+
+        <h1 className="text-4xl md:text-6xl font-black text-slate-900">
+          404 Not Found
+        </h1>
+
+      </div>
+
+    );
+
+  }
   /* ================================================= */
   /* ================= FALLBACK ====================== */
   /* ================================================= */
