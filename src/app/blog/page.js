@@ -13,6 +13,7 @@ export const metadata = {
     "news",
     "articles",
   ],
+  concanonical: "https://girlswithwine.com/blog",
 
   openGraph: {
     title: "Latest Blogs | Girls With Wine",
