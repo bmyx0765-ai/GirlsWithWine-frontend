@@ -60,7 +60,7 @@ const Footer = () => {
           <div className="space-y-8">
             <Link href="/" className="inline-block transition-transform hover:scale-105">
               <Image
-                src="/images/LOGO.PNG"
+                src="/images/girlswithwine.jpg"
                 alt="Logo"
                 width={200}
                 height={60}

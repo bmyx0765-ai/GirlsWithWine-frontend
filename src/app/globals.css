@@ -10,10 +10,12 @@
   animation: slideInRight 0.3s ease-out forwards;
 }
 
-.wordpress-content {
+.wordpress-blog-content {
+  width: 100%;
+  overflow: hidden;
+}
 
-  all: revert;
-
-  font-family: inherit;
-
+.wordpress-blog-content img {
+  max-width: 100%;
+  height: auto;
 }

@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-const createMarkup = (html) => {
-  return {
-    __html: html || "",
-  };
-};
+import root from "react-shadow";
 
 export default function BlogDetails({ slug }) {
 
@@ -27,7 +22,10 @@ export default function BlogDetails({ slug }) {
 
         const data = await res.json();
 
-        if (data?.length > 0) {
+        console.log("BLOG API 👉", data);
+
+        // ✅ ARRAY CHECK
+        if (data && data.length > 0) {
 
           const post = data[0];
 
@@ -36,8 +34,11 @@ export default function BlogDetails({ slug }) {
             title:
               post?.title?.rendered || "",
 
-            content:
-              post?.content?.rendered || "",
+            // ✅ CONTENT
+            fullContent:
+              post?.full_content ||
+              post?.content?.rendered ||
+              "",
 
             imageUrl:
               post?._embedded?.["wp:featuredmedia"]?.[0]
@@ -53,7 +54,7 @@ export default function BlogDetails({ slug }) {
 
       } catch (error) {
 
-        console.log(error);
+        console.log("BLOG ERROR 👉", error);
 
       } finally {
 
@@ -63,23 +64,34 @@ export default function BlogDetails({ slug }) {
 
     };
 
-    fetchBlog();
+    if (slug) {
+      fetchBlog();
+    }
 
   }, [slug]);
 
 
 
   // ✅ LOADING
-  if (loading || !blog) {
+  if (loading) {
 
     return (
-
       <div className="min-h-screen flex items-center justify-center text-lg font-semibold">
-
         Loading...
-
       </div>
+    );
 
+  }
+
+
+
+  // ✅ BLOG NOT FOUND
+  if (!blog) {
+
+    return (
+      <div className="min-h-screen flex items-center justify-center text-lg font-semibold">
+        Blog Not Found
+      </div>
     );
 
   }
@@ -88,57 +100,82 @@ export default function BlogDetails({ slug }) {
 
   return (
 
-    <div className="bg-[#FBFCFE] min-h-screen pb-20 font-sans">
+    <div className="bg-[#FBFCFE] min-h-screen pb-20">
 
-      {/* BACK */}
-      <nav className="max-w-5xl mx-auto px-6 pt-8">
+      <div className="max-w-5xl mx-auto px-6 py-10">
 
+        {/* BACK */}
         <Link
           href="/blog"
-          className="text-pink-600 font-medium hover:underline"
+          className="text-pink-600 hover:underline"
         >
-          ← Back to Blogs
+          ← Back
         </Link>
 
-      </nav>
+
+
+      
+
+
+        {/* TITLE */}
+        <h1
+          className="text-4xl md:text-5xl font-bold leading-tight text-gray-900 mb-4"
+          dangerouslySetInnerHTML={{
+            __html: blog.title,
+          }}
+        />
 
 
 
-      {/* BLOG */}
-      <div className="max-w-5xl mx-auto px-6 mt-12">
+        {/* DATE */}
+        <p className="text-gray-500 mb-12">
+          {new Date(blog.createdAt).toDateString()}
+        </p>
 
-        {/* HEADER */}
-        <header className="mb-10">
 
-          
 
-          {/* TITLE */}
-          <h1
-            className="text-4xl md:text-5xl font-bold mb-4 leading-tight text-gray-900"
+        {/* ✅ SHADOW DOM */}
+        <root.div
+          className="wordpress-shadow-wrapper"
+        >
+
+          {/* ✅ WORDPRESS CSS */}
+          <style>
+            {`
+              @import url("https://blog.girlswithwine.com/wp-includes/css/dist/block-library/style.min.css");
+
+              @import url("https://blog.girlswithwine.com/wp-includes/css/dist/global-styles/style.min.css");
+
+              @import url("https://blog.girlswithwine.com/wp-content/themes/astra/style.css");
+
+              @import url("https://blog.girlswithwine.com/wp-content/themes/astra/assets/css/minified/main.min.css");
+
+              @import url("https://blog.girlswithwine.com/wp-content/plugins/seo-by-rank-math/assets/frontend/css/rank-math.css");
+
+              body {
+                margin: 0;
+                padding: 0;
+              }
+
+              img {
+                max-width: 100%;
+                height: auto;
+              }
+
+              table {
+                width: 100%;
+              }
+            `}
+          </style>
+
+          {/* ✅ WORDPRESS HTML */}
+          <div
             dangerouslySetInnerHTML={{
-              __html: blog.title,
+              __html: blog.fullContent,
             }}
           />
 
-          {/* DATE */}
-          <p className="text-gray-500 text-sm">
-
-            {new Date(blog.createdAt).toDateString()}
-
-          </p>
-
-        </header>
-
-
-
-        {/* ✅ WORDPRESS CONTENT */}
-        <article className="wordpress-content">
-
-          <div
-            dangerouslySetInnerHTML={createMarkup(blog.content)}
-          />
-
-        </article>
+        </root.div>
 
       </div>
 
@@ -147,167 +184,3 @@ export default function BlogDetails({ slug }) {
   );
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import Link from "next/link";
-
-// export default function BlogDetails({ slug }) {
-
-//   const [blog, setBlog] = useState(null);
-
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-
-//     const fetchBlog = async () => {
-
-//       try {
-
-//         const res = await fetch(
-//           `https://blog.girlswithwine.com/wp-json/wp/v2/posts?slug=${slug}&_embed`
-//         );
-
-//         const data = await res.json();
-
-//         if (data?.length > 0) {
-
-//           const post = data[0];
-
-//           setBlog({
-
-//             title:
-//               post?.title?.rendered || "",
-
-//             imageUrl:
-//               post?._embedded?.["wp:featuredmedia"]?.[0]
-//                 ?.source_url ||
-//               "/images/default.jpg",
-
-//             createdAt:
-//               post?.date || "",
-
-//           });
-
-//         }
-
-//       } catch (error) {
-
-//         console.log(error);
-
-//       } finally {
-
-//         setLoading(false);
-
-//       }
-
-//     };
-
-//     fetchBlog();
-
-//   }, [slug]);
-
-
-
-//   // ✅ LOADING
-//   if (loading || !blog) {
-
-//     return (
-
-//       <div className="min-h-screen flex items-center justify-center text-lg font-semibold">
-
-//         Loading...
-
-//       </div>
-
-//     );
-
-//   }
-
-
-
-//   return (
-
-//     <div className="bg-[#FBFCFE] min-h-screen pb-20 font-sans">
-
-//       {/* BACK */}
-//       <nav className="max-w-5xl mx-auto px-6 pt-8">
-
-//         <Link
-//           href="/blog"
-//           className="text-pink-600 font-medium hover:underline"
-//         >
-//           ← Back to Blogs
-//         </Link>
-
-//       </nav>
-
-
-
-//       {/* BLOG */}
-//       <div className="max-w-5xl mx-auto px-6 mt-12">
-
-//         {/* HEADER */}
-//         <header className="mb-10">
-
-//           {/* IMAGE */}
-//           <img
-//             src={blog.imageUrl}
-//             alt="Blog"
-//             className="w-full h-[400px] object-cover rounded-3xl mb-8"
-//           />
-
-//           {/* TITLE */}
-//           <h1
-//             className="text-4xl font-bold mb-4 leading-tight"
-//             dangerouslySetInnerHTML={{
-//               __html: blog.title,
-//             }}
-//           />
-
-//           {/* DATE */}
-//           <p className="text-gray-500">
-
-//             {new Date(blog.createdAt).toDateString()}
-
-//           </p>
-
-//         </header>
-
-
-
-//         {/* ✅ EXACT WORDPRESS DESIGN */}
-//         <iframe
-//           src={`https://blog.girlswithwine.com/${slug}`}
-//           className="w-full border-0 rounded-2xl bg-white"
-//           style={{
-//             minHeight: "5000px",
-//           }}
-//         />
-
-//       </div>
-
-//     </div>
-
-//   );
-
-// }

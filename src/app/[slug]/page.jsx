@@ -247,20 +247,28 @@ async function checkSlug(slug) {
 /* ================= SEO =========================== */
 /* ================================================= */
 
+/* ================================================= */
+/* ================= SEO =========================== */
+/* ================================================= */
+
 export async function generateMetadata({
   params,
 }) {
 
-  const { slug } = await params;
+  const { slug } =
+    await params;
 
   const result =
     await checkSlug(slug);
+
+  /* ================= NOT FOUND ================= */
 
   if (!result) {
 
     return {
 
-      title: "404 Not Found",
+      title:
+        "404 Not Found",
 
       description:
         "Page not found",
@@ -274,42 +282,203 @@ export async function generateMetadata({
 
   }
 
-  if (result.type === "city") {
+  /* ================================================= */
+  /* ================= CITY SEO ====================== */
+  /* ================================================= */
 
-    const { city, seo } =
+  if (
+    result.type ===
+    "city"
+  ) {
+
+    const { city } =
       result.data;
+
+    /* ================= CITY NAME ================= */
+
+    const cityNameRaw =
+      city?.mainCity ||
+      city?.name ||
+      slug;
+
+    const cityName =
+      cityNameRaw
+        ?.split(" ")
+        ?.map(
+          (word) =>
+            word.charAt(0).toUpperCase() +
+            word.slice(1).toLowerCase()
+        )
+        ?.join(" ");
+
+    /* ================= PAGE URL ================= */
+
+    const pageUrl =
+      `https://girlswithwine.com/${slug}`;
+
+    /* ================= IMAGE ================= */
+
+    const imageUrl =
+      city?.imageUrl ||
+      city?.image ||
+      "https://girlswithwine.com/images/girlswithwine.jpg";
+
+    /* ================= SEO TITLE ================= */
+
+    const seoTitle =
+      city?.seo?.title ||
+      city?.seoTitle ||
+      city?.heading ||
+      `${cityName} Escort Service`;
+
+    /* ================= SEO DESCRIPTION ================= */
+
+    const seoDescription =
+      city?.seo?.description ||
+      city?.seoDescription ||
+      city?.subDescription ||
+      `Book verified call girls and independent escorts in ${cityName} with private and 24/7 booking.`;
+
+    /* ================= SEO KEYWORDS ================= */
+
+    const seoKeywords =
+      city?.seo?.seoKeywords ||
+      city?.seoKeywords ||
+      "";
+
+    /* ================= CANONICAL ================= */
+
+    const canonicalUrl =
+      city?.seo?.canonical ||
+      city?.canonical ||
+      pageUrl;
+
+    console.log(
+      "=========== FINAL SEO DATA ==========="
+    );
+
+    console.log(
+      "SEO TITLE 👉",
+      seoTitle
+    );
+
+    console.log(
+      "SEO DESCRIPTION 👉",
+      seoDescription
+    );
+
+    console.log(
+      "SEO KEYWORDS 👉",
+      seoKeywords
+    );
+
+    console.log(
+      "CANONICAL URL 👉",
+      canonicalUrl
+    );
+
+    console.log(
+      "======================================"
+    );
 
     return {
 
       title:
-        seo?.title ||
-        city?.heading,
+        seoTitle,
 
       description:
-        seo?.description ||
-        city?.subDescription,
+        seoDescription,
 
       keywords:
-        seo?.seoKeywords
-          ? seo.seoKeywords
-              .split(",")
-              .map((k) =>
-                k.trim()
-              )
+        seoKeywords
+          ? seoKeywords
+            .split(",")
+            .map((k) =>
+              k.trim()
+            )
           : [],
 
       alternates: {
+
         canonical:
-          seo?.canonical,
+          canonicalUrl,
       },
 
+      openGraph: {
+
+        title:
+          seoTitle,
+
+        description:
+          seoDescription,
+
+        url:
+          canonicalUrl,
+
+        siteName:
+          "Girls With Wine",
+
+        locale:
+          "en_IN",
+
+        type:
+          "website",
+
+        images: [
+
+          {
+            url:
+              imageUrl,
+
+            width: 1200,
+
+            height: 630,
+
+            alt:
+              seoTitle,
+          },
+        ],
+      },
+
+      twitter: {
+
+        card:
+          "summary_large_image",
+
+        title:
+          seoTitle,
+
+        description:
+          seoDescription,
+
+        images: [
+          imageUrl,
+        ],
+      },
+
+      robots: {
+
+        index: true,
+
+        follow: true,
+      },
     };
   }
 
-  if (result.type === "subcity") {
+  /* ================================================= */
+  /* ================= SUBCITY SEO =================== */
+  /* ================================================= */
+
+  if (
+    result.type ===
+    "subcity"
+  ) {
 
     const subCity =
       result.data;
+
+    const pageUrl =
+      `https://girlswithwine.com/${slug}`;
 
     return {
 
@@ -321,13 +490,53 @@ export async function generateMetadata({
         subCity?.seoDescription ||
         subCity?.subDescription,
 
+      alternates: {
+
+        canonical:
+          subCity?.canonical ||
+          pageUrl,
+      },
+
+      openGraph: {
+
+        title:
+          subCity?.seoTitle ||
+          subCity?.heading,
+
+        description:
+          subCity?.seoDescription ||
+          subCity?.subDescription,
+
+        url:
+          subCity?.canonical ||
+          pageUrl,
+
+        siteName:
+          "Girls With Wine",
+
+        locale:
+          "en_IN",
+
+        type:
+          "website",
+      },
     };
   }
 
-  if (result.type === "girl") {
+  /* ================================================= */
+  /* ================= GIRL SEO ====================== */
+  /* ================================================= */
+
+  if (
+    result.type ===
+    "girl"
+  ) {
 
     const girl =
       result.data;
+
+    const pageUrl =
+      `https://girlswithwine.com/${slug}`;
 
     return {
 
@@ -339,6 +548,36 @@ export async function generateMetadata({
         girl?.seoDescription ||
         girl?.heading,
 
+      alternates: {
+
+        canonical:
+          girl?.canonical ||
+          pageUrl,
+      },
+
+      openGraph: {
+
+        title:
+          girl?.seoTitle ||
+          girl?.heading,
+
+        description:
+          girl?.seoDescription ||
+          girl?.heading,
+
+        url:
+          girl?.canonical ||
+          pageUrl,
+
+        siteName:
+          "Girls With Wine",
+
+        locale:
+          "en_IN",
+
+        type:
+          "website",
+      },
     };
   }
 
@@ -380,105 +619,421 @@ export default async function Page({
   /* ================= CITY PAGE ===================== */
   /* ================================================= */
 
-  if (result.type === "city") {
 
-    const { city } =
-      result.data;
+ if (result.type === "city") {
 
-    const faqSchema =
-      await getFaqSchema(
-        "city",
-        city?._id
+  const { city } =
+    result.data;
+
+  /* ================================================= */
+  /* ================= DEBUG RESPONSE ================ */
+  /* ================================================= */
+
+
+
+  const faqSchema =
+    await getFaqSchema(
+      "city",
+      city?._id
+    );
+
+  let latitude =
+    city?.latitude;
+
+  let longitude =
+    city?.longitude;
+
+  const cityNameRaw =
+    city?.mainCity ||
+    city?.name ||
+    slug;
+
+  const cityName =
+    cityNameRaw
+      ?.split(" ")
+      ?.map(
+        (word) =>
+          word.charAt(0).toUpperCase() +
+          word.slice(1).toLowerCase()
+      )
+      ?.join(" ");
+
+  if (
+    !latitude ||
+    !longitude
+  ) {
+
+    const geo =
+      await getLatLong(
+        cityName
       );
 
-    let latitude =
-      city?.latitude;
+    if (geo) {
 
-    let longitude =
-      city?.longitude;
+      latitude =
+        geo.latitude;
 
-    const cityName =
-      city?.mainCity ||
-      city?.name ||
-      slug;
+      longitude =
+        geo.longitude;
 
-    if (
-      !latitude ||
-      !longitude
-    ) {
-
-      const geo =
-        await getLatLong(
-          cityName
-        );
-
-      if (geo) {
-
-        latitude =
-          geo.latitude;
-
-        longitude =
-          geo.longitude;
-
-      }
     }
+  }
 
-    return (
-      <>
+  /* ================================================= */
+  /* ================= URL =========================== */
+  /* ================================================= */
 
-        {/* FAQ SCHEMA */}
+  const pageUrl =
+    `https://girlswithwine.com/${slug}`;
 
-        {faqSchema && (
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html:
-                JSON.stringify(
-                  faqSchema
-                ),
-            }}
-          />
-        )}
+  /* ================================================= */
+  /* ================= IMAGE ========================= */
+  /* ================================================= */
 
-        {/* GEO */}
+  const imageUrl =
+    city?.imageUrl ||
+    city?.image ||
+    "";
 
-        {latitude &&
-          longitude && (
-            <>
-              <meta
-                name="geo.region"
-                content="IN"
-              />
+  /* ================================================= */
+  /* ================= SEO DATA ====================== */
+  /* ================================================= */
 
-              <meta
-                name="geo.placename"
-                content={
-                  cityName
-                }
-              />
+  const canonicalUrl =
+    city?.seo?.canonical ||
+    city?.canonical ||
+    pageUrl ||
+    "";
 
-              <meta
-                name="geo.position"
-                content={`${latitude};${longitude}`}
-              />
+  const seoTitle =
+    city?.seo?.title ||
+    city?.seoTitle ||
+    city?.heading ||
+    "";
 
-              <meta
-                name="ICBM"
-                content={`${latitude}, ${longitude}`}
-              />
-            </>
-          )}
+  const seoDescription =
+    city?.seo?.description ||
+    city?.seoDescription ||
+    city?.subDescription ||
+    "";
 
-        <CityGirlsPage
-          params={{
-            cityName:
-              slug,
+  const seoKeywords =
+    city?.seo?.seoKeywords ||
+    city?.seoKeywords ||
+    "";
+
+ /* ================================================= */
+/* ================= SERVICE TYPE ================== */
+/* ================================================= */
+
+const serviceTypes =
+  city?.serviceType ||
+  city?.seo?.serviceType ||
+  "";
+
+
+  /* ================================================= */
+  /* ================= BREADCRUMB ==================== */
+  /* ================================================= */
+
+  const breadcrumbSchema = {
+
+    "@context":
+      "https://schema.org",
+
+    "@type":
+      "BreadcrumbList",
+
+    itemListElement: [
+
+      {
+        "@type":
+          "ListItem",
+
+        position: 1,
+
+        name: "Home",
+
+        item:
+          "https://girlswithwine.com/",
+      },
+
+      {
+        "@type":
+          "ListItem",
+
+        position: 2,
+
+        ...(cityName && {
+          name:
+            cityName,
+        }),
+
+        ...(canonicalUrl && {
+          item:
+            canonicalUrl,
+        }),
+      },
+    ],
+  };
+
+  /* ================================================= */
+  /* ================= LOCAL BUSINESS ================ */
+  /* ================================================= */
+
+  const localBusinessSchema = {
+
+    "@context":
+      "https://schema.org",
+
+    "@type":
+      "LocalBusiness",
+
+    ...(seoTitle && {
+      name:
+        seoTitle,
+    }),
+
+    ...(canonicalUrl && {
+      url:
+        canonicalUrl,
+    }),
+
+    ...(imageUrl && {
+      image:
+        imageUrl,
+    }),
+
+    telephone:
+      "+91-XXXXXXXXXX",
+
+    priceRange:
+      "₹2999 - ₹19999",
+
+    ...(seoDescription && {
+      description:
+        seoDescription,
+    }),
+
+    ...(seoKeywords && {
+      keywords:
+        seoKeywords,
+    }),
+
+    address: {
+
+      "@type":
+        "PostalAddress",
+
+      ...(cityName && {
+        addressLocality:
+          cityName,
+      }),
+
+      ...(city?.state ||
+        city?.stateName
+        ? {
+          addressRegion:
+            city?.state ||
+            city?.stateName,
+        }
+        : {}),
+
+      addressCountry:
+        "IN",
+    },
+
+    ...(latitude &&
+      longitude && {
+        geo: {
+
+          "@type":
+            "GeoCoordinates",
+
+          latitude,
+
+          longitude,
+        },
+      }),
+
+    openingHours:
+      "Mo-Su 00:00-23:59",
+
+    ...(canonicalUrl && {
+      sameAs: [
+        canonicalUrl,
+      ],
+    }),
+  };
+
+  /* ================================================= */
+  /* ================= SERVICE SCHEMA ================ */
+  /* ================================================= */
+
+  const serviceSchema = {
+
+    "@context":
+      "https://schema.org",
+
+    "@type":
+      "Service",
+
+    ...(seoTitle && {
+      name:
+        seoTitle,
+    }),
+
+    provider: {
+
+      "@type":
+        "Organization",
+
+      name:
+        "Girls With Wine",
+
+      url:
+        "https://girlswithwine.com/",
+    },
+
+    ...(canonicalUrl && {
+      url:
+        canonicalUrl,
+    }),
+
+    areaServed: {
+
+      "@type":
+        "City",
+
+      ...(cityName && {
+        name:
+          cityName,
+      }),
+    },
+
+    ...(serviceTypes && {
+      serviceType:
+        serviceTypes,
+    }),
+
+    ...(seoDescription && {
+      description:
+        seoDescription,
+    }),
+
+    ...(seoKeywords && {
+      keywords:
+        seoKeywords,
+    }),
+
+    offers: {
+
+      "@type":
+        "AggregateOffer",
+
+      priceCurrency:
+        "INR",
+
+      lowPrice:
+        "2999",
+
+      highPrice:
+        "19999",
+    },
+  };
+
+  return (
+    <>
+
+      {/* FAQ SCHEMA */}
+
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html:
+              JSON.stringify(
+                faqSchema
+              ),
           }}
         />
+      )}
 
-      </>
-    );
-  }
+      {/* BREADCRUMB SCHEMA */}
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html:
+            JSON.stringify(
+              breadcrumbSchema
+            ),
+        }}
+      />
+
+      {/* LOCAL BUSINESS SCHEMA */}
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html:
+            JSON.stringify(
+              localBusinessSchema
+            ),
+        }}
+      />
+
+      {/* SERVICE SCHEMA */}
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html:
+            JSON.stringify(
+              serviceSchema
+            ),
+        }}
+      />
+
+      {/* GEO */}
+
+      {latitude &&
+        longitude && (
+          <>
+            <meta
+              name="geo.region"
+              content="IN"
+            />
+
+            <meta
+              name="geo.placename"
+              content={
+                cityName
+              }
+            />
+
+            <meta
+              name="geo.position"
+              content={`${latitude};${longitude}`}
+            />
+
+            <meta
+              name="ICBM"
+              content={`${latitude}, ${longitude}`}
+            />
+          </>
+        )}
+
+      <CityGirlsPage
+        params={{
+          cityName:
+            slug,
+        }}
+      />
+
+    </>
+  );
+}
 
   /* ================================================= */
   /* ================= SUBCITY PAGE ================== */
