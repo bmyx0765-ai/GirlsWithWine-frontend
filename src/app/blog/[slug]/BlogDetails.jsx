@@ -1,6 +1,734 @@
+// "use client";
+
+// import { useEffect, useState } from "react";
+// import Link from "next/link";
+// import root from "react-shadow";
+
+// export default function BlogDetails({ slug }) {
+
+//   const [blog, setBlog] = useState(null);
+
+//   const [loading, setLoading] = useState(true);
+
+//   const [seoHeadings, setSeoHeadings] = useState([]);
+
+//   useEffect(() => {
+
+//     const fetchBlog = async () => {
+
+//       try {
+
+//         const res = await fetch(
+//           `https://blog.girlswithwine.com/wp-json/wp/v2/posts?slug=${slug}&_embed`
+//         );
+
+//         const data = await res.json();
+
+//         console.log("BLOG API 👉", data);
+
+//         // ✅ ARRAY CHECK
+//         if (data && data.length > 0) {
+
+//           const post = data[0];
+
+//           let content =
+//             post?.full_content ||
+//             post?.content?.rendered ||
+//             "";
+
+
+
+//           // ✅ REMOVE STRONG FROM H1-H6
+//           content = content.replace(
+//             /<h([1-6])([^>]*)>\s*<strong>(.*?)<\/strong>\s*<\/h\1>/gi,
+//             "<h$1$2>$3</h$1>"
+//           );
+
+
+
+//           // ✅ CHANGE ALL BLOG DOMAIN TO MAIN DOMAIN
+//           content = content.replaceAll(
+//             "https://blog.girlswithwine.com",
+//             "https://girlswithwine.com"
+//           );
+
+
+
+//           // ✅ EXTRACT HEADINGS FOR SEO
+//           const headingMatches = [
+//             ...content.matchAll(
+//               /<h([1-6])[^>]*>(.*?)<\/h\1>/gi
+//             ),
+//           ];
+
+//           const headings = headingMatches.map((item) => ({
+//             level: item[1],
+//             text: item[2].replace(/<[^>]+>/g, ""),
+//           }));
+
+//           setSeoHeadings(headings);
+
+
+
+//           setBlog({
+
+//             title:
+//               post?.title?.rendered || "",
+
+//             fullContent:
+//               content,
+
+
+
+//             // ✅ FEATURE IMAGE DOMAIN CHANGE
+//             imageUrl:
+//               (
+//                 post?._embedded?.["wp:featuredmedia"]?.[0]
+//                   ?.source_url || "/images/default.jpg"
+//               ).replaceAll(
+//                 "https://blog.girlswithwine.com",
+//                 "https://girlswithwine.com"
+//               ),
+
+//             createdAt:
+//               post?.date || "",
+
+//           });
+
+//         }
+
+//       } catch (error) {
+
+//         console.log("BLOG ERROR 👉", error);
+
+//       } finally {
+
+//         setLoading(false);
+
+//       }
+
+//     };
+
+//     if (slug) {
+//       fetchBlog();
+//     }
+
+//   }, [slug]);
+
+
+
+//   // ✅ LOADING
+//   if (loading) {
+
+//     return (
+
+//       <div className="min-h-screen flex items-center justify-center text-lg font-semibold">
+
+//         Loading...
+
+//       </div>
+
+//     );
+
+//   }
+
+
+
+//   // ✅ BLOG NOT FOUND
+//   if (!blog) {
+
+//     return (
+
+//       <div className="min-h-screen flex items-center justify-center text-lg font-semibold">
+
+//         Blog Not Found
+
+//       </div>
+
+//     );
+
+//   }
+
+
+
+//   return (
+
+//     <div className="bg-[#FBFCFE] min-h-screen pb-20">
+
+//       <div className="max-w-5xl mx-auto px-6 py-10">
+
+//         {/* ✅ SEO HEADINGS */}
+//         <div className="hidden">
+
+//           {seoHeadings.map((heading, index) => {
+
+//             const Tag = `h${heading.level}`;
+
+//             return (
+//               <Tag key={index}>
+//                 {heading.text}
+//               </Tag>
+//             );
+
+//           })}
+
+//         </div>
+
+
+
+//         {/* ✅ BACK */}
+//         <Link
+//           href="/blog"
+//           className="text-pink-600 hover:underline"
+//         >
+//           ← Back
+//         </Link>
+
+
+
+//         {/* ✅ FEATURE IMAGE */}
+       
+
+
+
+//         {/* ✅ TITLE */}
+//         <h1
+//           className="text-4xl md:text-5xl font-bold leading-tight text-gray-900 mb-4"
+//           dangerouslySetInnerHTML={{
+//             __html: blog.title,
+//           }}
+//         />
+
+
+
+//         {/* ✅ DATE */}
+//         <p className="text-gray-500 mb-12">
+
+//           {new Date(blog.createdAt).toDateString()}
+
+//         </p>
+
+
+
+//         {/* ✅ SHADOW DOM */}
+//         <root.div
+//           className="wordpress-shadow-wrapper"
+//         >
+
+//           {/* ✅ WORDPRESS CSS */}
+//           <style>
+//             {`
+//               @import url("https://blog.girlswithwine.com/wp-includes/css/dist/block-library/style.min.css");
+
+//               @import url("https://blog.girlswithwine.com/wp-includes/css/dist/global-styles/style.min.css");
+
+//               @import url("https://blog.girlswithwine.com/wp-content/themes/astra/style.css");
+
+//               @import url("https://blog.girlswithwine.com/wp-content/themes/astra/assets/css/minified/main.min.css");
+
+//               @import url("https://blog.girlswithwine.com/wp-content/plugins/seo-by-rank-math/assets/frontend/css/rank-math.css");
+
+//               * {
+//                 box-sizing: border-box;
+//               }
+
+//               img {
+//                 max-width: 100%;
+//                 height: auto;
+//                 border-radius: 20px;
+//               }
+
+//               iframe {
+//                 width: 100%;
+//                 max-width: 100%;
+//               }
+
+//               table {
+//                 width: 100%;
+//               }
+
+//               figure {
+//                 margin: 20px 0;
+//               }
+
+//               p {
+//                 line-height: 1.8;
+//               }
+//             `}
+//           </style>
+
+
+
+//           {/* ✅ WORDPRESS CONTENT */}
+//           <div
+//             dangerouslySetInnerHTML={{
+//               __html: blog.fullContent,
+//             }}
+//           />
+
+//         </root.div>
+
+//       </div>
+
+//     </div>
+
+//   );
+
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// "use client";
+
+// import { useEffect, useRef, useState } from "react";
+// import Link from "next/link";
+// import root from "react-shadow";
+
+// export default function BlogDetails({ slug }) {
+
+//   const [blog, setBlog] = useState(null);
+
+//   const [loading, setLoading] = useState(true);
+
+//   const [seoHeadings, setSeoHeadings] = useState([]);
+
+//   // ✅ TOC STATES
+//   const [tableOfContents, setTableOfContents] = useState([]);
+//   const [showTOC, setShowTOC] = useState(true);
+
+//   // ✅ SHADOW REF
+//   const shadowRef = useRef(null);
+
+//   useEffect(() => {
+
+//     const fetchBlog = async () => {
+
+//       try {
+
+//         const res = await fetch(
+//           `https://blog.girlswithwine.com/wp-json/wp/v2/posts?slug=${slug}&_embed`
+//         );
+
+//         const data = await res.json();
+
+//         console.log("BLOG API 👉", data);
+
+//         // ✅ ARRAY CHECK
+//         if (data && data.length > 0) {
+
+//           const post = data[0];
+
+//           let content =
+//             post?.full_content ||
+//             post?.content?.rendered ||
+//             "";
+
+//           // ✅ REMOVE STRONG FROM H1-H6
+//           content = content.replace(
+//             /<h([1-6])([^>]*)>\s*<strong>(.*?)<\/strong>\s*<\/h\1>/gi,
+//             "<h$1$2>$3</h$1>"
+//           );
+
+//           // ✅ CHANGE ALL BLOG DOMAIN TO MAIN DOMAIN
+//           content = content.replaceAll(
+//             "https://blog.girlswithwine.com",
+//             "https://girlswithwine.com"
+//           );
+
+//           // ✅ EXTRACT HEADINGS
+//           const headingMatches = [
+//             ...content.matchAll(
+//               /<h([1-6])[^>]*>(.*?)<\/h\1>/gi
+//             ),
+//           ];
+
+//           // ✅ SEO HEADINGS
+//           const headings = headingMatches.map((item) => ({
+//             level: item[1],
+//             text: item[2]
+//               .replace(/<[^>]+>/g, "")
+//               .trim(),
+//           }));
+
+//           setSeoHeadings(headings);
+
+//           // ✅ TOC HEADINGS
+//           const tocHeadings = [];
+
+//           headingMatches.forEach((item, index) => {
+
+//             const level = item[1];
+
+//             const text = item[2]
+//               .replace(/<[^>]+>/g, "")
+//               .trim();
+
+//             const id = `heading-${index}`;
+
+//             tocHeadings.push({
+//               id,
+//               text,
+//               level,
+//             });
+
+//             const original = item[0];
+
+//             const updated = original.replace(
+//               `<h${level}`,
+//               `<h${level} id="${id}"`
+//             );
+
+//             content = content.replace(
+//               original,
+//               updated
+//             );
+
+//           });
+
+//           setTableOfContents(tocHeadings);
+
+//           setBlog({
+
+//             title:
+//               post?.title?.rendered || "",
+
+//             fullContent:
+//               content,
+
+//             imageUrl:
+//               (
+//                 post?._embedded?.["wp:featuredmedia"]?.[0]
+//                   ?.source_url ||
+//                 "/images/default.jpg"
+//               ).replaceAll(
+//                 "https://blog.girlswithwine.com",
+//                 "https://girlswithwine.com"
+//               ),
+
+//             createdAt:
+//               post?.date || "",
+
+//           });
+
+//         }
+
+//       } catch (error) {
+
+//         console.log("BLOG ERROR 👉", error);
+
+//       } finally {
+
+//         setLoading(false);
+
+//       }
+
+//     };
+
+//     if (slug) {
+//       fetchBlog();
+//     }
+
+//   }, [slug]);
+
+//   // ✅ LOADING
+//   if (loading) {
+
+//     return (
+
+//       <div className="min-h-screen flex items-center justify-center text-lg font-semibold">
+
+//         Loading...
+
+//       </div>
+
+//     );
+
+//   }
+
+//   // ✅ BLOG NOT FOUND
+//   if (!blog) {
+
+//     return (
+
+//       <div className="min-h-screen flex items-center justify-center text-lg font-semibold">
+
+//         Blog Not Found
+
+//       </div>
+
+//     );
+
+//   }
+
+//   return (
+
+//     <div className="bg-[#FBFCFE] min-h-screen pb-20">
+
+//       <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10">
+
+//         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-10">
+
+//           {/* ================= TOC ================= */}
+//           <aside className="lg:sticky lg:top-24 h-fit">
+
+//             <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6">
+
+//               {/* HEADER */}
+//               <div className="flex items-center justify-between gap-3 mb-6">
+
+//                 <div className="flex items-center gap-3">
+
+//                   {/* TOGGLE BUTTON */}
+//                   <button
+//                     type="button"
+//                     onClick={() => setShowTOC(!showTOC)}
+//                     className="w-10 h-10 rounded-full bg-pink-100 hover:bg-pink-600 hover:text-white flex items-center justify-center text-pink-600 font-bold transition-all duration-300"
+//                   >
+//                     ☰
+//                   </button>
+
+//                   <div>
+
+//                     <p className="text-sm text-gray-500">
+//                       Quick Navigation
+//                     </p>
+
+//                     <h3 className="text-xl font-bold text-gray-900">
+//                       Table of Contents
+//                     </h3>
+
+//                   </div>
+
+//                 </div>
+
+//               </div>
+
+//               {/* TOC LIST */}
+//               {
+//                 showTOC && (
+
+//                   <div className="flex flex-col gap-3 animate-fadeIn">
+
+//                     {tableOfContents.map((item, index) => (
+
+//                       <button
+//                         key={index}
+//                         type="button"
+//                         onClick={() => {
+
+//                           const shadowRoot =
+//                             shadowRef.current?.shadowRoot;
+
+//                           const element =
+//                             shadowRoot?.getElementById(item.id);
+
+//                           if (element) {
+
+//                             const y =
+//                               element.getBoundingClientRect().top +
+//                               window.pageYOffset -
+//                               100;
+
+//                             window.scrollTo({
+//                               top: y,
+//                               behavior: "smooth",
+//                             });
+
+//                           }
+
+//                         }}
+//                         className={`group flex items-start gap-3 p-3 rounded-2xl hover:bg-pink-50 transition-all duration-300 border border-transparent hover:border-pink-100 text-left w-full ${
+//                           item.level === "3"
+//                             ? "pl-10"
+//                             : ""
+//                         }`}
+//                       >
+
+//                         <div className="min-w-[30px] h-[30px] rounded-full bg-black text-white flex items-center justify-center text-sm font-semibold group-hover:bg-pink-600 transition-all duration-300">
+//                           {index + 1}
+//                         </div>
+
+//                         <p className="text-sm font-medium text-gray-700 leading-relaxed group-hover:text-pink-600 transition-all duration-300">
+//                           {item.text}
+//                         </p>
+
+//                       </button>
+
+//                     ))}
+
+//                   </div>
+
+//                 )
+//               }
+
+//             </div>
+
+//           </aside>
+
+//           {/* ================= BLOG ================= */}
+//           <div>
+
+//             {/* ✅ SEO HEADINGS */}
+//             <div className="hidden">
+
+//               {seoHeadings.map((heading, index) => {
+
+//                 const Tag = `h${heading.level}`;
+
+//                 return (
+//                   <Tag key={index}>
+//                     {heading.text}
+//                   </Tag>
+//                 );
+
+//               })}
+
+//             </div>
+
+//             {/* ✅ BACK */}
+//             <Link
+//               href="/blog"
+//               className="text-pink-600 hover:underline"
+//             >
+//               ← Back
+//             </Link>
+
+//             {/* ✅ TITLE */}
+//             <h1
+//               className="text-4xl md:text-5xl font-bold leading-tight text-gray-900 mb-4"
+//               dangerouslySetInnerHTML={{
+//                 __html: blog.title,
+//               }}
+//             />
+
+//             {/* ✅ DATE */}
+//             <p className="text-gray-500 mb-12">
+
+//               {new Date(blog.createdAt).toDateString()}
+
+//             </p>
+
+//             {/* ✅ SHADOW DOM */}
+//             <root.div
+//               ref={shadowRef}
+//               className="wordpress-shadow-wrapper"
+//             >
+
+//               {/* ✅ WORDPRESS CSS */}
+//               <style>
+//                 {`
+//                   @import url("https://blog.girlswithwine.com/wp-includes/css/dist/block-library/style.min.css");
+
+//                   @import url("https://blog.girlswithwine.com/wp-includes/css/dist/global-styles/style.min.css");
+
+//                   @import url("https://blog.girlswithwine.com/wp-content/themes/astra/style.css");
+
+//                   @import url("https://blog.girlswithwine.com/wp-content/themes/astra/assets/css/minified/main.min.css");
+
+//                   @import url("https://blog.girlswithwine.com/wp-content/plugins/seo-by-rank-math/assets/frontend/css/rank-math.css");
+
+//                   * {
+//                     box-sizing: border-box;
+//                   }
+
+//                   html{
+//                     scroll-behavior:smooth;
+//                   }
+
+//                   img {
+//                     max-width: 100%;
+//                     height: auto;
+//                     border-radius: 20px;
+//                   }
+
+//                   iframe {
+//                     width: 100%;
+//                     max-width: 100%;
+//                   }
+
+//                   table {
+//                     width: 100%;
+//                   }
+
+//                   figure {
+//                     margin: 20px 0;
+//                   }
+
+//                   p {
+//                     line-height: 1.8;
+//                   }
+
+//                   h2,h3{
+//                     scroll-margin-top:120px;
+//                   }
+
+//                   .animate-fadeIn{
+//                     animation:fadeIn .3s ease;
+//                   }
+
+//                   @keyframes fadeIn{
+//                     from{
+//                       opacity:0;
+//                       transform:translateY(-10px);
+//                     }
+//                     to{
+//                       opacity:1;
+//                       transform:translateY(0);
+//                     }
+//                   }
+//                 `}
+//               </style>
+
+//               {/* ✅ WORDPRESS CONTENT */}
+//               <div
+//                 dangerouslySetInnerHTML={{
+//                   __html: blog.fullContent,
+//                 }}
+//               />
+
+//             </root.div>
+
+//           </div>
+
+//         </div>
+
+//       </div>
+
+//     </div>
+
+//   );
+
+// }
+
+
+
+
+
+
+
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import root from "react-shadow";
 
@@ -11,6 +739,13 @@ export default function BlogDetails({ slug }) {
   const [loading, setLoading] = useState(true);
 
   const [seoHeadings, setSeoHeadings] = useState([]);
+
+  // ✅ TOC STATES
+  const [tableOfContents, setTableOfContents] = useState([]);
+  const [showTOC, setShowTOC] = useState(true);
+
+  // ✅ SHADOW REF
+  const shadowRef = useRef(null);
 
   useEffect(() => {
 
@@ -36,39 +771,72 @@ export default function BlogDetails({ slug }) {
             post?.content?.rendered ||
             "";
 
-
-
           // ✅ REMOVE STRONG FROM H1-H6
           content = content.replace(
             /<h([1-6])([^>]*)>\s*<strong>(.*?)<\/strong>\s*<\/h\1>/gi,
             "<h$1$2>$3</h$1>"
           );
 
-
-
-          // ✅ CHANGE ALL BLOG DOMAIN TO MAIN DOMAIN
+          // ✅ CHANGE DOMAIN
           content = content.replaceAll(
             "https://blog.girlswithwine.com",
             "https://girlswithwine.com"
           );
 
-
-
-          // ✅ EXTRACT HEADINGS FOR SEO
-          const headingMatches = [
+          // ✅ ALL HEADINGS FOR SEO
+          const seoHeadingMatches = [
             ...content.matchAll(
               /<h([1-6])[^>]*>(.*?)<\/h\1>/gi
             ),
           ];
 
-          const headings = headingMatches.map((item) => ({
+          const headings = seoHeadingMatches.map((item) => ({
             level: item[1],
-            text: item[2].replace(/<[^>]+>/g, ""),
+            text: item[2]
+              .replace(/<[^>]+>/g, "")
+              .trim(),
           }));
 
           setSeoHeadings(headings);
 
+          // ✅ ONLY H2 FOR TOC
+          const headingMatches = [
+            ...content.matchAll(
+              /<h2[^>]*>(.*?)<\/h2>/gi
+            ),
+          ];
 
+          // ✅ TOC HEADINGS
+          const tocHeadings = [];
+
+          headingMatches.forEach((item, index) => {
+
+            const text = item[1]
+              .replace(/<[^>]+>/g, "")
+              .trim();
+
+            const id = `heading-${index}`;
+
+            tocHeadings.push({
+              id,
+              text,
+            });
+
+            const original = item[0];
+
+            const updated = original.replace(
+              "<h2",
+              `<h2 id="${id}"`
+            );
+
+            content = content.replace(
+              original,
+              updated
+            );
+
+          });
+
+          setTableOfContents(tocHeadings);
 
           setBlog({
 
@@ -78,13 +846,11 @@ export default function BlogDetails({ slug }) {
             fullContent:
               content,
 
-
-
-            // ✅ FEATURE IMAGE DOMAIN CHANGE
             imageUrl:
               (
                 post?._embedded?.["wp:featuredmedia"]?.[0]
-                  ?.source_url || "/images/default.jpg"
+                  ?.source_url ||
+                "/images/default.jpg"
               ).replaceAll(
                 "https://blog.girlswithwine.com",
                 "https://girlswithwine.com"
@@ -115,8 +881,6 @@ export default function BlogDetails({ slug }) {
 
   }, [slug]);
 
-
-
   // ✅ LOADING
   if (loading) {
 
@@ -131,8 +895,6 @@ export default function BlogDetails({ slug }) {
     );
 
   }
-
-
 
   // ✅ BLOG NOT FOUND
   if (!blog) {
@@ -149,124 +911,233 @@ export default function BlogDetails({ slug }) {
 
   }
 
-
-
   return (
 
     <div className="bg-[#FBFCFE] min-h-screen pb-20">
 
-      <div className="max-w-5xl mx-auto px-6 py-10">
+      <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10">
 
-        {/* ✅ SEO HEADINGS */}
-        <div className="hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-10">
 
-          {seoHeadings.map((heading, index) => {
+          {/* ================= TOC ================= */}
+          <aside className="lg:sticky lg:top-24 h-fit">
 
-            const Tag = `h${heading.level}`;
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6">
 
-            return (
-              <Tag key={index}>
-                {heading.text}
-              </Tag>
-            );
+              {/* HEADER */}
+              <div className="flex items-center justify-between gap-3 mb-6">
 
-          })}
+                <div className="flex items-center gap-3">
+
+                  {/* TOGGLE BUTTON */}
+                  <button
+                    type="button"
+                    onClick={() => setShowTOC(!showTOC)}
+                    className="w-10 h-10 rounded-full bg-pink-100 hover:bg-pink-600 hover:text-white flex items-center justify-center text-pink-600 font-bold transition-all duration-300"
+                  >
+                    ☰
+                  </button>
+
+                  <div>
+
+                    <p className="text-sm text-gray-500">
+                      Quick Navigation
+                    </p>
+
+                    <h3 className="text-xl font-bold text-gray-900">
+                      Table of Contents
+                    </h3>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* TOC LIST */}
+              {
+                showTOC && (
+
+                  <div className="flex flex-col gap-3 animate-fadeIn">
+
+                    {tableOfContents.map((item, index) => (
+
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => {
+
+                          const shadowRoot =
+                            shadowRef.current?.shadowRoot;
+
+                          const element =
+                            shadowRoot?.getElementById(item.id);
+
+                          if (element) {
+
+                            const y =
+                              element.getBoundingClientRect().top +
+                              window.pageYOffset -
+                              100;
+
+                            window.scrollTo({
+                              top: y,
+                              behavior: "smooth",
+                            });
+
+                          }
+
+                        }}
+                        className="group flex items-start gap-3 p-3 rounded-2xl hover:bg-pink-50 transition-all duration-300 border border-transparent hover:border-pink-100 text-left w-full"
+                      >
+
+                        <div className="min-w-[30px] h-[30px] rounded-full bg-black text-white flex items-center justify-center text-sm font-semibold group-hover:bg-pink-600 transition-all duration-300">
+                          {index + 1}
+                        </div>
+
+                        <p className="text-sm font-medium text-gray-700 leading-relaxed group-hover:text-pink-600 transition-all duration-300">
+                          {item.text}
+                        </p>
+
+                      </button>
+
+                    ))}
+
+                  </div>
+
+                )
+              }
+
+            </div>
+
+          </aside>
+
+          {/* ================= BLOG ================= */}
+          <div>
+
+            {/* ✅ SEO HEADINGS */}
+            <div className="hidden">
+
+              {seoHeadings.map((heading, index) => {
+
+                const Tag = `h${heading.level}`;
+
+                return (
+                  <Tag key={index}>
+                    {heading.text}
+                  </Tag>
+                );
+
+              })}
+
+            </div>
+
+            {/* ✅ BACK */}
+            <Link
+              href="/blog"
+              className="text-pink-600 hover:underline"
+            >
+              ← Back
+            </Link>
+
+            {/* ✅ TITLE */}
+            <h1
+              className="text-4xl md:text-5xl font-bold leading-tight text-gray-900 mb-4"
+              dangerouslySetInnerHTML={{
+                __html: blog.title,
+              }}
+            />
+
+            {/* ✅ DATE */}
+            <p className="text-gray-500 mb-12">
+
+              {new Date(blog.createdAt).toDateString()}
+
+            </p>
+
+            {/* ✅ SHADOW DOM */}
+            <root.div
+              ref={shadowRef}
+              className="wordpress-shadow-wrapper"
+            >
+
+              {/* ✅ WORDPRESS CSS */}
+              <style>
+                {`
+                  @import url("https://blog.girlswithwine.com/wp-includes/css/dist/block-library/style.min.css");
+
+                  @import url("https://blog.girlswithwine.com/wp-includes/css/dist/global-styles/style.min.css");
+
+                  @import url("https://blog.girlswithwine.com/wp-content/themes/astra/style.css");
+
+                  @import url("https://blog.girlswithwine.com/wp-content/themes/astra/assets/css/minified/main.min.css");
+
+                  @import url("https://blog.girlswithwine.com/wp-content/plugins/seo-by-rank-math/assets/frontend/css/rank-math.css");
+
+                  * {
+                    box-sizing: border-box;
+                  }
+
+                  html{
+                    scroll-behavior:smooth;
+                  }
+
+                  img {
+                    max-width: 100%;
+                    height: auto;
+                    border-radius: 20px;
+                  }
+
+                  iframe {
+                    width: 100%;
+                    max-width: 100%;
+                  }
+
+                  table {
+                    width: 100%;
+                  }
+
+                  figure {
+                    margin: 20px 0;
+                  }
+
+                  p {
+                    line-height: 1.8;
+                  }
+
+                  h2{
+                    scroll-margin-top:120px;
+                  }
+
+                  .animate-fadeIn{
+                    animation:fadeIn .3s ease;
+                  }
+
+                  @keyframes fadeIn{
+                    from{
+                      opacity:0;
+                      transform:translateY(-10px);
+                    }
+                    to{
+                      opacity:1;
+                      transform:translateY(0);
+                    }
+                  }
+                `}
+              </style>
+
+              {/* ✅ WORDPRESS CONTENT */}
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: blog.fullContent,
+                }}
+              />
+
+            </root.div>
+
+          </div>
 
         </div>
-
-
-
-        {/* ✅ BACK */}
-        <Link
-          href="/blog"
-          className="text-pink-600 hover:underline"
-        >
-          ← Back
-        </Link>
-
-
-
-        {/* ✅ FEATURE IMAGE */}
-       
-
-
-
-        {/* ✅ TITLE */}
-        <h1
-          className="text-4xl md:text-5xl font-bold leading-tight text-gray-900 mb-4"
-          dangerouslySetInnerHTML={{
-            __html: blog.title,
-          }}
-        />
-
-
-
-        {/* ✅ DATE */}
-        <p className="text-gray-500 mb-12">
-
-          {new Date(blog.createdAt).toDateString()}
-
-        </p>
-
-
-
-        {/* ✅ SHADOW DOM */}
-        <root.div
-          className="wordpress-shadow-wrapper"
-        >
-
-          {/* ✅ WORDPRESS CSS */}
-          <style>
-            {`
-              @import url("https://blog.girlswithwine.com/wp-includes/css/dist/block-library/style.min.css");
-
-              @import url("https://blog.girlswithwine.com/wp-includes/css/dist/global-styles/style.min.css");
-
-              @import url("https://blog.girlswithwine.com/wp-content/themes/astra/style.css");
-
-              @import url("https://blog.girlswithwine.com/wp-content/themes/astra/assets/css/minified/main.min.css");
-
-              @import url("https://blog.girlswithwine.com/wp-content/plugins/seo-by-rank-math/assets/frontend/css/rank-math.css");
-
-              * {
-                box-sizing: border-box;
-              }
-
-              img {
-                max-width: 100%;
-                height: auto;
-                border-radius: 20px;
-              }
-
-              iframe {
-                width: 100%;
-                max-width: 100%;
-              }
-
-              table {
-                width: 100%;
-              }
-
-              figure {
-                margin: 20px 0;
-              }
-
-              p {
-                line-height: 1.8;
-              }
-            `}
-          </style>
-
-
-
-          {/* ✅ WORDPRESS CONTENT */}
-          <div
-            dangerouslySetInnerHTML={{
-              __html: blog.fullContent,
-            }}
-          />
-
-        </root.div>
 
       </div>
 
