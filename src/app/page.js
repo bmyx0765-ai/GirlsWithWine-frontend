@@ -17,7 +17,7 @@ async function getFaqSchema() {
 
     const data = await res.json();
 
-    console.log("FAQ DATA:", data);
+  
 
     // FIXED
     const faqList = data?.[0]?.faqs || [];

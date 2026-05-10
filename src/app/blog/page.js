@@ -3,6 +3,7 @@ import BlogClient from "@/components/BlogClient";
 // ✅ SEO META
 export const metadata = {
   title: "Latest Blogs | Girls With Wine",
+
   description:
     "Read latest blogs, insights and updates from Girls With Wine.",
 
@@ -13,12 +14,19 @@ export const metadata = {
     "news",
     "articles",
   ],
-  concanonical: "https://girlswithwine.com/blog",
+
+  // ✅ FIXED CANONICAL
+  alternates: {
+    canonical: "https://girlswithwine.com/blog",
+  },
 
   openGraph: {
     title: "Latest Blogs | Girls With Wine",
+
     description: "Explore our latest blog posts and insights.",
+
     url: "https://girlswithwine.com/blog",
+
     siteName: "Girls With Wine",
 
     images: [
