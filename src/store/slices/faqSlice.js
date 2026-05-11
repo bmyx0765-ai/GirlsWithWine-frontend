@@ -1,11 +1,16 @@
 // store/slices/faqSlice.js
 
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createAsyncThunk,
+} from "@reduxjs/toolkit";
+
 import { axiosInstance } from "api/axiosInstance";
 
 import {
   ADD_FAQ_URL,
   GET_FAQS_URL,
+  GET_HOMEPAGE_FAQS_URL,
   GET_FAQS_BY_TYPE_URL,
   GET_FAQS_BY_CITY_URL,
   GET_FAQS_BY_SUBCITY_URL,
@@ -15,172 +20,306 @@ import {
   TOGGLE_FAQ_STATUS_URL,
 } from "api/constant/constant";
 
-/* ================= NORMALIZER ================= */
+/* =========================================================
+   NORMALIZE RESPONSE
+========================================================= */
 
-const normalizeArray = (res) => {
-  if (Array.isArray(res)) return res;
+const normalizeFaqResponse = (data) => {
 
-  if (Array.isArray(res?.data)) {
-    return res.data;
+  // DIRECT ARRAY
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  // OBJECT WITH FAQS
+  if (Array.isArray(data?.faqs)) {
+    return data.faqs;
   }
 
   return [];
 };
 
-/* ================= GET ALL ================= */
+/* =========================================================
+   GET ALL FAQ
+========================================================= */
 
 export const getFaqsThunk = createAsyncThunk(
   "faq/getAll",
+
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axiosInstance.get(GET_FAQS_URL);
 
-      return normalizeArray(res.data);
-    } catch {
-      return rejectWithValue("Failed to load FAQs");
+      const res = await axiosInstance.get(
+        GET_FAQS_URL
+      );
+
+      return normalizeFaqResponse(
+        res.data
+      );
+
+    } catch (err) {
+
+      return rejectWithValue(
+        err?.response?.data?.message ||
+        "Failed to fetch FAQs"
+      );
     }
   }
 );
 
-/* ================= GET BY TYPE ================= */
+/* =========================================================
+   GET HOMEPAGE FAQ
+========================================================= */
+
+export const getHomepageFaqsThunk = createAsyncThunk(
+  "faq/getHomepage",
+
+  async (_, { rejectWithValue }) => {
+    try {
+
+      const res = await axiosInstance.get(
+        GET_HOMEPAGE_FAQS_URL
+      );
+
+      return normalizeFaqResponse(
+        res.data
+      );
+
+    } catch (err) {
+
+      return rejectWithValue(
+        err?.response?.data?.message ||
+        "Failed to fetch homepage FAQs"
+      );
+    }
+  }
+);
+
+/* =========================================================
+   GET FAQ BY TYPE
+========================================================= */
 
 export const getFaqsByTypeThunk = createAsyncThunk(
   "faq/getByType",
+
   async (type, { rejectWithValue }) => {
     try {
+
       const res = await axiosInstance.get(
         `${GET_FAQS_BY_TYPE_URL}/${type}`
       );
 
-      return normalizeArray(res.data);
-    } catch {
-      return rejectWithValue("Failed to load FAQs by type");
+      return normalizeFaqResponse(
+        res.data
+      );
+
+    } catch (err) {
+
+      return rejectWithValue(
+        err?.response?.data?.message ||
+        "Failed to fetch FAQs by type"
+      );
     }
   }
 );
 
-/* ================= GET BY CITY ================= */
+/* =========================================================
+   GET FAQ BY CITY
+========================================================= */
 
 export const getFaqsByCityThunk = createAsyncThunk(
   "faq/getByCity",
+
   async (cityId, { rejectWithValue }) => {
     try {
+
       const res = await axiosInstance.get(
         `${GET_FAQS_BY_CITY_URL}/${cityId}`
       );
 
-      return normalizeArray(res.data);
-    } catch {
-      return rejectWithValue("Failed to load city FAQs");
+      return normalizeFaqResponse(
+        res.data
+      );
+
+    } catch (err) {
+
+      return rejectWithValue(
+        err?.response?.data?.message ||
+        "Failed to fetch city FAQs"
+      );
     }
   }
 );
 
-/* ================= GET BY SUBCITY ================= */
+/* =========================================================
+   GET FAQ BY SUBCITY
+========================================================= */
 
 export const getFaqsBySubCityThunk = createAsyncThunk(
   "faq/getBySubCity",
+
   async (subCityId, { rejectWithValue }) => {
     try {
+
       const res = await axiosInstance.get(
         `${GET_FAQS_BY_SUBCITY_URL}/${subCityId}`
       );
 
-      return normalizeArray(res.data);
-    } catch {
-      return rejectWithValue("Failed to load subcity FAQs");
+      return normalizeFaqResponse(
+        res.data
+      );
+
+    } catch (err) {
+
+      return rejectWithValue(
+        err?.response?.data?.message ||
+        "Failed to fetch subcity FAQs"
+      );
     }
   }
 );
 
-/* ================= GET BY GIRL ================= */
+/* =========================================================
+   GET FAQ BY GIRL
+========================================================= */
 
 export const getFaqsByGirlThunk = createAsyncThunk(
   "faq/getByGirl",
+
   async (girlId, { rejectWithValue }) => {
     try {
+
       const res = await axiosInstance.get(
         `${GET_FAQS_BY_GIRL_URL}/${girlId}`
       );
 
-      return normalizeArray(res.data);
-    } catch {
-      return rejectWithValue("Failed to load girl FAQs");
+      return normalizeFaqResponse(
+        res.data
+      );
+
+    } catch (err) {
+
+      return rejectWithValue(
+        err?.response?.data?.message ||
+        "Failed to fetch girl FAQs"
+      );
     }
   }
 );
 
-/* ================= ADD ================= */
+/* =========================================================
+   ADD FAQ
+========================================================= */
 
 export const addFaqThunk = createAsyncThunk(
   "faq/add",
+
   async (data, { rejectWithValue }) => {
     try {
+
       const res = await axiosInstance.post(
         ADD_FAQ_URL,
         data
       );
 
-      return res.data;
-    } catch {
-      return rejectWithValue("Failed to add FAQ");
+      return res.data?.faq;
+
+    } catch (err) {
+
+      return rejectWithValue(
+        err?.response?.data?.message ||
+        "Failed to add FAQ"
+      );
     }
   }
 );
 
-/* ================= UPDATE ================= */
+/* =========================================================
+   UPDATE FAQ
+========================================================= */
 
 export const updateFaqThunk = createAsyncThunk(
   "faq/update",
-  async ({ id, data }, { rejectWithValue }) => {
+
+  async (
+    { id, data },
+    { rejectWithValue }
+  ) => {
     try {
+
       const res = await axiosInstance.put(
         `${UPDATE_FAQ_URL}/${id}`,
         data
       );
 
-      return res.data;
-    } catch {
-      return rejectWithValue("Failed to update FAQ");
+      return res.data?.faq;
+
+    } catch (err) {
+
+      return rejectWithValue(
+        err?.response?.data?.message ||
+        "Failed to update FAQ"
+      );
     }
   }
 );
 
-/* ================= DELETE ================= */
+/* =========================================================
+   DELETE FAQ
+========================================================= */
 
 export const deleteFaqThunk = createAsyncThunk(
   "faq/delete",
+
   async (id, { rejectWithValue }) => {
     try {
+
       await axiosInstance.delete(
         `${DELETE_FAQ_URL}/${id}`
       );
 
       return id;
-    } catch {
-      return rejectWithValue("Failed to delete FAQ");
-    }
-  }
-);
 
-/* ================= STATUS ================= */
+    } catch (err) {
 
-export const toggleFaqStatusThunk = createAsyncThunk(
-  "faq/status",
-  async (id, { rejectWithValue }) => {
-    try {
-      const res = await axiosInstance.patch(
-        `${TOGGLE_FAQ_STATUS_URL}/${id}`
+      return rejectWithValue(
+        err?.response?.data?.message ||
+        "Failed to delete FAQ"
       );
-
-      return res.data;
-    } catch {
-      return rejectWithValue("Failed to update status");
     }
   }
 );
 
-/* ================= SLICE ================= */
+/* =========================================================
+   TOGGLE FAQ STATUS
+========================================================= */
+
+export const toggleFaqStatusThunk =
+  createAsyncThunk(
+    "faq/status",
+
+    async (id, { rejectWithValue }) => {
+      try {
+
+        const res = await axiosInstance.patch(
+          `${TOGGLE_FAQ_STATUS_URL}/${id}`
+        );
+
+        return res.data?.faq;
+
+      } catch (err) {
+
+        return rejectWithValue(
+          err?.response?.data?.message ||
+          "Failed to toggle FAQ status"
+        );
+      }
+    }
+  );
+
+/* =========================================================
+   SLICE
+========================================================= */
 
 const faqSlice = createSlice({
   name: "faq",
@@ -192,137 +331,277 @@ const faqSlice = createSlice({
   },
 
   reducers: {
+
     clearFaqError: (state) => {
       state.error = null;
+    },
+
+    clearFaqs: (state) => {
+      state.faqs = [];
     },
   },
 
   extraReducers: (builder) => {
+
     builder
 
-      /* ================= GET ALL ================= */
+      /* ===================================================
+         GET ALL
+      =================================================== */
 
-      .addCase(getFaqsThunk.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(
+        getFaqsThunk.pending,
+        (state) => {
 
-      .addCase(getFaqsThunk.fulfilled, (state, action) => {
-        state.loading = false;
-        state.faqs = action.payload;
-      })
+          state.loading = true;
+          state.error = null;
+        }
+      )
 
-      .addCase(getFaqsThunk.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(
+        getFaqsThunk.fulfilled,
+        (state, action) => {
 
-      /* ================= GET BY TYPE ================= */
+          state.loading = false;
+          state.faqs = action.payload;
+        }
+      )
 
-      .addCase(getFaqsByTypeThunk.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(
+        getFaqsThunk.rejected,
+        (state, action) => {
 
-      .addCase(getFaqsByTypeThunk.fulfilled, (state, action) => {
-        state.loading = false;
-        state.faqs = action.payload;
-      })
+          state.loading = false;
+          state.error = action.payload;
+        }
+      )
 
-      .addCase(getFaqsByTypeThunk.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      /* ===================================================
+         GET HOMEPAGE
+      =================================================== */
 
-      /* ================= GET BY CITY ================= */
+      .addCase(
+        getHomepageFaqsThunk.pending,
+        (state) => {
 
-      .addCase(getFaqsByCityThunk.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+          state.loading = true;
+          state.error = null;
+        }
+      )
 
-      .addCase(getFaqsByCityThunk.fulfilled, (state, action) => {
-        state.loading = false;
-        state.faqs = action.payload;
-      })
+      .addCase(
+        getHomepageFaqsThunk.fulfilled,
+        (state, action) => {
 
-      .addCase(getFaqsByCityThunk.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+          state.loading = false;
+          state.faqs = action.payload;
+        }
+      )
 
-      /* ================= GET BY SUBCITY ================= */
+      .addCase(
+        getHomepageFaqsThunk.rejected,
+        (state, action) => {
 
-      .addCase(getFaqsBySubCityThunk.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+          state.loading = false;
+          state.error = action.payload;
+        }
+      )
 
-      .addCase(getFaqsBySubCityThunk.fulfilled, (state, action) => {
-        state.loading = false;
-        state.faqs = action.payload;
-      })
+      /* ===================================================
+         GET TYPE
+      =================================================== */
 
-      .addCase(getFaqsBySubCityThunk.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(
+        getFaqsByTypeThunk.pending,
+        (state) => {
 
-      /* ================= GET BY GIRL ================= */
+          state.loading = true;
+          state.error = null;
+        }
+      )
 
-      .addCase(getFaqsByGirlThunk.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(
+        getFaqsByTypeThunk.fulfilled,
+        (state, action) => {
 
-      .addCase(getFaqsByGirlThunk.fulfilled, (state, action) => {
-        state.loading = false;
-        state.faqs = action.payload;
-      })
+          state.loading = false;
+          state.faqs = action.payload;
+        }
+      )
 
-      .addCase(getFaqsByGirlThunk.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(
+        getFaqsByTypeThunk.rejected,
+        (state, action) => {
 
-      /* ================= ADD ================= */
+          state.loading = false;
+          state.error = action.payload;
+        }
+      )
 
-      .addCase(addFaqThunk.fulfilled, (state, action) => {
-        state.faqs.unshift(action.payload);
-      })
+      /* ===================================================
+         GET CITY
+      =================================================== */
 
-      /* ================= DELETE ================= */
+      .addCase(
+        getFaqsByCityThunk.pending,
+        (state) => {
 
-      .addCase(deleteFaqThunk.fulfilled, (state, action) => {
-        state.faqs = state.faqs.filter(
-          (f) => f._id !== action.payload
-        );
-      })
+          state.loading = true;
+          state.error = null;
+        }
+      )
 
-      /* ================= UPDATE ================= */
+      .addCase(
+        getFaqsByCityThunk.fulfilled,
+        (state, action) => {
 
-      .addCase(updateFaqThunk.fulfilled, (state, action) => {
-        state.faqs = state.faqs.map((f) =>
-          f._id === action.payload._id
-            ? action.payload
-            : f
-        );
-      })
+          state.loading = false;
+          state.faqs = action.payload;
+        }
+      )
 
-      /* ================= STATUS ================= */
+      .addCase(
+        getFaqsByCityThunk.rejected,
+        (state, action) => {
 
-      .addCase(toggleFaqStatusThunk.fulfilled, (state, action) => {
-        const updated = action.payload;
+          state.loading = false;
+          state.error = action.payload;
+        }
+      )
 
-        state.faqs = state.faqs.map((f) =>
-          f._id === updated._id
-            ? updated
-            : f
-        );
-      });
+      /* ===================================================
+         GET SUBCITY
+      =================================================== */
+
+      .addCase(
+        getFaqsBySubCityThunk.pending,
+        (state) => {
+
+          state.loading = true;
+          state.error = null;
+        }
+      )
+
+      .addCase(
+        getFaqsBySubCityThunk.fulfilled,
+        (state, action) => {
+
+          state.loading = false;
+          state.faqs = action.payload;
+        }
+      )
+
+      .addCase(
+        getFaqsBySubCityThunk.rejected,
+        (state, action) => {
+
+          state.loading = false;
+          state.error = action.payload;
+        }
+      )
+
+      /* ===================================================
+         GET GIRL
+      =================================================== */
+
+      .addCase(
+        getFaqsByGirlThunk.pending,
+        (state) => {
+
+          state.loading = true;
+          state.error = null;
+        }
+      )
+
+      .addCase(
+        getFaqsByGirlThunk.fulfilled,
+        (state, action) => {
+
+          state.loading = false;
+          state.faqs = action.payload;
+        }
+      )
+
+      .addCase(
+        getFaqsByGirlThunk.rejected,
+        (state, action) => {
+
+          state.loading = false;
+          state.error = action.payload;
+        }
+      )
+
+      /* ===================================================
+         ADD FAQ
+      =================================================== */
+
+      .addCase(
+        addFaqThunk.fulfilled,
+        (state, action) => {
+
+          if (action.payload?._id) {
+
+            state.faqs.unshift(
+              action.payload
+            );
+          }
+        }
+      )
+
+      /* ===================================================
+         UPDATE FAQ
+      =================================================== */
+
+      .addCase(
+        updateFaqThunk.fulfilled,
+        (state, action) => {
+
+          state.faqs = state.faqs.map(
+            (faq) =>
+              faq._id === action.payload._id
+                ? action.payload
+                : faq
+          );
+        }
+      )
+
+      /* ===================================================
+         DELETE FAQ
+      =================================================== */
+
+      .addCase(
+        deleteFaqThunk.fulfilled,
+        (state, action) => {
+
+          state.faqs = state.faqs.filter(
+            (faq) =>
+              faq._id !== action.payload
+          );
+        }
+      )
+
+      /* ===================================================
+         TOGGLE STATUS
+      =================================================== */
+
+      .addCase(
+        toggleFaqStatusThunk.fulfilled,
+        (state, action) => {
+
+          state.faqs = state.faqs.map(
+            (faq) =>
+              faq._id === action.payload._id
+                ? action.payload
+                : faq
+          );
+        }
+      );
   },
 });
 
-export const { clearFaqError } = faqSlice.actions;
+export const {
+  clearFaqError,
+  clearFaqs,
+} = faqSlice.actions;
 
 export default faqSlice.reducer;

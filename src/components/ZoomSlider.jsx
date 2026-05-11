@@ -11,7 +11,7 @@ const images = [
 
 export default function ZoomSlider() {
   const [index, setIndex] = useState(0);
-  const whatsappNumber = "91XXXXXXXXXX"; 
+  const whatsappNumber = "917727937290"; 
   const whatsappLink = `https://wa.me/${whatsappNumber}`;
 
   useEffect(() => {

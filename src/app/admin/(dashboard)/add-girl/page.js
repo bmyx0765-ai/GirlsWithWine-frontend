@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 
@@ -11,13 +11,13 @@ import { fetchSubCities } from "@/store/slices/subCitySlice";
 
 // Components
 import RichTextEditor from "@/components/RichTextEditor";
-import { 
-  FormControl, 
-  Select, 
-  MenuItem, 
-  Checkbox, 
-  ListItemText, 
-  OutlinedInput 
+import {
+  FormControl,
+  Select,
+  MenuItem,
+  Checkbox,
+  ListItemText,
+  OutlinedInput
 } from "@mui/material";
 
 const AddGirlForm = () => {
@@ -36,9 +36,9 @@ const AddGirlForm = () => {
     heading: "",
     city: [],             // Array of Main City IDs
     subCity: [],          // Array of Sub-City IDs
-    description: "",      // Short Description
-    priceDetails: "",     // Rates/Pricing details
-    aboutGirlInformation: "", // Detailed Bio (Rich Text)
+    description: "",      
+    priceDetails: "",     
+    aboutGirlInformation: "", 
     phoneNumber: "",
     whatsappNumber: "",
     imageAlt: "",
@@ -68,7 +68,7 @@ const AddGirlForm = () => {
         permalink: formData.name.toLowerCase().trim().replace(/\s+/g, "-"),
       }));
     }
-  }, [formData.name]);
+  }, [formData.name, formData.permalink]);
 
   /* ================= HANDLERS ================= */
   const handleChange = (e) => {
@@ -81,6 +81,12 @@ const AddGirlForm = () => {
 
   const handleMultiSelectChange = (event) => {
     const { name, value } = event.target;
+    
+    // Ignore dummy "all" values so they don't enter our state array
+    if (value.includes("all-cities") || value.includes("all-subcities")) {
+        return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: typeof value === "string" ? value.split(",") : value,
@@ -98,13 +104,13 @@ const AddGirlForm = () => {
   const handleImagesChange = (e) => {
     const files = Array.from(e.target.files);
     const validImages = files.filter((file) => file.type.startsWith("image/"));
-    
+
     if (validImages.length === 0) return;
 
     setImagesFiles((prev) => [...prev, ...validImages]);
     const newPreviews = validImages.map((f) => URL.createObjectURL(f));
     setPreviewGallery((prev) => [...prev, ...newPreviews]);
-    e.target.value = null; // reset input
+    e.target.value = null; 
   };
 
   const removeGalleryImage = (index) => {
@@ -112,12 +118,34 @@ const AddGirlForm = () => {
     setPreviewGallery((prev) => prev.filter((_, i) => i !== index));
   };
 
+  /* ================= SELECT ALL LOGIC ================= */
+
+  const isAllCitiesSelected = cities.length > 0 && formData.city.length === cities.length;
+  const isAllSubCitiesSelected = subCities.length > 0 && formData.subCity.length === subCities.length;
+
+  const handleSelectAllCities = (e) => {
+    e.stopPropagation(); // Prevents dropdown from closing or triggering other events
+    const allCityIds = cities.map((c) => c._id);
+    setFormData((prev) => ({
+      ...prev,
+      city: isAllCitiesSelected ? [] : allCityIds,
+    }));
+  };
+
+  const handleSelectAllSubCities = (e) => {
+    e.stopPropagation();
+    const allSubCityIds = subCities.map((sc) => sc._id);
+    setFormData((prev) => ({
+      ...prev,
+      subCity: isAllSubCitiesSelected ? [] : allSubCityIds,
+    }));
+  };
+
   /* ================= SUBMIT ================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
     const fd = new FormData();
 
-    // Utility to format phone to Indian standard if needed
     const formatPhone = (val) => {
       if (!val) return "";
       const cleaned = val.replace(/\D/g, "");
@@ -126,7 +154,6 @@ const AddGirlForm = () => {
 
     Object.entries(formData).forEach(([key, value]) => {
       if (key === "city" || key === "subCity") {
-        // Correct way to send multiple IDs in FormData
         value.forEach((id) => fd.append(key, id));
       } else if (key === "phoneNumber" || key === "whatsappNumber") {
         fd.append(key, formatPhone(value));
@@ -147,7 +174,7 @@ const AddGirlForm = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-3xl overflow-hidden border border-gray-100">
-        
+
         {/* HEADER */}
         <div className="bg-white border-b border-gray-100 px-10 py-8 flex justify-between items-center">
           <div>
@@ -164,7 +191,7 @@ const AddGirlForm = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-10 space-y-12">
-          
+
           {/* SECTION: IDENTITY & LOCATION */}
           <Section title="Identity & Location" subtitle="Basic details and geo-mapping">
             <div className="grid md:grid-cols-2 gap-8">
@@ -183,6 +210,7 @@ const AddGirlForm = () => {
                     value={formData.city}
                     onChange={handleMultiSelectChange}
                     input={<OutlinedInput className="bg-gray-50 rounded-xl" />}
+                    MenuProps={{ PaperProps: { style: { maxHeight: 400 } } }}
                     renderValue={(selected) => (
                       <div className="flex flex-wrap gap-1">
                         {selected.map((val) => (
@@ -193,9 +221,23 @@ const AddGirlForm = () => {
                       </div>
                     )}
                   >
+                    <MenuItem 
+                        value="all-cities" 
+                        onClick={handleSelectAllCities}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        className="bg-gray-100 sticky top-0 z-10"
+                    >
+                      <Checkbox 
+                        checked={isAllCitiesSelected} 
+                        indeterminate={formData.city.length > 0 && !isAllCitiesSelected}
+                        color="secondary" 
+                      />
+                      <ListItemText primary="Select All Cities" primaryTypographyProps={{ fontWeight: "bold" }} />
+                    </MenuItem>
+
                     {cities.map((c) => (
                       <MenuItem key={c._id} value={c._id}>
-                        <Checkbox checked={formData.city.indexOf(c._id) > -1} size="small" color="secondary" />
+                        <Checkbox checked={formData.city.includes(c._id)} color="secondary" />
                         <ListItemText primary={c.mainCity} />
                       </MenuItem>
                     ))}
@@ -213,6 +255,7 @@ const AddGirlForm = () => {
                     value={formData.subCity}
                     onChange={handleMultiSelectChange}
                     input={<OutlinedInput className="bg-gray-50 rounded-xl" />}
+                    MenuProps={{ PaperProps: { style: { maxHeight: 400 } } }}
                     renderValue={(selected) => (
                       <div className="flex flex-wrap gap-1">
                         {selected.map((val) => (
@@ -223,10 +266,24 @@ const AddGirlForm = () => {
                       </div>
                     )}
                   >
+                    <MenuItem 
+                        value="all-subcities" 
+                        onClick={handleSelectAllSubCities}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        className="bg-gray-100 sticky top-0 z-10"
+                    >
+                      <Checkbox 
+                        checked={isAllSubCitiesSelected} 
+                        indeterminate={formData.subCity.length > 0 && !isAllSubCitiesSelected}
+                        color="primary" 
+                      />
+                      <ListItemText primary="Select All Sub Cities" primaryTypographyProps={{ fontWeight: "bold" }} />
+                    </MenuItem>
+
                     {subCities.map((sc) => (
                       <MenuItem key={sc._id} value={sc._id}>
-                        <Checkbox checked={formData.subCity.indexOf(sc._id) > -1} size="small" color="primary" />
-                        <ListItemText primary={`${sc.name} `} />
+                        <Checkbox checked={formData.subCity.includes(sc._id)} color="primary" />
+                        <ListItemText primary={sc.name} />
                       </MenuItem>
                     ))}
                   </Select>
@@ -236,7 +293,6 @@ const AddGirlForm = () => {
               <div className="md:col-span-2">
                 <Input label="HEADING" name="heading" value={formData.heading} onChange={handleChange} placeholder="Profile heading" required />
               </div>
-              
               <div className="md:col-span-2">
                 <Input label="PERMALINK" name="permalink" value={formData.permalink} onChange={handleChange} placeholder="auto-generated-slug" required />
               </div>
@@ -252,7 +308,6 @@ const AddGirlForm = () => {
                 <Textarea label="SHORT DESCRIPTION" name="description" value={formData.description} onChange={handleChange} rows={4} placeholder="Brief intro..." />
                 <Textarea label="PRICING DETAILS" name="priceDetails" value={formData.priceDetails} onChange={handleChange} rows={4} placeholder="Hourly/Nightly rates..." />
               </div>
-
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Detailed Bio (Rich Text)</label>
                 <div className="rounded-xl overflow-hidden border border-gray-200">
@@ -270,7 +325,6 @@ const AddGirlForm = () => {
           {/* SECTION: MEDIA */}
           <Section title="Media" subtitle="Upload visual content">
             <div className="grid md:grid-cols-2 gap-10">
-              {/* MAIN IMAGE */}
               <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
                 <label className="block text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">Main Featured Image</label>
                 <input type="file" accept="image/*" onChange={handleImageChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-pink-600 file:text-white cursor-pointer" />
@@ -284,7 +338,6 @@ const AddGirlForm = () => {
                 )}
               </div>
 
-              {/* GALLERY IMAGES */}
               <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
                 <label className="block text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">Gallery Images</label>
                 <input type="file" multiple accept="image/*" onChange={handleImagesChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-gray-800 file:text-white cursor-pointer" />
@@ -292,13 +345,7 @@ const AddGirlForm = () => {
                   {previewGallery.map((img, i) => (
                     <div key={i} className="relative aspect-square">
                       <img src={img} className="w-full h-full object-cover rounded-xl shadow-sm border border-white" alt={`Gallery ${i}`} />
-                      <button
-                        type="button"
-                        onClick={() => removeGalleryImage(i)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center shadow-lg"
-                      >
-                        ✕
-                      </button>
+                      <button type="button" onClick={() => removeGalleryImage(i)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center shadow-lg">✕</button>
                     </div>
                   ))}
                 </div>
@@ -322,14 +369,7 @@ const AddGirlForm = () => {
           {/* FOOTER & SUBMIT */}
           <div className="pt-8 border-t border-gray-100 flex justify-end items-center gap-6">
             <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="showOnHomepage"
-                id="showOnHomepage"
-                checked={formData.showOnHomepage}
-                onChange={handleChange}
-                className="w-5 h-5 accent-pink-600 cursor-pointer"
-              />
+              <input type="checkbox" name="showOnHomepage" id="showOnHomepage" checked={formData.showOnHomepage} onChange={handleChange} className="w-5 h-5 accent-pink-600 cursor-pointer" />
               <label htmlFor="showOnHomepage" className="text-sm font-medium text-gray-600 cursor-pointer">Pin to Homepage</label>
             </div>
             <button
@@ -340,7 +380,6 @@ const AddGirlForm = () => {
               {addLoading ? "Processing..." : "Publish Profile"}
             </button>
           </div>
-
         </form>
       </div>
     </div>
@@ -361,20 +400,14 @@ const Section = ({ title, subtitle, children }) => (
 const Input = ({ label, ...props }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">{label}</label>
-    <input
-      {...props}
-      className="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none transition-all placeholder:text-gray-300"
-    />
+    <input {...props} className="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none transition-all placeholder:text-gray-300" />
   </div>
 );
 
 const Textarea = ({ label, ...props }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">{label}</label>
-    <textarea
-      {...props}
-      className="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none transition-all placeholder:text-gray-300 resize-none"
-    />
+    <textarea {...props} className="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none transition-all placeholder:text-gray-300 resize-none" />
   </div>
 );
 

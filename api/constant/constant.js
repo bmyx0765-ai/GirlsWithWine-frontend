@@ -157,33 +157,88 @@ export const GET_SUBCITY_PAGE_URL = "/api/subcities";
 
 
 
-
-
 // ================= FAQ =================
 
-// CREATE
-export const ADD_FAQ_URL = "/api/faqs/add";
+/* =========================================================
+   CREATE FAQ
+========================================================= */
 
-// GET ALL
-export const GET_FAQS_URL = "/api/faqs";
+export const ADD_FAQ_URL =
+  "/api/faqs/add";
 
-// GET BY TYPE (homepage, city, subcity, girl)
-export const GET_FAQS_BY_TYPE_URL = "/api/faqs/type";
+/* =========================================================
+   GET ALL FAQ
+========================================================= */
 
-// GET BY CITY
-export const GET_FAQS_BY_CITY_URL = "/api/faqs/city";
+export const GET_FAQS_URL =
+  "/api/faqs";
 
-// GET BY SUBCITY
-export const GET_FAQS_BY_SUBCITY_URL = "/api/faqs/subcity";
+/* =========================================================
+   GET HOMEPAGE FAQ
+========================================================= */
 
-// GET BY GIRL
-export const GET_FAQS_BY_GIRL_URL = "/api/faqs/girl";
+export const GET_HOMEPAGE_FAQS_URL =
+  "/api/faqs/homepage";
 
-// UPDATE
-export const UPDATE_FAQ_URL = "/api/faqs/update";
+/* =========================================================
+   GET FAQ BY TYPE
+   usage:
+   `${GET_FAQS_BY_TYPE_URL}/homepage`
+========================================================= */
 
-// DELETE
-export const DELETE_FAQ_URL = "/api/faqs/delete";
+export const GET_FAQS_BY_TYPE_URL =
+  "/api/faqs/type";
 
-// STATUS
-export const TOGGLE_FAQ_STATUS_URL = "/api/faqs/status";
+/* =========================================================
+   GET FAQ BY CITY
+   usage:
+   `${GET_FAQS_BY_CITY_URL}/${cityId}`
+========================================================= */
+
+export const GET_FAQS_BY_CITY_URL =
+  "/api/faqs/city";
+
+/* =========================================================
+   GET FAQ BY SUBCITY
+   usage:
+   `${GET_FAQS_BY_SUBCITY_URL}/${subCityId}`
+========================================================= */
+
+export const GET_FAQS_BY_SUBCITY_URL =
+  "/api/faqs/subcity";
+
+/* =========================================================
+   GET FAQ BY GIRL
+   usage:
+   `${GET_FAQS_BY_GIRL_URL}/${girlId}`
+========================================================= */
+
+export const GET_FAQS_BY_GIRL_URL =
+  "/api/faqs/girl";
+
+/* =========================================================
+   UPDATE FAQ
+   usage:
+   `${UPDATE_FAQ_URL}/${faqId}`
+========================================================= */
+
+export const UPDATE_FAQ_URL =
+  "/api/faqs/update";
+
+/* =========================================================
+   DELETE FAQ
+   usage:
+   `${DELETE_FAQ_URL}/${faqId}`
+========================================================= */
+
+export const DELETE_FAQ_URL =
+  "/api/faqs/delete";
+
+/* =========================================================
+   TOGGLE FAQ STATUS
+   usage:
+   `${TOGGLE_FAQ_STATUS_URL}/${faqId}`
+========================================================= */
+
+export const TOGGLE_FAQ_STATUS_URL =
+  "/api/faqs/status";

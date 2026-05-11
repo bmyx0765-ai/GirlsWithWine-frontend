@@ -4,9 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "react-toastify";
-import { 
-  FiMapPin, FiType, FiSearch, FiImage, 
-  FiActivity, FiChevronLeft, FiUpload, FiSave 
+import {
+  FiMapPin, FiType, FiSearch, FiImage,
+  FiActivity, FiChevronLeft, FiUpload, FiSave
 } from "react-icons/fi";
 
 import { getCitiesThunk, updateCityThunk } from "@/store/slices/citySlice";
@@ -117,14 +117,14 @@ const EditCity = () => {
   return (
     <div className="min-h-screen bg-[#f8fafc] py-12 px-4 md:px-8">
       <div className="max-w-6xl mx-auto">
-        
+
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Edit City Profile</h1>
             <p className="text-slate-500 mt-1">Modify location parameters and SEO for {form.mainCity}.</p>
           </div>
-          <button 
+          <button
             type="button"
             onClick={() => router.back()}
             className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-all font-semibold"
@@ -134,45 +134,47 @@ const EditCity = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
+
           {/* MAIN COLUMN */}
           <div className="lg:col-span-8 space-y-8">
-            
+
             {/* SECTION: GENERAL INFO */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
               <div className="px-8 py-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2 text-blue-600 font-bold">
                 <FiMapPin /> Basic Identity
               </div>
               <div className="p-8 grid md:grid-cols-2 gap-6">
-                <Input 
-                  label="Main City Name" 
+                <Input
+                  label="Main City Name"
                   name="mainCity"
                   value={form.mainCity}
-                  onChange={handleInputChange} 
-                  required 
+                  onChange={handleInputChange}
+                  disabled
+                  required
                 />
-                <Input 
-                  label="Permalink (Slug)" 
+                <Input
+                  label="Permalink (Slug)"
                   name="permalink"
                   value={form.permalink}
-                  onChange={handleInputChange} 
-                  required 
+                  onChange={handleInputChange}
+                  disabled
+                  required
                 />
                 <div className="md:col-span-2">
-                  <Input 
-                    label="Page Display Heading" 
+                  <Input
+                    label="Page Display Heading"
                     name="heading"
                     value={form.heading}
-                    onChange={handleInputChange} 
+                    onChange={handleInputChange}
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <Textarea 
-                    label="Short Sub-Description" 
+                  <Textarea
+                    label="Short Sub-Description"
                     name="subDescription"
                     value={form.subDescription}
-                    onChange={handleInputChange} 
-                    rows={2} 
+                    onChange={handleInputChange}
+                    rows={2}
                   />
                 </div>
               </div>
@@ -199,26 +201,44 @@ const EditCity = () => {
                 <FiSearch /> SEO Optimization
               </div>
               <div className="p-8 space-y-6">
-                <Input 
-                  label="SEO Meta Title" 
+                <Input
+                  label="SEO Meta Title"
                   name="seoTitle"
                   value={form.seoTitle}
-                  onChange={handleInputChange} 
+                  onChange={handleInputChange}
                 />
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Textarea 
-                    label="Meta Description" 
+                  <Textarea
+                    label="Meta Description"
                     name="seoDescription"
                     value={form.seoDescription}
-                    onChange={handleInputChange} 
-                    rows={3} 
+                    onChange={handleInputChange}
+                    rows={3}
                   />
-                  <Textarea 
-                    label="Meta Keywords" 
+                  <Textarea
+                    label="Meta Keywords (Max 10)"
                     name="seoKeywords"
                     value={form.seoKeywords}
-                    onChange={handleInputChange} 
-                    rows={3} 
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      // comma separated keywords
+                      const keywords = value
+                        .split(",")
+                        .map((k) => k.trim())
+                        .filter((k) => k !== "");
+
+                      // only allow 10 keywords
+                      if (keywords.length <= 10) {
+                        setForm((prev) => ({
+                          ...prev,
+                          seoKeywords: value,
+                        }));
+                      } else {
+                        toast.error("Only 10 keywords allowed");
+                      }
+                    }}
+                    rows={3}
                   />
                 </div>
               </div>
@@ -227,22 +247,22 @@ const EditCity = () => {
 
           {/* SIDEBAR COLUMN */}
           <div className="lg:col-span-4 space-y-8">
-            
+
             {/* UPDATE CARD */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-               <div className="flex items-center gap-2 text-slate-800 font-bold mb-4">
-                  <FiActivity className="text-green-500" /> Status & Visibility
-               </div>
-               <select 
+              <div className="flex items-center gap-2 text-slate-800 font-bold mb-4">
+                <FiActivity className="text-green-500" /> Status & Visibility
+              </div>
+              <select
                 name="status"
                 value={form.status}
                 onChange={handleInputChange}
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none mb-6"
-               >
-                 <option value="Active">Active</option>
-                 <option value="Inactive">Inactive</option>
-               </select>
-               <button
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+              <button
                 type="submit"
                 disabled={updateLoading}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
@@ -258,8 +278,8 @@ const EditCity = () => {
               </div>
               <div className="p-6 space-y-6">
                 <div className="space-y-2">
-                   <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Change Image</label>
-                   <label className="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition-all overflow-hidden relative group">
+                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Change Image</label>
+                  <label className="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition-all overflow-hidden relative group">
                     {preview ? (
                       <img src={preview} className="w-full h-full object-cover" alt="Preview" />
                     ) : (
@@ -271,11 +291,11 @@ const EditCity = () => {
                     <input type="file" className="hidden" onChange={handleImageChange} />
                   </label>
                 </div>
-                <Input 
-                  label="Image Alt (SEO)" 
+                <Input
+                  label="Image Alt (SEO)"
                   name="imageAlt"
                   value={form.imageAlt}
-                  onChange={handleInputChange} 
+                  onChange={handleInputChange}
                 />
               </div>
             </div>
@@ -286,12 +306,12 @@ const EditCity = () => {
                 <FiSearch /> Tags
               </div>
               <div className="p-6">
-                <Textarea 
-                  label="Tags (Comma Separated)" 
+                <Textarea
+                  label="Tags (Comma Separated)"
                   name="tags"
                   value={form.tags}
-                  onChange={handleInputChange} 
-                  rows={2} 
+                  onChange={handleInputChange}
+                  rows={2}
                 />
               </div>
             </div>
@@ -308,9 +328,9 @@ const EditCity = () => {
 const Input = ({ label, ...props }) => (
   <div className="flex flex-col gap-1.5 w-full">
     <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">{label}</label>
-    <input 
-      {...props} 
-      className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300 text-sm" 
+    <input
+      {...props}
+      className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300 text-sm"
     />
   </div>
 );
@@ -318,9 +338,9 @@ const Input = ({ label, ...props }) => (
 const Textarea = ({ label, ...props }) => (
   <div className="flex flex-col gap-1.5 w-full">
     <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest ml-1">{label}</label>
-    <textarea 
-      {...props} 
-      className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300 text-sm" 
+    <textarea
+      {...props}
+      className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300 text-sm"
     />
   </div>
 );
