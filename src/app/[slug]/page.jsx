@@ -608,22 +608,7 @@ export default async function Page({
 
   /* ================= 404 ================= */
 
-  if (!result) {
-
-    return (
-
-      <div className="min-h-screen flex items-center justify-center bg-white">
-
-        <h1 className="text-4xl md:text-6xl font-black text-slate-900">
-          404 Not Found
-        </h1>
-
-      </div>
-
-    );
-
-  }
-
+  
   /* ================================================= */
   /* ================= CITY PAGE ===================== */
   /* ================================================= */
