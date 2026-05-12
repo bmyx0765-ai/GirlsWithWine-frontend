@@ -79,6 +79,8 @@ export default function RootLayout({ children }) {
           content="c09IAF3PnXkZnpQ57WLvYg8oXUsrQRuOZ5phxQS07Bs"
         />
 
+        <meta name="msvalidate.01" content="55C6CD5F437B670268E8E861D770B55F" />
+
         {/* FONT AWESOME */}
         <link
           rel="stylesheet"

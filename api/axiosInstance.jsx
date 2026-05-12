@@ -19,7 +19,7 @@ axiosInstance.interceptors.request.use(
         localStorage.getItem("token") ||
         localStorage.getItem("tokenId");
 
-      console.log("TOKEN 👉", token); // debug
+  
 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;

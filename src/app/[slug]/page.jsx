@@ -62,10 +62,7 @@ async function getLatLong(cityName) {
 
   } catch (err) {
 
-    console.log(
-      "LatLong Error:",
-      err
-    );
+    
 
     return null;
 
@@ -139,11 +136,7 @@ async function getFaqSchema(type, id) {
 
   } catch (error) {
 
-    console.log(
-      "FAQ SCHEMA ERROR:",
-      error
-    );
-
+  
     return null;
 
   }
@@ -250,10 +243,7 @@ async function checkSlug(slug) {
 
   } catch (err) {
 
-    console.log(
-      "CHECK SLUG ERROR 👉",
-      err
-    );
+   
 
     return null;
 
@@ -368,33 +358,6 @@ export async function generateMetadata({
       city?.canonical ||
       pageUrl;
 
-    console.log(
-      "=========== FINAL SEO DATA ==========="
-    );
-
-    console.log(
-      "SEO TITLE 👉",
-      seoTitle
-    );
-
-    console.log(
-      "SEO DESCRIPTION 👉",
-      seoDescription
-    );
-
-    console.log(
-      "SEO KEYWORDS 👉",
-      seoKeywords
-    );
-
-    console.log(
-      "CANONICAL URL 👉",
-      canonicalUrl
-    );
-
-    console.log(
-      "======================================"
-    );
 
     return {
 
