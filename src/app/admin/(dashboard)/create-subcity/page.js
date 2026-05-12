@@ -4,7 +4,10 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { FiMapPin, FiSearch, FiType, FiCheckCircle, FiChevronLeft, FiTag } from "react-icons/fi";
+import { 
+  FiMapPin, FiSearch, FiType, FiCheckCircle, FiChevronLeft, 
+  FiTag, FiShare2, FiFacebook, FiTwitter 
+} from "react-icons/fi";
 
 import { createSubCity } from "@/store/slices/subCitySlice";
 import { getCitiesThunk } from "@/store/slices/citySlice";
@@ -28,6 +31,13 @@ const AddSubCity = () => {
     seoDescription: "",
     seoKeywords: "",
     tags: "",
+    // Social SEO Fields
+    ogTitle: "",
+    ogDescription: "",
+    twitterTitle: "",
+    twitterDescription: "",
+    facebookTitle: "",
+    facebookDescription: "",
   });
 
   useEffect(() => {
@@ -49,7 +59,16 @@ const AddSubCity = () => {
     if (!form.name) return toast.error("Enter SubCity name");
 
     const fd = new FormData();
-    Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+    
+    Object.entries(form).forEach(([key, value]) => {
+      if (key === "tags") {
+        // Convert comma string to array for backend consistency
+        const tagArray = value.split(",").map(tag => tag.trim()).filter(tag => tag !== "");
+        tagArray.forEach(tag => fd.append("tags[]", tag)); 
+      } else {
+        fd.append(key, value);
+      }
+    });
 
     dispatch(createSubCity(fd)).then((res) => {
       if (res.meta.requestStatus === "fulfilled") {
@@ -73,7 +92,7 @@ const AddSubCity = () => {
             </button>
             <div>
               <h1 className="text-xl font-bold text-slate-900">Add New SubCity</h1>
-              <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold tracking-tight">Location Management</p>
+              <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Location Management</p>
             </div>
           </div>
           <button 
@@ -113,7 +132,7 @@ const AddSubCity = () => {
               </div>
               <div className="p-6 space-y-5">
                 <Textarea
-                  label="Short Listing Summary"
+                  label="Short Listing Summary {Optional}"
                   name="subDescription"
                   rows={2}
                   value={form.subDescription}
@@ -122,10 +141,44 @@ const AddSubCity = () => {
                 />
                 <div className="space-y-2">
                   <label className="text-[11px] uppercase tracking-widest font-black text-slate-400 ml-1">Page Body Content</label>
-                  <div className="rounded-lg border border-slate-200 focus-within:border-blue-400 transition-colors bg-white">
+                  <div className="rounded-lg border border-slate-200 focus-within:border-blue-400 transition-colors bg-white overflow-hidden">
                     <RichTextEditor value={form.description} onChange={handleEditor} />
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* SOCIAL SEO SECTION */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2 font-bold text-slate-700 bg-slate-50/50">
+                <FiShare2 className="text-blue-500" /> Social Media Optimization
+              </div>
+              <div className="p-6 space-y-8">
+                
+                {/* Facebook / Open Graph */}
+                <div className="space-y-4 p-5 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="flex items-center gap-2 text-xs font-bold text-blue-600 uppercase tracking-wider">
+                    <FiFacebook /> Facebook & Open Graph
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Input label="OG Title" name="ogTitle" value={form.ogTitle} onChange={handleChange} placeholder="OG share title" />
+                    <Input label="FB Specific Title" name="facebookTitle" value={form.facebookTitle} onChange={handleChange} placeholder="Custom Facebook title" />
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Textarea label="OG Description" name="ogDescription" value={form.ogDescription} onChange={handleChange} placeholder="OG share description..." rows={2} />
+                    <Textarea label="Facebook Description" name="facebookDescription" value={form.facebookDescription} onChange={handleChange} placeholder="Custom FB description..." rows={2} />
+                  </div>
+                </div>
+
+                {/* Twitter */}
+                <div className="space-y-4 p-5 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="flex items-center gap-2 text-xs font-bold text-sky-500 uppercase tracking-wider">
+                    <FiTwitter /> Twitter Card Data
+                  </div>
+                  <Input label="Twitter Title" name="twitterTitle" value={form.twitterTitle} onChange={handleChange} placeholder="Twitter share title" />
+                  <Textarea label="Twitter Description" name="twitterDescription" value={form.twitterDescription} onChange={handleChange} placeholder="Twitter summary description..." rows={2} />
+                </div>
+
               </div>
             </div>
           </div>
@@ -140,8 +193,8 @@ const AddSubCity = () => {
               </div>
               <div className="p-6 space-y-5">
                 <Input label="Meta Title" name="seoTitle" value={form.seoTitle} onChange={handleChange} placeholder="Search engine title" />
-                <Textarea label="Meta Description" name="seoDescription" value={form.seoDescription} onChange={handleChange} placeholder="Brief meta description..." />
-                <Textarea label="Meta Keywords" name="seoKeywords" value={form.seoKeywords} onChange={handleChange} placeholder="SEO keywords..." />
+                <Textarea label="Meta Description" name="seoDescription" value={form.seoDescription} onChange={handleChange} placeholder="Brief meta description..." rows={4} />
+                <Textarea label="Meta Keywords" name="seoKeywords" value={form.seoKeywords} onChange={handleChange} placeholder="keyword1, keyword2..." rows={3} />
               </div>
             </div>
 
@@ -152,6 +205,7 @@ const AddSubCity = () => {
               </div>
               <div className="p-6">
                 <Input label="Search Tags" name="tags" value={form.tags} onChange={handleChange} placeholder="Comma separated tags..." />
+                <p className="text-[10px] text-slate-400 mt-2 italic">Stored as an array in the database.</p>
               </div>
             </div>
 

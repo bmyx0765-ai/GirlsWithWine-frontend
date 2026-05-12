@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -13,6 +12,12 @@ const CitySection = ({
 
   const skeletonItems =
     new Array(12).fill(0);
+
+      const activeCities =
+    cities.filter(
+      (city) =>
+        city?.status === "Active"
+    );
 
   return (
 
@@ -55,9 +60,9 @@ const CitySection = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 
-            {cities?.length > 0 ? (
+            {activeCities?.length > 0 ? (
 
-              cities.map((city) => {
+              activeCities.map((city) => {
 
                 /* ================= CLEAN SLUG ================= */
 

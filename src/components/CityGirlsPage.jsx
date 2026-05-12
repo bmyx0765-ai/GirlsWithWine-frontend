@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { getGirlsByCityThunk } from "@/store/slices/girlSlice";
 import { getCityPageThunk, getCitiesThunk } from "@/store/slices/citySlice";
-import CitySection from "@/components/CitySection";
 import CommonFaq from "./CommonFaq";
 import CityMetaSection from "./CityMetaSection";
 

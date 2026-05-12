@@ -4,7 +4,10 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { FiMapPin, FiType, FiSearch, FiImage, FiHash, FiActivity, FiChevronLeft } from "react-icons/fi";
+import { 
+  FiMapPin, FiType, FiSearch, FiImage, FiHash, 
+  FiActivity, FiChevronLeft, FiShare2, FiFacebook, FiTwitter, FiUpload 
+} from "react-icons/fi";
 
 import { addCityThunk, resetCityState } from "@/store/slices/citySlice";
 import RichTextEditor from "@/components/RichTextEditor";
@@ -21,10 +24,17 @@ const AddCity = () => {
     heading: "",
     subDescription: "",
     description: "",
-    tags: "", // Will be sent as comma-separated and handled in submit
+    tags: "", 
     seoTitle: "",
     seoDescription: "",
     seoKeywords: "",
+    // Social SEO Fields
+    ogTitle: "",
+    ogDescription: "",
+    twitterTitle: "",
+    twitterDescription: "",
+    facebookTitle: "",
+    facebookDescription: "", // Added this
     imageAlt: "",
     status: "Active",
   });
@@ -60,10 +70,8 @@ const AddCity = () => {
 
     const fd = new FormData();
 
-    // Append all form fields
     Object.entries(form).forEach(([key, value]) => {
       if (key === "tags") {
-        // Handle tags: Convert comma string to array or append individually
         const tagArray = value.split(",").map(tag => tag.trim()).filter(tag => tag !== "");
         tagArray.forEach(tag => fd.append("tags[]", tag)); 
       } else {
@@ -72,7 +80,6 @@ const AddCity = () => {
     });
 
     fd.append("image", image);
-
     dispatch(addCityThunk(fd));
   };
 
@@ -115,40 +122,13 @@ const AddCity = () => {
                 <FiMapPin /> Basic Identity
               </div>
               <div className="p-8 grid md:grid-cols-2 gap-6">
-                <Input 
-                  label="Main City Name" 
-                  name="mainCity"
-                  placeholder="e.g. Jaipur" 
-                  value={form.mainCity}
-                  onChange={handleInputChange} 
-                  required 
-                />
-                <Input 
-                  label="Permalink (Slug)" 
-                  name="permalink"
-                  placeholder="escorts-in-jaipur" 
-                  value={form.permalink}
-                  onChange={handleInputChange} 
-                  required 
-                />
+                <Input label="Main City Name" name="mainCity" placeholder="e.g. Jaipur" value={form.mainCity} onChange={handleInputChange} required />
+                <Input label="Permalink (Slug)" name="permalink" placeholder="escorts-in-jaipur" value={form.permalink} onChange={handleInputChange} required />
                 <div className="md:col-span-2">
-                  <Input 
-                    label="Page Display Heading" 
-                    name="heading"
-                    placeholder="Luxury Services in Jaipur" 
-                    value={form.heading}
-                    onChange={handleInputChange} 
-                  />
+                  <Input label="Page Display Heading" name="heading" placeholder="Luxury Services in Jaipur" value={form.heading} onChange={handleInputChange} />
                 </div>
                 <div className="md:col-span-2">
-                  <Textarea 
-                    label="Short Sub-Description" 
-                    name="subDescription"
-                    placeholder="Short intro text for listing cards..." 
-                    value={form.subDescription}
-                    onChange={handleInputChange} 
-                    rows={2} 
-                  />
+                  <Textarea label="Short Sub-Description" name="subDescription" placeholder="Short intro text..." value={form.subDescription} onChange={handleInputChange} rows={2} />
                 </div>
               </div>
             </div>
@@ -160,44 +140,54 @@ const AddCity = () => {
               </div>
               <div className="p-8">
                 <div className="rounded-xl border border-slate-200 overflow-hidden">
-                  <RichTextEditor
-                    value={form.description}
-                    onChange={handleEditorChange}
-                  />
+                  <RichTextEditor value={form.description} onChange={handleEditorChange} />
                 </div>
               </div>
             </div>
 
-            {/* SECTION: SEO */}
+            {/* SECTION: SEO & SOCIAL META */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
               <div className="px-8 py-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2 text-blue-600 font-bold">
-                <FiSearch /> SEO Optimization
+                <FiSearch /> Search Engine Optimization
               </div>
               <div className="p-8 space-y-6">
-                <Input 
-                  label="SEO Meta Title" 
-                  name="seoTitle"
-                  placeholder="Title for Google Search" 
-                  value={form.seoTitle}
-                  onChange={handleInputChange} 
-                />
+                <Input label="SEO Meta Title" name="seoTitle" placeholder="Title for Google Search" value={form.seoTitle} onChange={handleInputChange} />
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Textarea 
-                    label="Meta Description" 
-                    name="seoDescription"
-                    placeholder="Brief summary for SERP..." 
-                    value={form.seoDescription}
-                    onChange={handleInputChange} 
-                    rows={3} 
-                  />
-                  <Textarea 
-                    label="Meta Keywords" 
-                    name="seoKeywords"
-                    placeholder="keyword1, keyword2..." 
-                    value={form.seoKeywords}
-                    onChange={handleInputChange} 
-                    rows={3} 
-                  />
+                  <Textarea label="Meta Description" name="seoDescription" placeholder="Brief summary for SERP..." value={form.seoDescription} onChange={handleInputChange} rows={3} />
+                  <Textarea label="Meta Keywords" name="seoKeywords" placeholder="keyword1, keyword2..." value={form.seoKeywords} onChange={handleInputChange} rows={3} />
+                </div>
+
+                <hr className="border-slate-100 my-6" />
+
+                {/* SOCIAL MEDIA FIELDS */}
+                <div className="flex items-center gap-2 text-slate-800 font-bold mb-4">
+                  <FiShare2 className="text-blue-500" /> Social Media Previews
+                </div>
+                
+                <div className="grid md:grid-cols-1 gap-6">
+                  {/* Facebook / OG */}
+                  <div className="space-y-4 p-6 rounded-xl bg-slate-50 border border-slate-100">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      <FiFacebook className="text-blue-600" /> Facebook / Open Graph
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <Input label="OG Title" name="ogTitle" placeholder="General Open Graph title" value={form.ogTitle} onChange={handleInputChange} />
+                        <Input label="FB Specific Title" name="facebookTitle" placeholder="Custom Facebook title" value={form.facebookTitle} onChange={handleInputChange} />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <Textarea label="OG Description" name="ogDescription" placeholder="General OG description..." value={form.ogDescription} onChange={handleInputChange} rows={2} />
+                        <Textarea label="Facebook Description" name="facebookDescription" placeholder="Custom Facebook description..." value={form.facebookDescription} onChange={handleInputChange} rows={2} />
+                    </div>
+                  </div>
+
+                  {/* Twitter */}
+                  <div className="space-y-4 p-6 rounded-xl bg-slate-50 border border-slate-100">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      <FiTwitter className="text-sky-500" /> Twitter Card
+                    </div>
+                    <Input label="Twitter Title" name="twitterTitle" placeholder="Twitter share title" value={form.twitterTitle} onChange={handleInputChange} />
+                    <Textarea label="Twitter Description" name="twitterDescription" placeholder="Twitter summary..." value={form.twitterDescription} onChange={handleInputChange} rows={3} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -205,8 +195,6 @@ const AddCity = () => {
 
           {/* SIDEBAR COLUMN */}
           <div className="lg:col-span-4 space-y-8">
-            
-            {/* PUBLISH CARD */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                <div className="flex items-center gap-2 text-slate-800 font-bold mb-4">
                   <FiActivity className="text-green-500" /> Status & Visibility
@@ -249,13 +237,7 @@ const AddCity = () => {
                     <input type="file" className="hidden" onChange={handleImageChange} />
                   </label>
                 </div>
-                <Input 
-                  label="Image Alt (SEO)" 
-                  name="imageAlt"
-                  placeholder="e.g. City Escort Services" 
-                  value={form.imageAlt}
-                  onChange={handleInputChange} 
-                />
+                <Input label="Image Alt (SEO)" name="imageAlt" placeholder="e.g. City Image Alt" value={form.imageAlt} onChange={handleInputChange} />
               </div>
             </div>
 
@@ -265,18 +247,10 @@ const AddCity = () => {
                 <FiHash /> Tags
               </div>
               <div className="p-6">
-                <Textarea 
-                  label="Tags (Comma Separated)" 
-                  name="tags"
-                  placeholder="jaipur, luxury, premium..." 
-                  value={form.tags}
-                  onChange={handleInputChange} 
-                  rows={2} 
-                />
-                <p className="text-[10px] text-slate-400 mt-2 italic">These will be stored as an array in the database.</p>
+                <Textarea label="Tags (Comma Separated)" name="tags" placeholder="jaipur, luxury..." value={form.tags} onChange={handleInputChange} rows={2} />
+                <p className="text-[10px] text-slate-400 mt-2 italic">Stored as an array in the DB.</p>
               </div>
             </div>
-
           </div>
         </form>
       </div>
@@ -304,10 +278,6 @@ const Textarea = ({ label, ...props }) => (
       className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300 text-sm" 
     />
   </div>
-);
-
-const FiUpload = ({ className }) => (
-  <svg className={className} stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
 );
 
 export default AddCity;

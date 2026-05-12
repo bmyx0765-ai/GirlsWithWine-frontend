@@ -11,6 +11,7 @@ import { fetchSubCities } from "@/store/slices/subCitySlice";
 import RichTextEditor from "@/components/RichTextEditor";
 
 import { FormControl, Select, MenuItem, Checkbox, ListItemText, OutlinedInput } from "@mui/material";
+import { FiShare2, FiFacebook, FiTwitter } from "react-icons/fi";
 
 const EditGirlForm = () => {
   const dispatch = useDispatch();
@@ -37,6 +38,13 @@ const EditGirlForm = () => {
     seoTitle: "",
     seoDescription: "",
     seoKeywords: "",
+    // Social SEO Fields
+    ogTitle: "",
+    ogDescription: "",
+    twitterTitle: "",
+    twitterDescription: "",
+    facebookTitle: "",
+    facebookDescription: "",
     showOnHomepage: false,
     permalink: "",
   });
@@ -81,6 +89,13 @@ const EditGirlForm = () => {
         seoKeywords: Array.isArray(singleGirl.seoKeywords)
           ? singleGirl.seoKeywords.join(", ")
           : singleGirl.seoKeywords || "",
+        // Sync Social Meta
+        ogTitle: singleGirl.ogTitle || "",
+        ogDescription: singleGirl.ogDescription || "",
+        twitterTitle: singleGirl.twitterTitle || "",
+        twitterDescription: singleGirl.twitterDescription || "",
+        facebookTitle: singleGirl.facebookTitle || "",
+        facebookDescription: singleGirl.facebookDescription || "",
         showOnHomepage: singleGirl.showOnHomepage || false,
         permalink: singleGirl.permalink || "",
       });
@@ -100,12 +115,7 @@ const EditGirlForm = () => {
 
   const handleMultiSelectChange = (event) => {
     const { name, value } = event.target;
-
-    // FIX: Dummy values filter karein taaki state array clean rahe
-    if (value.includes("all-cities") || value.includes("all-subcities")) {
-        return;
-    }
-
+    if (value.includes("all-cities") || value.includes("all-subcities")) return;
     setFormData((prev) => ({
       ...prev,
       [name]: typeof value === "string" ? value.split(",") : value,
@@ -138,27 +148,19 @@ const EditGirlForm = () => {
     setExistingGallery((prev) => prev.filter((item) => item !== url));
   };
 
-  /* ================= SELECT ALL LOGIC (FIXED) ================= */
-
   const isAllCitiesSelected = cities.length > 0 && formData.city.length === cities.length;
   const isAllSubCitiesSelected = subCities.length > 0 && formData.subCity.length === subCities.length;
 
   const handleSelectAllCities = (e) => {
     e.stopPropagation();
     const allCityIds = cities.map((c) => c._id);
-    setFormData((prev) => ({
-      ...prev,
-      city: isAllCitiesSelected ? [] : allCityIds,
-    }));
+    setFormData((prev) => ({ ...prev, city: isAllCitiesSelected ? [] : allCityIds }));
   };
 
   const handleSelectAllSubCities = (e) => {
     e.stopPropagation();
     const allSubCityIds = subCities.map((sc) => sc._id);
-    setFormData((prev) => ({
-      ...prev,
-      subCity: isAllSubCitiesSelected ? [] : allSubCityIds,
-    }));
+    setFormData((prev) => ({ ...prev, subCity: isAllSubCitiesSelected ? [] : allSubCityIds }));
   };
 
   const handleSubmit = async (e) => {
@@ -167,9 +169,7 @@ const EditGirlForm = () => {
 
     Object.entries(formData).forEach(([key, value]) => {
       if (key === "city" || key === "subCity") {
-        if (Array.isArray(value)) {
-          value.forEach((val) => fd.append(key, val));
-        }
+        if (Array.isArray(value)) value.forEach((val) => fd.append(key, val));
       } else {
         fd.append(key, value);
       }
@@ -217,13 +217,7 @@ const EditGirlForm = () => {
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-bold text-gray-700 uppercase">Main Cities</label>
                 <FormControl fullWidth size="small">
-                  <Select
-                    name="city"
-                    multiple
-                    value={formData.city}
-                    onChange={handleMultiSelectChange}
-                    input={<OutlinedInput className="bg-gray-50 rounded-xl" />}
-                    MenuProps={{ PaperProps: { style: { maxHeight: 400 } } }}
+                  <Select name="city" multiple value={formData.city} onChange={handleMultiSelectChange} input={<OutlinedInput className="bg-gray-50 rounded-xl" />}
                     renderValue={(selected) => (
                       <div className="flex flex-wrap gap-1">
                         {selected.map((val) => (
@@ -234,20 +228,10 @@ const EditGirlForm = () => {
                       </div>
                     )}
                   >
-                    <MenuItem 
-                        value="all-cities" 
-                        onClick={handleSelectAllCities}
-                        onKeyDown={(e) => e.stopPropagation()}
-                        className="bg-gray-100 sticky top-0 z-10"
-                    >
-                      <Checkbox 
-                        checked={isAllCitiesSelected} 
-                        indeterminate={formData.city.length > 0 && !isAllCitiesSelected}
-                        color="secondary" 
-                      />
+                    <MenuItem value="all-cities" onClick={handleSelectAllCities} onKeyDown={(e) => e.stopPropagation()} className="bg-gray-100 sticky top-0 z-10">
+                      <Checkbox checked={isAllCitiesSelected} indeterminate={formData.city.length > 0 && !isAllCitiesSelected} color="secondary" />
                       <ListItemText primary="Select All Cities" primaryTypographyProps={{ fontWeight: "bold" }} />
                     </MenuItem>
-
                     {cities.map((c) => (
                       <MenuItem key={c._id} value={c._id}>
                         <Checkbox checked={formData.city.includes(c._id)} color="secondary" />
@@ -262,13 +246,7 @@ const EditGirlForm = () => {
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-bold text-gray-700 uppercase">Sub Cities</label>
                 <FormControl fullWidth size="small">
-                  <Select
-                    name="subCity"
-                    multiple
-                    value={formData.subCity}
-                    onChange={handleMultiSelectChange}
-                    input={<OutlinedInput className="bg-gray-50 rounded-xl" />}
-                    MenuProps={{ PaperProps: { style: { maxHeight: 400 } } }}
+                  <Select name="subCity" multiple value={formData.subCity} onChange={handleMultiSelectChange} input={<OutlinedInput className="bg-gray-50 rounded-xl" />}
                     renderValue={(selected) => (
                       <div className="flex flex-wrap gap-1">
                         {selected.map((val) => (
@@ -279,20 +257,10 @@ const EditGirlForm = () => {
                       </div>
                     )}
                   >
-                    <MenuItem 
-                        value="all-subcities" 
-                        onClick={handleSelectAllSubCities}
-                        onKeyDown={(e) => e.stopPropagation()}
-                        className="bg-gray-100 sticky top-0 z-10"
-                    >
-                      <Checkbox 
-                        checked={isAllSubCitiesSelected} 
-                        indeterminate={formData.subCity.length > 0 && !isAllSubCitiesSelected}
-                        color="primary" 
-                      />
+                    <MenuItem value="all-subcities" onClick={handleSelectAllSubCities} onKeyDown={(e) => e.stopPropagation()} className="bg-gray-100 sticky top-0 z-10">
+                      <Checkbox checked={isAllSubCitiesSelected} indeterminate={formData.subCity.length > 0 && !isAllSubCitiesSelected} color="primary" />
                       <ListItemText primary="Select All Sub Cities" primaryTypographyProps={{ fontWeight: "bold" }} />
                     </MenuItem>
-
                     {subCities.map((sc) => (
                       <MenuItem key={sc._id} value={sc._id}>
                         <Checkbox checked={formData.subCity.includes(sc._id)} color="primary" />
@@ -305,12 +273,11 @@ const EditGirlForm = () => {
 
               <div className="md:col-span-2 space-y-4">
                 <Input label="HEADING" name="heading" value={formData.heading} onChange={handleChange} required />
-                <Input label="PERMALINK (READ ONLY)" name="permalink" value={formData.permalink} onChange={handleChange} required disabled />
+                <Input label="PERMALINK (READ ONLY)" name="permalink" value={formData.permalink} required disabled />
               </div>
             </div>
           </Section>
 
-          {/* Bio & Pricing Section */}
           <Section title="Bio & Pricing">
             <div className="space-y-8">
               <div className="grid md:grid-cols-2 gap-8">
@@ -321,32 +288,29 @@ const EditGirlForm = () => {
                 <label className="text-sm font-bold text-gray-700 uppercase">Detailed Bio (Rich Text)</label>
                 <div className="rounded-xl overflow-hidden border">
                   {isDataLoaded ? (
-                    <RichTextEditor
-                      value={formData.aboutGirlInformation}
-                      onChange={(val) => setFormData(p => ({ ...p, aboutGirlInformation: val }))}
-                    />
+                    <RichTextEditor value={formData.aboutGirlInformation} onChange={(val) => setFormData(p => ({ ...p, aboutGirlInformation: val }))} />
                   ) : (
-                    <div className="p-10 text-center text-gray-400 italic">Loading editor content...</div>
+                    <div className="p-10 text-center text-gray-400 italic">Loading content...</div>
                   )}
                 </div>
               </div>
             </div>
           </Section>
 
-          {/* Media Section */}
           <Section title="Media">
             <div className="grid md:grid-cols-2 gap-10">
               <div className="bg-gray-50 p-6 rounded-2xl border-2 border-dashed border-gray-200">
-                <label className="block text-sm font-bold mb-4 uppercase">Main Featured Image</label>
+                <label className="block text-sm font-bold mb-4 uppercase">Featured Image</label>
                 <input type="file" onChange={handleImageChange} className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-pink-600 file:text-white" />
-                {previewImage && <img src={previewImage} className="mt-4 w-32 h-40 object-cover rounded-xl shadow-md border-2 border-white" alt="Main Preview" />}
+                {previewImage && <img src={previewImage} className="mt-4 w-32 h-40 object-cover rounded-xl shadow-md border-2 border-white" alt="Preview" />}
+                <div className="mt-4">
+                    <Input label="IMAGE ALT TEXT" name="imageAlt" value={formData.imageAlt} onChange={handleChange} placeholder="SEO image alt" />
+                </div>
               </div>
               
               <div className="bg-gray-50 p-6 rounded-2xl border-2 border-dashed border-gray-200">
-                <label className="block text-sm font-bold mb-4 uppercase">Existing Gallery</label>
+                <label className="block text-sm font-bold mb-4 uppercase">Gallery</label>
                 <input type="file" multiple onChange={handleImagesChange} className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-gray-800 file:text-white mb-4" />
-                
-                {/* Existing Images */}
                 <div className="grid grid-cols-3 gap-3">
                   {existingGallery.map((img, i) => (
                     <div key={`existing-${i}`} className="relative aspect-square">
@@ -354,7 +318,6 @@ const EditGirlForm = () => {
                       <button type="button" onClick={() => removeExistingGalleryImage(img)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-lg">✕</button>
                     </div>
                   ))}
-                  {/* New Previews */}
                   {previewGallery.map((img, i) => (
                     <div key={`new-${i}`} className="relative aspect-square">
                       <img src={img} className="w-full h-full object-cover rounded-xl border-2 border-blue-400" />
@@ -366,29 +329,50 @@ const EditGirlForm = () => {
             </div>
           </Section>
 
-          {/* SEO Section */}
           <Section title="SEO Settings">
             <div className="grid md:grid-cols-2 gap-8">
               <Input label="SEO TITLE" name="seoTitle" value={formData.seoTitle} onChange={handleChange} />
-              <Input label="SEO KEYWORDS" name="seoKeywords" value={formData.seoKeywords} onChange={handleChange} placeholder="comma, separated, keywords" />
+              <Input label="SEO KEYWORDS" name="seoKeywords" value={formData.seoKeywords} onChange={handleChange} placeholder="comma, separated" />
               <div className="md:col-span-2">
                 <Textarea label="SEO DESCRIPTION" name="seoDescription" value={formData.seoDescription} onChange={handleChange} rows={3} />
               </div>
             </div>
           </Section>
 
-          {/* Footer actions */}
+          {/* SOCIAL MEDIA SECTION */}
+          <Section title="Social Meta">
+             <div className="space-y-6">
+                <div className="bg-pink-50/30 p-6 rounded-2xl border border-pink-100 space-y-4">
+                    <div className="flex items-center gap-2 text-pink-600 font-bold text-xs uppercase tracking-widest">
+                        <FiFacebook size={16} /> Facebook & Open Graph
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <Input label="OG Title" name="ogTitle" value={formData.ogTitle} onChange={handleChange} placeholder="Social share title" />
+                        <Input label="Facebook Title" name="facebookTitle" value={formData.facebookTitle} onChange={handleChange} placeholder="Custom FB title" />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <Textarea label="OG Description" name="ogDescription" value={formData.ogDescription} onChange={handleChange} rows={2} placeholder="Social description..." />
+                        <Textarea label="Facebook Description" name="facebookDescription" value={formData.facebookDescription} onChange={handleChange} rows={2} placeholder="Custom FB description..." />
+                    </div>
+                </div>
+
+                <div className="bg-blue-50/30 p-6 rounded-2xl border border-blue-100 space-y-4">
+                    <div className="flex items-center gap-2 text-blue-600 font-bold text-xs uppercase tracking-widest">
+                        <FiTwitter size={16} /> Twitter Card Data
+                    </div>
+                    <Input label="Twitter Title" name="twitterTitle" value={formData.twitterTitle} onChange={handleChange} placeholder="Twitter share title" />
+                    <Textarea label="Twitter Description" name="twitterDescription" value={formData.twitterDescription} onChange={handleChange} rows={2} placeholder="Twitter share description..." />
+                </div>
+             </div>
+          </Section>
+
           <div className="pt-10 border-t flex justify-end items-center gap-8">
             <label className="flex items-center gap-3 cursor-pointer">
               <input type="checkbox" name="showOnHomepage" checked={formData.showOnHomepage} onChange={handleChange} className="w-5 h-5 accent-pink-600" />
               <span className="text-sm font-semibold text-gray-700">Pin to Homepage</span>
             </label>
-            <button 
-                type="submit" 
-                disabled={loading} 
-                className="bg-pink-600 hover:bg-pink-700 text-white px-12 py-4 rounded-2xl font-bold shadow-lg transition-transform active:scale-95 disabled:opacity-50"
-            >
-              {loading ? "Updating Profile..." : "Update Profile"}
+            <button type="submit" disabled={loading} className="bg-pink-600 hover:bg-pink-700 text-white px-12 py-4 rounded-2xl font-bold shadow-lg transition-transform active:scale-95 disabled:opacity-50">
+              {loading ? "Updating..." : "Update Profile"}
             </button>
           </div>
         </form>
@@ -409,7 +393,7 @@ const Section = ({ title, children }) => (
 const Input = ({ label, ...props }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-sm font-bold text-gray-700 tracking-wide">{label}</label>
-    <input {...props} className="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder:text-gray-300" />
+    <input {...props} className="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-pink-500 transition-all placeholder:text-gray-300 disabled:opacity-50" />
   </div>
 );
 

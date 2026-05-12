@@ -19,6 +19,7 @@ import {
   ListItemText,
   OutlinedInput
 } from "@mui/material";
+import { FiShare2, FiFacebook, FiTwitter } from "react-icons/fi"; // Added icons
 
 const AddGirlForm = () => {
   const dispatch = useDispatch();
@@ -45,6 +46,14 @@ const AddGirlForm = () => {
     seoTitle: "",
     seoDescription: "",
     seoKeywords: "",
+    // --- New Social SEO Fields ---
+    ogTitle: "",
+    ogDescription: "",
+    twitterTitle: "",
+    twitterDescription: "",
+    facebookTitle: "",
+    facebookDescription: "",
+    // ------------------------------
     showOnHomepage: false,
     permalink: "",
   });
@@ -81,12 +90,7 @@ const AddGirlForm = () => {
 
   const handleMultiSelectChange = (event) => {
     const { name, value } = event.target;
-    
-    // Ignore dummy "all" values so they don't enter our state array
-    if (value.includes("all-cities") || value.includes("all-subcities")) {
-        return;
-    }
-
+    if (value.includes("all-cities") || value.includes("all-subcities")) return;
     setFormData((prev) => ({
       ...prev,
       [name]: typeof value === "string" ? value.split(",") : value,
@@ -104,9 +108,7 @@ const AddGirlForm = () => {
   const handleImagesChange = (e) => {
     const files = Array.from(e.target.files);
     const validImages = files.filter((file) => file.type.startsWith("image/"));
-
     if (validImages.length === 0) return;
-
     setImagesFiles((prev) => [...prev, ...validImages]);
     const newPreviews = validImages.map((f) => URL.createObjectURL(f));
     setPreviewGallery((prev) => [...prev, ...newPreviews]);
@@ -119,12 +121,11 @@ const AddGirlForm = () => {
   };
 
   /* ================= SELECT ALL LOGIC ================= */
-
   const isAllCitiesSelected = cities.length > 0 && formData.city.length === cities.length;
   const isAllSubCitiesSelected = subCities.length > 0 && formData.subCity.length === subCities.length;
 
   const handleSelectAllCities = (e) => {
-    e.stopPropagation(); // Prevents dropdown from closing or triggering other events
+    e.stopPropagation();
     const allCityIds = cities.map((c) => c._id);
     setFormData((prev) => ({
       ...prev,
@@ -179,13 +180,9 @@ const AddGirlForm = () => {
         <div className="bg-white border-b border-gray-100 px-10 py-8 flex justify-between items-center">
           <div>
             <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Create Profile</h2>
-            <p className="text-gray-500 text-sm mt-1">Fill in the details below to list a new model.</p>
+            <p className="text-gray-500 text-sm mt-1">Fill in details for a new listing.</p>
           </div>
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-pink-600 font-medium transition-colors"
-          >
+          <button type="button" onClick={() => router.back()} className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-pink-600 font-medium transition-colors">
             <span className="text-xl">←</span> Back
           </button>
         </div>
@@ -200,17 +197,11 @@ const AddGirlForm = () => {
               <Input label="PHONE" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="Phone number" required />
               <Input label="WHATSAPP" name="whatsappNumber" value={formData.whatsappNumber} onChange={handleChange} placeholder="WhatsApp (Optional)" />
 
-              {/* MAIN CITY DROPDOWN */}
+              {/* MAIN CITIES */}
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Main Cities</label>
                 <FormControl fullWidth size="small">
-                  <Select
-                    name="city"
-                    multiple
-                    value={formData.city}
-                    onChange={handleMultiSelectChange}
-                    input={<OutlinedInput className="bg-gray-50 rounded-xl" />}
-                    MenuProps={{ PaperProps: { style: { maxHeight: 400 } } }}
+                  <Select name="city" multiple value={formData.city} onChange={handleMultiSelectChange} input={<OutlinedInput className="bg-gray-50 rounded-xl" />}
                     renderValue={(selected) => (
                       <div className="flex flex-wrap gap-1">
                         {selected.map((val) => (
@@ -221,20 +212,10 @@ const AddGirlForm = () => {
                       </div>
                     )}
                   >
-                    <MenuItem 
-                        value="all-cities" 
-                        onClick={handleSelectAllCities}
-                        onKeyDown={(e) => e.stopPropagation()}
-                        className="bg-gray-100 sticky top-0 z-10"
-                    >
-                      <Checkbox 
-                        checked={isAllCitiesSelected} 
-                        indeterminate={formData.city.length > 0 && !isAllCitiesSelected}
-                        color="secondary" 
-                      />
+                    <MenuItem value="all-cities" onClick={handleSelectAllCities} onKeyDown={(e) => e.stopPropagation()} className="bg-gray-100 sticky top-0 z-10">
+                      <Checkbox checked={isAllCitiesSelected} indeterminate={formData.city.length > 0 && !isAllCitiesSelected} color="secondary" />
                       <ListItemText primary="Select All Cities" primaryTypographyProps={{ fontWeight: "bold" }} />
                     </MenuItem>
-
                     {cities.map((c) => (
                       <MenuItem key={c._id} value={c._id}>
                         <Checkbox checked={formData.city.includes(c._id)} color="secondary" />
@@ -245,17 +226,11 @@ const AddGirlForm = () => {
                 </FormControl>
               </div>
 
-              {/* SUB CITY DROPDOWN */}
+              {/* SUB CITIES */}
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Sub Cities</label>
                 <FormControl fullWidth size="small">
-                  <Select
-                    name="subCity"
-                    multiple
-                    value={formData.subCity}
-                    onChange={handleMultiSelectChange}
-                    input={<OutlinedInput className="bg-gray-50 rounded-xl" />}
-                    MenuProps={{ PaperProps: { style: { maxHeight: 400 } } }}
+                  <Select name="subCity" multiple value={formData.subCity} onChange={handleMultiSelectChange} input={<OutlinedInput className="bg-gray-50 rounded-xl" />}
                     renderValue={(selected) => (
                       <div className="flex flex-wrap gap-1">
                         {selected.map((val) => (
@@ -266,23 +241,13 @@ const AddGirlForm = () => {
                       </div>
                     )}
                   >
-                    <MenuItem 
-                        value="all-subcities" 
-                        onClick={handleSelectAllSubCities}
-                        onKeyDown={(e) => e.stopPropagation()}
-                        className="bg-gray-100 sticky top-0 z-10"
-                    >
-                      <Checkbox 
-                        checked={isAllSubCitiesSelected} 
-                        indeterminate={formData.subCity.length > 0 && !isAllSubCitiesSelected}
-                        color="primary" 
-                      />
+                    <MenuItem value="all-subcities" onClick={handleSelectAllSubCities} onKeyDown={(e) => e.stopPropagation()} className="bg-gray-100 sticky top-0 z-10">
+                      <Checkbox checked={isAllSubCitiesSelected} indeterminate={formData.subCity.length > 0 && !isAllSubCitiesSelected} />
                       <ListItemText primary="Select All Sub Cities" primaryTypographyProps={{ fontWeight: "bold" }} />
                     </MenuItem>
-
                     {subCities.map((sc) => (
                       <MenuItem key={sc._id} value={sc._id}>
-                        <Checkbox checked={formData.subCity.includes(sc._id)} color="primary" />
+                        <Checkbox checked={formData.subCity.includes(sc._id)} />
                         <ListItemText primary={sc.name} />
                       </MenuItem>
                     ))}
@@ -294,14 +259,14 @@ const AddGirlForm = () => {
                 <Input label="HEADING" name="heading" value={formData.heading} onChange={handleChange} placeholder="Profile heading" required />
               </div>
               <div className="md:col-span-2">
-                <Input label="PERMALINK" name="permalink" value={formData.permalink} onChange={handleChange} placeholder="auto-generated-slug" required />
+                <Input label="PERMALINK" name="permalink" value={formData.permalink} onChange={handleChange} placeholder="auto-slug" required />
               </div>
             </div>
           </Section>
 
           <hr className="border-gray-100" />
 
-          {/* SECTION: CONTENT & BIO */}
+          {/* SECTION: BIO & PRICING */}
           <Section title="Bio & Pricing" subtitle="Describe services and rates">
             <div className="space-y-8">
               <div className="grid md:grid-cols-2 gap-8">
@@ -311,10 +276,7 @@ const AddGirlForm = () => {
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Detailed Bio (Rich Text)</label>
                 <div className="rounded-xl overflow-hidden border border-gray-200">
-                  <RichTextEditor
-                    value={formData.aboutGirlInformation}
-                    onChange={(val) => setFormData((prev) => ({ ...prev, aboutGirlInformation: val }))}
-                  />
+                  <RichTextEditor value={formData.aboutGirlInformation} onChange={(val) => setFormData((prev) => ({ ...prev, aboutGirlInformation: val }))} />
                 </div>
               </div>
             </div>
@@ -326,26 +288,21 @@ const AddGirlForm = () => {
           <Section title="Media" subtitle="Upload visual content">
             <div className="grid md:grid-cols-2 gap-10">
               <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-                <label className="block text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">Main Featured Image</label>
+                <label className="block text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">Main Image</label>
                 <input type="file" accept="image/*" onChange={handleImageChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-pink-600 file:text-white cursor-pointer" />
                 <div className="mt-4">
-                  <Input label="IMAGE ALT TEXT" name="imageAlt" value={formData.imageAlt} onChange={handleChange} placeholder="SEO description for image" />
+                  <Input label="IMAGE ALT TEXT" name="imageAlt" value={formData.imageAlt} onChange={handleChange} placeholder="SEO image alt" />
                 </div>
-                {previewImage && (
-                  <div className="mt-4 w-32 h-40">
-                    <img src={previewImage} className="w-full h-full object-cover rounded-xl shadow-lg border-2 border-white" alt="Preview" />
-                  </div>
-                )}
+                {previewImage && <img src={previewImage} className="mt-4 w-32 h-40 object-cover rounded-xl shadow-lg border-2 border-white" alt="Preview" />}
               </div>
-
               <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
                 <label className="block text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">Gallery Images</label>
                 <input type="file" multiple accept="image/*" onChange={handleImagesChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-gray-800 file:text-white cursor-pointer" />
                 <div className="grid grid-cols-3 gap-3 mt-6">
                   {previewGallery.map((img, i) => (
                     <div key={i} className="relative aspect-square">
-                      <img src={img} className="w-full h-full object-cover rounded-xl shadow-sm border border-white" alt={`Gallery ${i}`} />
-                      <button type="button" onClick={() => removeGalleryImage(i)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center shadow-lg">✕</button>
+                      <img src={img} className="w-full h-full object-cover rounded-xl border border-white" alt={`Gallery ${i}`} />
+                      <button type="button" onClick={() => removeGalleryImage(i)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex justify-center items-center shadow-lg">✕</button>
                     </div>
                   ))}
                 </div>
@@ -355,7 +312,7 @@ const AddGirlForm = () => {
 
           <hr className="border-gray-100" />
 
-          {/* SECTION: SEO */}
+          {/* SECTION: STANDARD SEO */}
           <Section title="Search Engine" subtitle="Optimize for Google ranking">
             <div className="grid md:grid-cols-2 gap-8">
               <Input label="SEO TITLE" name="seoTitle" value={formData.seoTitle} onChange={handleChange} placeholder="Meta title" />
@@ -366,17 +323,42 @@ const AddGirlForm = () => {
             </div>
           </Section>
 
+          <hr className="border-gray-100" />
+
+          {/* NEW SECTION: SOCIAL MEDIA SEO (OG/Facebook/Twitter) */}
+          <Section title="Social Meta" subtitle="Control sharing on Social Media">
+             <div className="space-y-6">
+                <div className="bg-pink-50/30 p-6 rounded-2xl border border-pink-100 space-y-4">
+                    <div className="flex items-center gap-2 text-pink-600 font-bold text-xs uppercase tracking-widest mb-2">
+                        <FiFacebook size={16} /> Facebook & Open Graph
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <Input label="OG Title" name="ogTitle" value={formData.ogTitle} onChange={handleChange} placeholder="Social share title" />
+                        <Input label="Facebook Title" name="facebookTitle" value={formData.facebookTitle} onChange={handleChange} placeholder="Custom FB title" />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <Textarea label="OG Description" name="ogDescription" value={formData.ogDescription} onChange={handleChange} rows={2} placeholder="Social share description..." />
+                        <Textarea label="Facebook Description" name="facebookDescription" value={formData.facebookDescription} onChange={handleChange} rows={2} placeholder="Custom FB description..." />
+                    </div>
+                </div>
+
+                <div className="bg-blue-50/30 p-6 rounded-2xl border border-blue-100 space-y-4">
+                    <div className="flex items-center gap-2 text-blue-600 font-bold text-xs uppercase tracking-widest mb-2">
+                        <FiTwitter size={16} /> Twitter Card Data
+                    </div>
+                    <Input label="Twitter Title" name="twitterTitle" value={formData.twitterTitle} onChange={handleChange} placeholder="Twitter share title" />
+                    <Textarea label="Twitter Description" name="twitterDescription" value={formData.twitterDescription} onChange={handleChange} rows={2} placeholder="Twitter share description..." />
+                </div>
+             </div>
+          </Section>
+
           {/* FOOTER & SUBMIT */}
           <div className="pt-8 border-t border-gray-100 flex justify-end items-center gap-6">
             <div className="flex items-center gap-3">
-              <input type="checkbox" name="showOnHomepage" id="showOnHomepage" checked={formData.showOnHomepage} onChange={handleChange} className="w-5 h-5 accent-pink-600 cursor-pointer" />
-              <label htmlFor="showOnHomepage" className="text-sm font-medium text-gray-600 cursor-pointer">Pin to Homepage</label>
+              <input type="checkbox" name="showOnHomepage" id="showOnHomepage" checked={formData.showOnHomepage} onChange={handleChange} className="w-5 h-5 accent-pink-600" />
+              <label htmlFor="showOnHomepage" className="text-sm font-medium text-gray-600">Pin to Homepage</label>
             </div>
-            <button
-              type="submit"
-              disabled={addLoading}
-              className="bg-pink-600 hover:bg-pink-700 text-white font-bold py-4 px-12 rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-50"
-            >
+            <button type="submit" disabled={addLoading} className="bg-pink-600 hover:bg-pink-700 text-white font-bold py-4 px-12 rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-50">
               {addLoading ? "Processing..." : "Publish Profile"}
             </button>
           </div>

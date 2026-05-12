@@ -30,10 +30,7 @@ const normalizeArray = (res) => {
 // GET ALL
 export const getAllGirlsThunk = createAsyncThunk(
   "girls/getAll",
-  async (_, { rejectWithValue, getState }) => {
-    const { girls } = getState().girls;
-    if (girls.length > 0) return girls;
-
+  async (_, { rejectWithValue }) => {
     try {
       const res = await axiosInstance.get(GET_ALL_GIRLS_URL);
       return normalizeArray(res.data);
@@ -43,15 +40,10 @@ export const getAllGirlsThunk = createAsyncThunk(
   }
 );
 
-// GET BY CITY
+// GET BY CITY (Caching removed inside thunk for fresh data on navigation)
 export const getGirlsByCityThunk = createAsyncThunk(
   "girls/getByCity",
-  async (cityId, { rejectWithValue, getState }) => {
-    const { cityGirlsById } = getState().girls;
-    if (cityGirlsById[cityId]) {
-      return { cityId, data: cityGirlsById[cityId] };
-    }
-
+  async (cityId, { rejectWithValue }) => {
     try {
       const res = await axiosInstance.get(`${GET_GIRLS_BY_CITY_URL}/${cityId}`);
       return { cityId, data: normalizeArray(res.data) };
@@ -74,20 +66,20 @@ export const getGirlsBySubCityThunk = createAsyncThunk(
   }
 );
 
-// GET BY ID (Fallback/Admin)
+// GET BY ID
 export const getGirlByIdThunk = createAsyncThunk(
   "girls/getById",
   async (id, { rejectWithValue }) => {
     try {
       const res = await axiosInstance.get(`${GET_SINGLE_GIRL_URL}/${id}`);
-      return res.data.data || res.data; 
+      return res.data.data || res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Failed to load girl");
     }
   }
-)
+);
 
-// GET BY SLUG (Public Profile)
+// GET BY SLUG
 export const getGirlBySlugThunk = createAsyncThunk(
   "girls/getBySlug",
   async (slug, { rejectWithValue }) => {
@@ -105,14 +97,10 @@ export const addGirlThunk = createAsyncThunk(
   "girls/add",
   async (formData, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("adminToken");
       const res = await axiosInstance.post(ADD_GIRL_URL, formData, {
-        headers: { 
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}` 
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      return res.data.data;
+      return res.data.data || res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Failed to add record");
     }
@@ -122,12 +110,9 @@ export const addGirlThunk = createAsyncThunk(
 // DELETE
 export const deleteGirlThunk = createAsyncThunk(
   "girls/delete",
-  async ({ id }, { rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("adminToken");
-      await axiosInstance.delete(`${DELETE_GIRL_URL}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axiosInstance.delete(`${DELETE_GIRL_URL}/${id}`);
       return id;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Delete failed");
@@ -138,61 +123,14 @@ export const deleteGirlThunk = createAsyncThunk(
 // UPDATE
 export const updateGirlThunk = createAsyncThunk(
   "girls/update",
-
-  async (
-    { id, formData },
-    { rejectWithValue }
-  ) => {
-
+  async ({ id, formData }, { rejectWithValue }) => {
     try {
-
-      const token =
-        localStorage.getItem(
-          "adminToken"
-        );
-
-      const res =
-        await axiosInstance.put(
-
-          `${UPDATE_GIRL_URL}/${id}`,
-
-          formData,
-
-          {
-            headers: {
-
-              "Content-Type":
-                "multipart/form-data",
-
-              Authorization:
-                `Bearer ${token}`,
-
-            },
-          }
-        );
-
-      console.log(
-        "UPDATE API RESPONSE 👉",
-        res.data
-      );
-
-      return (
-        res.data.girl ||
-        res.data.data ||
-        res.data
-      );
-
+      const res = await axiosInstance.put(`${UPDATE_GIRL_URL}/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return res.data.girl || res.data.data || res.data;
     } catch (err) {
-
-      return rejectWithValue(
-
-        err.response?.data
-          ?.message ||
-
-          "Update failed"
-
-      );
-
+      return rejectWithValue(err.response?.data?.message || "Update failed");
     }
   }
 );
@@ -202,13 +140,8 @@ export const toggleGirlStatusThunk = createAsyncThunk(
   "girls/toggleStatus",
   async ({ id, status }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("adminToken");
-      const res = await axiosInstance.patch(
-        `${TOGGLE_GIRL_STATUS_URL}/${id}`,
-        { status },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      return { id, status: res.data.status };
+      const res = await axiosInstance.patch(`${TOGGLE_GIRL_STATUS_URL}/${id}`, { status });
+      return { id, status: res.data.status || status };
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Status update failed");
     }
@@ -221,20 +154,20 @@ export const toggleGirlStatusThunk = createAsyncThunk(
 const girlSlice = createSlice({
   name: "girls",
   initialState: {
-    girls: [],             // All girls (Admin/General)
-    cityGirls: [],         // Active filtered list
-    cityGirlsById: {},     // Caching for city-specific lists
-    singleGirl: null,      // Currently viewed profile
-    singleGirlCache: {},   // Cache for quick ID lookups
-    
+    girls: [],
+    cityGirls: [],
+    cityGirlsById: {},
+    singleGirl: null,
     listLoading: false,
     cityLoading: false,
     singleLoading: false,
     error: null,
+    success: false,
   },
   reducers: {
     resetGirlState: (state) => {
       state.error = null;
+      state.success = false;
     },
     clearSingleGirl: (state) => {
       state.singleGirl = null;
@@ -268,18 +201,16 @@ const girlSlice = createSlice({
       .addCase(getGirlBySlugThunk.pending, (state) => { state.singleLoading = true; })
       .addCase(getGirlBySlugThunk.fulfilled, (state, action) => {
         state.singleLoading = false;
-        const data = action.payload?.data || action.payload;
-        state.singleGirl = data;
-        if (data?._id) state.singleGirlCache[data._id] = data;
+        state.singleGirl = action.payload;
       })
       .addCase(getGirlByIdThunk.fulfilled, (state, action) => {
-      state.singleGirl = action.payload; // Form sync ispe depend karta hai
-      state.singleGirlCache[action.payload._id] = action.payload;
-    })
+        state.singleGirl = action.payload;
+      })
 
       /* --- ADD --- */
       .addCase(addGirlThunk.fulfilled, (state, action) => {
         state.girls.unshift(action.payload);
+        state.success = true;
       })
 
       /* --- DELETE --- */
@@ -287,44 +218,25 @@ const girlSlice = createSlice({
         const id = action.payload;
         state.girls = state.girls.filter((g) => g._id !== id);
         state.cityGirls = state.cityGirls.filter((g) => g._id !== id);
-        delete state.singleGirlCache[id];
         if (state.singleGirl?._id === id) state.singleGirl = null;
       })
 
       /* --- UPDATE --- */
-      /* --- UPDATE CASE IN SLICE --- */
-.addCase(updateGirlThunk.fulfilled, (state, action) => {
-  // Check karein ki payload exist karta hai
-  if (!action.payload || !action.payload._id) {
-    console.error("Update payload is missing _id:", action.payload);
-    return; 
-  }
-
-  const updated = action.payload;
-  
-  // Update main list
-  state.girls = state.girls.map((g) => (g._id === updated._id ? updated : g));
-  
-  // Update city list
-  state.cityGirls = state.cityGirls.map((g) => (g._id === updated._id ? updated : g));
-  
-  // Update Cache
-  state.singleGirlCache[updated._id] = updated;
-  
-  if (state.singleGirl?._id === updated._id) {
-    state.singleGirl = updated;
-  }
-  
-  state.error = null;
-})
+      .addCase(updateGirlThunk.fulfilled, (state, action) => {
+        const updated = action.payload;
+        state.girls = state.girls.map((g) => (g._id === updated._id ? updated : g));
+        state.cityGirls = state.cityGirls.map((g) => (g._id === updated._id ? updated : g));
+        if (state.singleGirl?._id === updated._id) state.singleGirl = updated;
+        state.success = true;
+        state.error = null;
+      })
 
       /* --- TOGGLE STATUS --- */
       .addCase(toggleGirlStatusThunk.fulfilled, (state, action) => {
         const { id, status } = action.payload;
-        const updateStatus = (g) => g._id === id ? { ...g, status } : g;
-        
-        state.girls = state.girls.map(updateStatus);
-        state.cityGirls = state.cityGirls.map(updateStatus);
+        const updateFn = (g) => g._id === id ? { ...g, status } : g;
+        state.girls = state.girls.map(updateFn);
+        state.cityGirls = state.cityGirls.map(updateFn);
         if (state.singleGirl?._id === id) state.singleGirl.status = status;
       });
   },

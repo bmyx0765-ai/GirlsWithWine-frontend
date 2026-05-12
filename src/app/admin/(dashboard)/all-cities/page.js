@@ -42,6 +42,7 @@ const TableSkeleton = () => {
             </div>
           </td>
           <td className="p-4"><div className="h-4 bg-gray-200 rounded w-20"></div></td>
+          <td className="p-4"><div className="h-4 bg-gray-200 rounded w-20"></div></td>
           <td className="p-4"><div className="h-8 bg-gray-200 rounded-full w-20"></div></td>
           <td className="p-4 text-center"><div className="h-8 bg-gray-200 rounded-lg w-24 mx-auto"></div></td>
         </tr>
@@ -54,7 +55,7 @@ export default function AllCities() {
   const dispatch = useDispatch();
   const router = useRouter();
 
-  const { cities = [], loading, deleteLoading } = useSelector((s) => s.city);
+  const { cities = [], loading } = useSelector((s) => s.city);
 
   const [open, setOpen] = useState(false);
   const [selectedCity, setSelectedCity] = useState(null);
@@ -72,33 +73,48 @@ export default function AllCities() {
     currentPage * pageSize
   );
 
-  /* FETCH CITIES */
+  /* FETCH CITIES ON LOAD */
   useEffect(() => {
     dispatch(getCitiesThunk());
   }, [dispatch]);
 
   /* HANDLERS */
   const handleDelete = async (cityId) => {
-    if (!window.confirm("Delete this city permanentely?")) return;
+    if (!window.confirm("Delete this city permanently?")) return;
     setDeleteId(cityId);
-    const action = await dispatch(deleteCityThunk(cityId));
-    if (action.meta.requestStatus === "fulfilled") {
-      toast.success("City removed");
-      dispatch(getCitiesThunk());
+    try {
+      const action = await dispatch(deleteCityThunk(cityId));
+      if (action.meta.requestStatus === "fulfilled") {
+        toast.success("City removed successfully");
+        dispatch(getCitiesThunk()); // Refresh list
+      }
+    } catch (error) {
+      toast.error("Failed to delete city");
+    } finally {
+      setDeleteId(null);
     }
-    setDeleteId(null);
   };
 
   const handleStatusToggle = async (city) => {
     setStatusLoadingId(city._id);
     const newStatus = city.status === "Active" ? "Inactive" : "Active";
-    const action = await dispatch(updateCityStatusThunk({ id: city._id, status: newStatus }));
     
-    if (action.meta.requestStatus === "fulfilled") {
-      toast.success(`City is now ${newStatus}`);
-      dispatch(getCitiesThunk());
+    try {
+      const action = await dispatch(updateCityStatusThunk({ id: city._id, status: newStatus }));
+      
+      if (action.meta.requestStatus === "fulfilled") {
+        toast.success(`City is now ${newStatus}`);
+        // List refresh logic: Page reload ki jagah thunk ko dobara call karna better hai
+        await dispatch(getCitiesThunk()); 
+      } else {
+        toast.error("Status update failed");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setStatusLoadingId(null);
     }
-    setStatusLoadingId(null);
   };
 
   const handleView = (city) => {
@@ -107,7 +123,7 @@ export default function AllCities() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8">
+    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 font-sans">
       <div className="max-w-7xl mx-auto space-y-6">
         
         {/* HEADER CARD */}
@@ -133,14 +149,14 @@ export default function AllCities() {
                   <th className="px-6 py-5 w-16">#</th>
                   <th className="px-6 py-5">City Info</th>
                   <th className="px-6 py-5">Contact Details</th>
-                  <th className="px-6 py-5">Created</th>
+                  <th className="px-6 py-5">Created At</th>
                   <th className="px-6 py-5">Status</th>
                   <th className="px-6 py-5 text-center">Actions</th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-gray-50">
-                {loading ? (
+                {loading && paginatedCities.length === 0 ? (
                   <TableSkeleton />
                 ) : paginatedCities.length === 0 ? (
                   <tr>
@@ -157,7 +173,7 @@ export default function AllCities() {
                       
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100 overflow-hidden">
+                          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100 overflow-hidden shadow-sm">
                             {city.imageUrl ? (
                                 <img src={city.imageUrl} className="w-full h-full object-cover" alt={city.mainCity} />
                             ) : (
@@ -166,7 +182,7 @@ export default function AllCities() {
                           </div>
                           <div>
                             <div className="font-bold text-gray-900 text-base">{city.mainCity}</div>
-                            <div className="text-gray-400 text-xs truncate max-w-[200px]">{city.heading}</div>
+                            <div className="text-gray-400 text-xs truncate max-w-[180px]">{city.heading}</div>
                           </div>
                         </div>
                       </td>
@@ -183,7 +199,7 @@ export default function AllCities() {
                       </td>
 
                       <td className="px-6 py-4 text-sm text-gray-500">
-                        {new Date(city.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        {city.createdAt ? new Date(city.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "N/A"}
                       </td>
 
                       <td className="px-6 py-4">
@@ -192,7 +208,7 @@ export default function AllCities() {
                         ) : (
                           <button
                             onClick={() => handleStatusToggle(city)}
-                            className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter transition-all ${
+                            className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight transition-all shadow-sm ${
                               city.status === "Active"
                                 ? "bg-green-100 text-green-700 hover:bg-green-200"
                                 : "bg-red-100 text-red-700 hover:bg-red-200"
@@ -214,7 +230,7 @@ export default function AllCities() {
                           <button 
                             disabled={deleteId === city._id}
                             onClick={() => handleDelete(city._id)} 
-                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all disabled:opacity-50"
                           >
                             {deleteId === city._id ? (
                                 <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
@@ -234,14 +250,14 @@ export default function AllCities() {
           {/* PAGINATION */}
           <div className="bg-gray-50/50 px-6 py-4 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-xs text-gray-500 font-medium tracking-wide">
-              Displaying <span className="text-blue-600 font-bold">{paginatedCities.length}</span> out of {totalItems} cities
+              Showing <span className="text-blue-600 font-bold">{paginatedCities.length}</span> of {totalItems} cities
             </p>
             {totalPages > 1 && (
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 disabled:opacity-30 hover:bg-gray-50 transition-all"
+                  className="px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 disabled:opacity-30 hover:bg-gray-50 transition-all text-xs font-bold"
                 >
                   Prev
                 </button>
@@ -250,9 +266,9 @@ export default function AllCities() {
                     <button
                       key={num}
                       onClick={() => setCurrentPage(num)}
-                      className={`w-10 h-10 rounded-xl text-xs font-bold transition-all ${
+                      className={`w-9 h-9 rounded-xl text-xs font-bold transition-all ${
                         currentPage === num
-                          ? "bg-blue-600 text-white shadow-lg shadow-blue-100"
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-100"
                           : "bg-white text-gray-500 border border-gray-100 hover:bg-gray-50"
                       }`}
                     >
@@ -263,7 +279,7 @@ export default function AllCities() {
                 <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 disabled:opacity-30 hover:bg-gray-50 transition-all"
+                  className="px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 disabled:opacity-30 hover:bg-gray-50 transition-all text-xs font-bold"
                 >
                   Next
                 </button>
@@ -274,69 +290,71 @@ export default function AllCities() {
 
         {/* DETAILS DRAWER */}
         <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
-          <div className="w-[450px] bg-white h-full flex flex-col">
+          <div className="w-[100vw] sm:w-[450px] bg-white h-full flex flex-col">
             {selectedCity && (
               <>
-                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                  <h3 className="text-2xl font-black text-gray-900">City Overview</h3>
-                  <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-black text-2xl">×</button>
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                  <h3 className="text-xl font-black text-gray-900">City Overview</h3>
+                  <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-black text-2xl font-light">×</button>
                 </div>
 
-                <div className="p-8 overflow-y-auto flex-1 space-y-8">
-                  <div className="relative h-48 rounded-3xl overflow-hidden shadow-xl">
+                <div className="p-6 overflow-y-auto flex-1 space-y-6">
+                  <div className="relative h-48 rounded-2xl overflow-hidden shadow-md">
                     <img 
                       src={selectedCity.imageUrl || "https://placehold.co/600x400?text=No+Image"} 
                       className="w-full h-full object-cover" 
-                      alt={selectedCity.imageAlt} 
+                      alt={selectedCity.imageAlt || "City Image"} 
                     />
-                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-4 py-1.5 rounded-full text-xs font-bold text-blue-600 shadow-sm">
+                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-blue-600 uppercase">
                       {selectedCity.status}
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <h4 className="text-3xl font-bold text-gray-900">{selectedCity.mainCity}</h4>
-                    <p className="text-blue-600 font-medium text-sm">{selectedCity.heading}</p>
+                    <h4 className="text-2xl font-bold text-gray-900">{selectedCity.mainCity}</h4>
+                    <p className="text-blue-600 font-medium text-xs">{selectedCity.heading}</p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                     <div className="p-4 bg-gray-50 rounded-2xl">
-                        <label className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Phone</label>
-                        <p className="text-sm font-semibold">{selectedCity.phoneNumber || "-"}</p>
+                  <div className="grid grid-cols-2 gap-3">
+                     <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <label className="text-[9px] text-gray-400 font-bold uppercase block mb-1">Phone</label>
+                        <p className="text-xs font-semibold text-gray-700">{selectedCity.phoneNumber || "-"}</p>
                      </div>
-                     <div className="p-4 bg-gray-50 rounded-2xl">
-                        <label className="text-[10px] text-gray-400 font-bold uppercase block mb-1">WhatsApp</label>
-                        <p className="text-sm font-semibold text-green-600">{selectedCity.whatsappNumber || "-"}</p>
+                     <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <label className="text-[9px] text-gray-400 font-bold uppercase block mb-1">WhatsApp</label>
+                        <p className="text-xs font-semibold text-green-600">{selectedCity.whatsappNumber || "-"}</p>
                      </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <h5 className="text-sm font-bold text-gray-900 border-l-4 border-blue-600 pl-3">Full Description</h5>
+                  <div className="space-y-2">
+                    <h5 className="text-xs font-bold text-gray-900 border-l-3 border-blue-600 pl-2">Full Description</h5>
                     <div 
-                      className="text-sm text-gray-600 leading-relaxed prose prose-sm"
+                      className="text-xs text-gray-600 leading-relaxed prose prose-blue max-w-full"
                       dangerouslySetInnerHTML={{ __html: selectedCity.description }}
                     />
                   </div>
 
-                  <div className="space-y-3 p-6 bg-blue-50 rounded-3xl">
-                    <h5 className="text-sm font-bold text-blue-900">SEO Meta Info</h5>
-                    <div className="space-y-2">
-                        <p className="text-xs text-blue-700 italic">"{selectedCity.seoTitle}"</p>
-                        <div className="flex flex-wrap gap-1">
-                            {selectedCity.seoKeywords?.split(',').map((tag, i) => (
-                                <span key={i} className="bg-white text-[10px] px-2 py-0.5 rounded-md text-blue-500 font-bold">#{tag.trim()}</span>
-                            ))}
-                        </div>
+                  {selectedCity.seoTitle && (
+                    <div className="space-y-3 p-5 bg-blue-50/50 rounded-2xl border border-blue-100">
+                      <h5 className="text-xs font-bold text-blue-900">SEO Meta Info</h5>
+                      <div className="space-y-2">
+                          <p className="text-xs text-blue-700 font-medium">Title: <span className="font-normal italic">"{selectedCity.seoTitle}"</span></p>
+                          <div className="flex flex-wrap gap-1">
+                              {selectedCity.seoKeywords?.split(',').map((tag, i) => (
+                                  <span key={i} className="bg-white text-[9px] px-2 py-0.5 rounded-md text-blue-500 font-bold border border-blue-100">#{tag.trim()}</span>
+                              ))}
+                          </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
-                <div className="p-8 border-t border-gray-100 flex gap-4">
+                <div className="p-6 border-t border-gray-100 bg-gray-50/30">
                     <Link 
                         href={`/admin/edit-city/${selectedCity._id}`}
-                        className="flex-1 text-center py-3 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all"
+                        className="block w-full text-center py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
                     >
-                        Edit Details
+                        Edit City Details
                     </Link>
                 </div>
               </>

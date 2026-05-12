@@ -26,7 +26,7 @@ export default function ClientHome() {
 
   return (
     <>
-      <ZoomSlider />
+      {/* <ZoomSlider /> */}
 
       <div id="featured-models" className="scroll-mt-20">
         {/* <FeaturedModelsSection /> */}
