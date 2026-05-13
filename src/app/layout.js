@@ -66,12 +66,16 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-
   return (
-
     <html lang="en">
 
       <head>
+
+        {/* CONTENT TYPE */}
+        <meta
+          httpEquiv="Content-Type"
+          content="text/html; charset=UTF-8"
+        />
 
         {/* GOOGLE SEARCH CONSOLE */}
         <meta
@@ -79,7 +83,14 @@ export default function RootLayout({ children }) {
           content="c09IAF3PnXkZnpQ57WLvYg8oXUsrQRuOZ5phxQS07Bs"
         />
 
-        <meta name="msvalidate.01" content="55C6CD5F437B670268E8E861D770B55F" />
+        {/* BING VERIFICATION */}
+        <meta
+          name="msvalidate.01"
+          content="55C6CD5F437B670268E8E861D770B55F"
+        />
+
+        {/* NORTON VERIFICATION */}
+       <meta name="yandex-verification" content="c3db89ff1d1d4f32" />
 
         {/* FONT AWESOME */}
         <link
@@ -97,10 +108,6 @@ export default function RootLayout({ children }) {
           src="https://unpkg.com/jodit@4.7.6/es2021/jodit.min.js"
           defer
         ></script>
-
-
-      
-
 
         {/* JSON-LD SCHEMA */}
         <script
@@ -125,7 +132,6 @@ export default function RootLayout({ children }) {
           }}
         />
 
-
         {/* GOOGLE ANALYTICS */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-3GDW8E8RJD"
@@ -139,7 +145,7 @@ export default function RootLayout({ children }) {
           {`
             window.dataLayer = window.dataLayer || [];
 
-            function gtag(){
+            function gtag() {
               dataLayer.push(arguments);
             }
 
@@ -164,13 +170,5 @@ export default function RootLayout({ children }) {
       </body>
 
     </html>
-
   );
-
 }
-
-
-
-
-
-
