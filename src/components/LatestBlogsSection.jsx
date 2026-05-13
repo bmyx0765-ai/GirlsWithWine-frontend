@@ -1,129 +1,350 @@
 "use client";
 
-import { getAllBlogsThunk } from "@/store/slices/blogSlice";
-import { useEffect, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 
-/* ✅ UI HELPER: CLEAN TEXT */
-const stripHtmlAndSlice = (html, limit = 80) => {
-  if (!html) return "";
-  const cleanText = html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
-  return cleanText.length > limit ? cleanText.slice(0, limit) + "..." : cleanText;
+/* ================= CLEAN TEXT ================= */
+
+const stripHtml = (html = "") => {
+  return html
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 };
 
-/* ✅ UI HELPER: SKELETON LOADER */
-const BlogSkeleton = () => (
-  <div className="animate-pulse bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
-    <div className="bg-gray-200 aspect-[16/10] rounded-2xl mb-4"></div>
-    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-    <div className="h-3 bg-gray-200 rounded w-full"></div>
-  </div>
-);
-
 export default function LatestBlogsSection() {
-  const dispatch = useDispatch();
-  const router = useRouter();
-  const { blogs, loading } = useSelector((state) => state.blog || {});
+
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  /* ================= FETCH WORDPRESS BLOGS ================= */
 
   useEffect(() => {
-    dispatch(getAllBlogsThunk());
-  }, [dispatch]);
 
-  /* ✅ FIXED: SLICE TO 3 ONLY */
-  const latestBlogs = useMemo(() => {
-    if (!blogs?.length) return [];
-    return [...blogs]
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 3); // Sirf 3 cards ke liye
-  }, [blogs]);
+    const fetchBlogs = async () => {
+
+      try {
+
+        const res = await fetch(
+          "https://blog.girlswithwine.com/wp-json/wp/v2/posts?_embed&per_page=3",
+          {
+            cache: "no-store",
+          }
+        );
+
+        const data = await res.json();
+
+        console.log("WORDPRESS BLOGS:", data);
+
+        setBlogs(data);
+
+      } catch (error) {
+
+        console.log("BLOG FETCH ERROR:", error);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+    };
+
+    fetchBlogs();
+
+  }, []);
 
   return (
-    <section className="bg-[#FAFAFB] py-16 md:py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-        
-        {/* HEADER */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+    <section className="bg-[#EEF2F6] py-16 md:py-20">
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* TOP SECTION */}
+
+        <div className="flex items-center justify-between mb-12">
+
           <div>
-            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-              Latest <span className="text-[#A3195B]">Insights</span>
+
+            <h2 className="text-4xl md:text-5xl font-black text-[#1B2B48]">
+              Latest Blogs
             </h2>
-            <p className="text-gray-500 mt-2 text-lg">
-              Explore our top 3 handpicked stories for you.
+
+            <p className="text-gray-500 text-lg mt-3">
+              Latest articles from Girls With Wine Blog
             </p>
+
           </div>
-          <button 
-            onClick={() => router.push('/blog')}
-            className="group text-[#A3195B] font-bold text-sm flex items-center gap-2 transition-all hover:gap-3"
+
+          <a
+            href="https://blog.girlswithwine.com"
+            target="_blank"
+            className="
+              hidden md:flex
+              items-center
+              gap-2
+              bg-[#0066D9]
+              text-white
+              px-6
+              py-3
+              rounded-xl
+              font-semibold
+              hover:bg-[#0052ad]
+              transition-all
+            "
           >
-            EXPLORE BLOG <span>→</span>
-          </button>
+            View All →
+          </a>
+
         </div>
 
-        {/* CONTENT */}
+        {/* LOADING */}
+
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {[...Array(3)].map((_, i) => <BlogSkeleton key={i} />)}
-          </div>
-        ) : latestBlogs.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
-            <p className="text-gray-400 font-medium">No stories published yet.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {latestBlogs.map((blog) => (
-              <article
-                key={blog._id}
-                onClick={() => router.push(`/blog/${blog.slug}`)}
-                className="group bg-white rounded-[2rem] border border-gray-100 overflow-hidden hover:shadow-[0_20px_50px_rgba(163,25,91,0.1)] hover:-translate-y-2 transition-all duration-500 cursor-pointer flex flex-col"
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+
+            {[1, 2, 3].map((item) => (
+
+              <div
+                key={item}
+                className="
+                  bg-white
+                  rounded-[28px]
+                  overflow-hidden
+                  animate-pulse
+                  shadow-sm
+                "
               >
-                {/* IMAGE CONTAINER */}
-                <div className="relative w-full aspect-[16/11] overflow-hidden bg-gray-100">
-                  <Image
-                    src={blog.imageUrl || "/placeholder.jpg"}
-                    alt={blog.imageAlt || blog.title}
-                    width={600}
-                    height={550}
-                    unoptimized
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                <div className="h-[260px] bg-gray-200"></div>
+
+                <div className="p-7">
+
+                  <div className="h-4 bg-gray-200 rounded w-32 mb-5"></div>
+
+                  <div className="h-8 bg-gray-200 rounded mb-3"></div>
+
+                  <div className="h-8 bg-gray-200 rounded w-[80%] mb-5"></div>
+
+                  <div className="h-4 bg-gray-200 rounded w-40 mb-5"></div>
+
+                  <div className="h-4 bg-gray-200 rounded mb-3"></div>
+
+                  <div className="h-4 bg-gray-200 rounded w-[90%]"></div>
+
                 </div>
 
-                {/* TEXT CONTENT */}
-                <div className="p-8 flex flex-col flex-grow">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="px-3 py-1 bg-[#A3195B] text-white text-[9px] font-black rounded-lg uppercase tracking-widest shadow-sm">
-                      NEW
-                    </span>
-                    <time className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                      {new Date(blog.createdAt).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </time>
-                  </div>
-
-                  <h3 className="text-gray-900 text-xl font-bold leading-tight group-hover:text-[#A3195B] transition-colors line-clamp-2 mb-4">
-                    {blog.title}
-                  </h3>
-
-                  <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 mb-6">
-                    {stripHtmlAndSlice(blog.description, 95)}
-                  </p>
-
-                  <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
-                    <span className="text-[#A3195B] font-extrabold text-[11px] uppercase tracking-widest group-hover:underline">
-                      Read Full Story
-                    </span>
-                    <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#A3195B] group-hover:text-white transition-all duration-300">
-                      <span className="text-lg">→</span>
-                    </div>
-                  </div>
-                </div>
-              </article>
+              </div>
             ))}
+
           </div>
+
+        ) : (
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+
+            {blogs?.map((blog) => {
+
+              /* ================= IMAGE ================= */
+
+const image =
+  blog?._embedded?.["wp:featuredmedia"]?.[0]?.media_details
+    ?.sizes?.full?.source_url ||
+
+  blog?._embedded?.["wp:featuredmedia"]?.[0]?.source_url ||
+
+  blog?._embedded?.["wp:featuredmedia"]?.[0]?.guid?.rendered ||
+
+  "https://girlswithwine.com/logo.png";
+
+              return (
+
+                <article
+                  key={blog.id}
+                  onClick={() => {
+                    window.open(blog.link, "_blank");
+                  }}
+                  className="
+                    group
+                    bg-white
+                    rounded-[28px]
+                    overflow-hidden
+                    shadow-sm
+                    hover:shadow-2xl
+                    transition-all
+                    duration-500
+                    cursor-pointer
+                    hover:-translate-y-2
+                    border
+                    border-gray-100
+                  "
+                >
+
+                  {/* IMAGE */}
+
+                  <div className="relative w-full h-[260px] overflow-hidden">
+
+                    <Image
+                      src={image}
+                      alt={blog?.title?.rendered || "Blog"}
+                      fill
+                      unoptimized
+                      className="
+                        object-cover
+                        group-hover:scale-110
+                        transition-transform
+                        duration-700
+                      "
+                    />
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+
+                  </div>
+
+                  {/* CONTENT */}
+
+                  <div className="p-7 flex flex-col h-[340px]">
+
+                    {/* CATEGORY */}
+
+                    <span
+                      className="
+                        inline-flex
+                        w-fit
+                        px-4
+                        py-1.5
+                        rounded-full
+                        bg-[#E8F1FF]
+                        text-[#0066D9]
+                        text-xs
+                        font-bold
+                        uppercase
+                        tracking-wider
+                        mb-5
+                      "
+                    >
+                      {
+                        blog?._embedded?.["wp:term"]?.[0]?.[0]
+                          ?.name || "Blog"
+                      }
+                    </span>
+
+                    {/* TITLE */}
+
+                    <h3
+                      className="
+                        text-[28px]
+                        leading-[40px]
+                        font-black
+                        text-[#1B2B48]
+                        mb-5
+                        line-clamp-3
+                        group-hover:text-[#0066D9]
+                        transition-colors
+                      "
+                      dangerouslySetInnerHTML={{
+                        __html: blog?.title?.rendered,
+                      }}
+                    />
+
+                    {/* DATE */}
+
+                    <p
+                      className="
+                        text-[#0066D9]
+                        font-semibold
+                        text-[15px]
+                        mb-5
+                      "
+                    >
+                      Girls With Wine /{" "}
+
+                      {new Date(blog.date).toLocaleDateString(
+                        "en-US",
+                        {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        }
+                      )}
+
+                    </p>
+
+                    {/* EXCERPT */}
+
+                    <p
+                      className="
+                        text-[#39465E]
+                        text-[17px]
+                        leading-[34px]
+                        line-clamp-4
+                      "
+                    >
+                      {stripHtml(
+                        blog?.excerpt?.rendered
+                      ).slice(0, 140)}
+                      ...
+                    </p>
+
+                    {/* BUTTON */}
+
+                    <div className="mt-auto pt-6">
+
+                      <button
+                        className="
+                          flex
+                          items-center
+                          gap-2
+                          text-[#0066D9]
+                          font-bold
+                          text-sm
+                          uppercase
+                          tracking-wider
+                          group-hover:gap-4
+                          transition-all
+                        "
+                      >
+                        Read Full Blog →
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </article>
+              );
+            })}
+
+          </div>
+
         )}
+
+        {/* MOBILE BUTTON */}
+
+        <div className="mt-10 flex md:hidden justify-center">
+
+          <a
+            href="https://blog.girlswithwine.com"
+            target="_blank"
+            className="
+              inline-flex
+              items-center
+              gap-2
+              bg-[#0066D9]
+              text-white
+              px-6
+              py-3
+              rounded-xl
+              font-semibold
+            "
+          >
+            View All Blogs →
+          </a>
+
+        </div>
+
       </div>
+
     </section>
   );
 }

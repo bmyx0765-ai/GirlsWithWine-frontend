@@ -1,8 +1,6 @@
-
-
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -35,38 +33,70 @@ const CommonFaq = ({
   useEffect(() => {
 
     if (type === "homepage") {
+
       dispatch(getFaqsByTypeThunk("homepage"));
-    }
 
-    else if (type === "city" && cityId) {
+    } else if (type === "city" && cityId) {
+
       dispatch(getFaqsByCityThunk(cityId));
-    }
 
-    else if (type === "subcity" && subCityId) {
+    } else if (type === "subcity" && subCityId) {
+
       dispatch(getFaqsBySubCityThunk(subCityId));
-    }
 
-    else if (type === "girl" && girlId) {
+    } else if (type === "girl" && girlId) {
+
       dispatch(getFaqsByGirlThunk(girlId));
-    }
 
-    else {
+    } else {
+
       dispatch(getFaqsThunk());
+
     }
 
   }, [dispatch, type, cityId, subCityId, girlId]);
 
-  /* ================= FAQ LIST ================= */
+  /* ================= FAQ FILTER ================= */
 
-  let faqList = [];
+  const faqList = useMemo(() => {
 
-  if (Array.isArray(faqs)) {
-    faqList = faqs?.[0]?.faqs || [];
-  }
+    if (!faqs) return [];
 
-  /* ================= ADD FAQ SCHEMA ================= */
+    // CASE 1: API directly returns faq array
+    // Example:
+    // { success: true, faqs: [ {showOn:{}}, {showOn:{}} ] }
 
- 
+    if (
+      Array.isArray(faqs) &&
+      faqs.length > 0 &&
+      faqs[0]?.showOn
+    ) {
+
+      return faqs.filter((faq) => {
+        return faq?.showOn?.[type] === true;
+      });
+
+    }
+
+    // CASE 2: API returns grouped structure
+    // Example:
+    // [{ faqs:[...] }, { faqs:[...] }]
+
+    if (Array.isArray(faqs)) {
+
+      const allFaqs = faqs.flatMap(
+        (item) => item?.faqs || []
+      );
+
+      return allFaqs.filter((faq) => {
+        return faq?.showOn?.[type] === true;
+      });
+
+    }
+
+    return [];
+
+  }, [faqs, type]);
 
   /* ================= LOADING ================= */
 
@@ -149,6 +179,7 @@ const CommonFaq = ({
                   text-base
                   sm:text-lg
                   leading-[34px]
+                  whitespace-pre-line
                 "
               >
                 {faq?.answer}
