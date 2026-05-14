@@ -146,15 +146,15 @@ export default function LatestBlogsSection() {
 
               /* ================= IMAGE ================= */
 
-const image =
-  blog?._embedded?.["wp:featuredmedia"]?.[0]?.media_details
-    ?.sizes?.full?.source_url ||
+              const image =
+                blog?._embedded?.["wp:featuredmedia"]?.[0]?.media_details
+                  ?.sizes?.full?.source_url ||
 
-  blog?._embedded?.["wp:featuredmedia"]?.[0]?.source_url ||
+                blog?._embedded?.["wp:featuredmedia"]?.[0]?.source_url ||
 
-  blog?._embedded?.["wp:featuredmedia"]?.[0]?.guid?.rendered ||
+                blog?._embedded?.["wp:featuredmedia"]?.[0]?.guid?.rendered ||
 
-  "https://girlswithwine.com/logo.png";
+                "https://girlswithwine.com/logo.png";
 
               return (
 
@@ -232,7 +232,7 @@ const image =
 
                     <h3
                       className="
-                        text-[28px]
+                        text-[18px]
                         leading-[40px]
                         font-black
                         text-[#1B2B48]
