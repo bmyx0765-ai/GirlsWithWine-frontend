@@ -281,7 +281,7 @@ export default function LatestBlogsSection() {
                     >
                       {stripHtml(
                         blog?.excerpt?.rendered
-                      ).slice(0, 140)}
+                      ).slice(0,69)}
                       ...
                     </p>
 

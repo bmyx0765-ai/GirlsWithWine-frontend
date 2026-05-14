@@ -255,7 +255,6 @@ async function checkSlug(slug) {
 /* ================= SEO =========================== */
 /* ================================================= */
 
-
 export async function generateMetadata({
   params,
 }) {
@@ -283,6 +282,17 @@ export async function generateMetadata({
         follow: false,
       },
 
+      openGraph: {
+
+        title:
+          "404 Not Found",
+
+        description:
+          "Page not found",
+
+        type:
+          "website",
+      },
     };
 
   }
@@ -291,275 +301,608 @@ export async function generateMetadata({
   /* ================= CITY SEO ====================== */
   /* ================================================= */
 
-  if (
-    result.type ===
-    "city"
-  ) {
+ if (
+  result.type ===
+  "city"
+) {
 
-    const { city } =
-      result.data;
+  const { city } =
+    result.data;
 
-    /* ================= CITY NAME ================= */
+  /* ================= CITY NAME ================= */
 
-    const cityNameRaw =
-      city?.mainCity ||
-      city?.name ||
-      slug;
+  const cityNameRaw =
+    city?.mainCity ||
+    city?.name ||
+    slug;
 
-    const cityName =
-      cityNameRaw
-        ?.split(" ")
-        ?.map(
-          (word) =>
-            word.charAt(0).toUpperCase() +
-            word.slice(1).toLowerCase()
-        )
-        ?.join(" ");
+  const cityName =
+    cityNameRaw
+      ?.split(" ")
+      ?.map(
+        (word) =>
+          word.charAt(0).toUpperCase() +
+          word.slice(1).toLowerCase()
+      )
+      ?.join(" ");
 
-    /* ================= PAGE URL ================= */
+  /* ================= PAGE URL ================= */
 
-    const pageUrl =
-      `https://girlswithwine.com/${slug}`;
+  const pageUrl =
+    `https://girlswithwine.com/${slug}`;
 
-    /* ================= IMAGE ================= */
+  /* ================= IMAGE ================= */
 
-    const imageUrl =
-      city?.imageUrl ||
-      city?.image ||
-      "https://girlswithwine.com/images/girlswithwine.jpg";
+  const imageUrl =
+    city?.imageUrl ||
+    city?.image ||
+    "https://girlswithwine.com/images/girlswithwine.jpg";
 
-    /* ================= SEO TITLE ================= */
+  /* ================= SEO TITLE ================= */
 
-    const seoTitle =
-      city?.seo?.title ||
-      city?.seoTitle ||
-      city?.heading ||
-      `${cityName} Escort Service`;
+  const seoTitle =
+    city?.seo?.title ||
+    city?.seoTitle ||
+    city?.heading ||
+    `${cityName} Escort Service`;
 
-    /* ================= SEO DESCRIPTION ================= */
+  /* ================= SEO DESCRIPTION ================= */
 
-    const seoDescription =
-      city?.seo?.description ||
-      city?.seoDescription ||
-      city?.subDescription ||
-      `Book verified call girls and independent escorts in ${cityName} with private and 24/7 booking.`;
+  const seoDescription =
+    city?.seo?.description ||
+    city?.seoDescription ||
+    city?.subDescription ||
+    `Book verified call girls and independent escorts in ${cityName} with private and 24/7 booking.`;
 
-    /* ================= SEO KEYWORDS ================= */
+  /* ================= OG TITLE ================= */
 
-    const seoKeywords =
-      city?.seo?.seoKeywords ||
-      city?.seoKeywords ||
-      "";
+  const ogTitle =
+    city?.seo?.ogTitle ||
+    city?.ogTitle ||
+    seoTitle;
 
-    /* ================= CANONICAL ================= */
+  /* ================= OG DESCRIPTION ================= */
 
-    const canonicalUrl =
-      city?.seo?.canonical ||
-      city?.canonical ||
-      pageUrl;
+  const ogDescription =
+    city?.seo?.ogDescription ||
+    city?.ogDescription ||
+    seoDescription;
 
+  /* ================= FACEBOOK TITLE ================= */
 
-    return {
+  const facebookTitle =
+    city?.seo?.facebookTitle ||
+    city?.facebookTitle ||
+    ogTitle;
+
+  /* ================= FACEBOOK DESCRIPTION ================= */
+
+  const facebookDescription =
+    city?.seo?.facebookDescription ||
+    city?.facebookDescription ||
+    ogDescription;
+
+  /* ================= TWITTER TITLE ================= */
+
+  const twitterTitle =
+    city?.seo?.twitterTitle ||
+    city?.twitterTitle ||
+    ogTitle;
+
+  /* ================= TWITTER DESCRIPTION ================= */
+
+  const twitterDescription =
+    city?.seo?.twitterDescription ||
+    city?.twitterDescription ||
+    ogDescription;
+
+  /* ================= SEO KEYWORDS ================= */
+
+  const seoKeywords =
+    city?.seo?.seoKeywords ||
+    city?.seoKeywords ||
+    "";
+
+  /* ================= CANONICAL ================= */
+
+  const canonicalUrl =
+    city?.seo?.canonical ||
+    city?.canonical ||
+    pageUrl;
+
+  return {
+
+    /* ================= SEO ================= */
+
+    title:
+      seoTitle,
+
+    description:
+      seoDescription,
+
+    keywords:
+      seoKeywords
+        ? seoKeywords
+          .split(",")
+          .map((k) =>
+            k.trim()
+          )
+        : [],
+
+    alternates: {
+
+      canonical:
+        canonicalUrl,
+    },
+
+    /* ================= OPEN GRAPH ================= */
+
+    openGraph: {
 
       title:
-        seoTitle,
+        facebookTitle,
 
       description:
-        seoDescription,
+        facebookDescription,
 
-      keywords:
-        seoKeywords
-          ? seoKeywords
-            .split(",")
-            .map((k) =>
-              k.trim()
-            )
-          : [],
+      url:
+        canonicalUrl,
 
-      alternates: {
+      siteName:
+        "Girls With Wine",
 
-        canonical:
-          canonicalUrl,
-      },
+      locale:
+        "en_IN",
 
-      openGraph: {
+      type:
+        "website",
 
-        title:
-          seoTitle,
+      images: [
 
-        description:
-          seoDescription,
+        {
+          url:
+            imageUrl,
 
-        url:
-          canonicalUrl,
+          width: 1200,
 
-        siteName:
-          "Girls With Wine",
+          height: 630,
 
-        locale:
-          "en_IN",
+          alt:
+            ogTitle,
+        },
+      ],
+    },
 
-        type:
-          "website",
+    /* ================= TWITTER ================= */
 
-        images: [
+    twitter: {
 
-          {
-            url:
-              imageUrl,
+      card:
+        "summary_large_image",
 
-            width: 1200,
+      title:
+        twitterTitle,
 
-            height: 630,
+      description:
+        twitterDescription,
 
-            alt:
-              seoTitle,
-          },
-        ],
-      },
+      images: [
+        imageUrl,
+      ],
+    },
 
-      twitter: {
+    /* ================= CUSTOM META ================= */
 
-        card:
-          "summary_large_image",
+    other: {
 
-        title:
-          seoTitle,
+      "facebook:title":
+        facebookTitle,
 
-        description:
-          seoDescription,
+      "facebook:description":
+        facebookDescription,
+    },
 
-        images: [
-          imageUrl,
-        ],
-      },
+    /* ================= ROBOTS ================= */
 
-      robots: {
+    robots: {
 
-        index: true,
+      index: true,
 
-        follow: true,
-      },
-    };
-  }
+      follow: true,
+    },
+  };
+}
 
   /* ================================================= */
   /* ================= SUBCITY SEO =================== */
   /* ================================================= */
 
-  if (
-    result.type ===
-    "subcity"
-  ) {
 
-    const subCity =
-      result.data;
+if (
+  result.type ===
+  "subcity"
+) {
 
-    const pageUrl =
-      `https://girlswithwine.com/${slug}`;
+  const subCity =
+    result.data;
 
-    return {
+  const pageUrl =
+    `https://girlswithwine.com/${slug}`;
+
+  /* ================= SEO TITLE ================= */
+
+  const seoTitle =
+    subCity?.seoTitle ||
+    subCity?.heading ||
+    "Girls With Wine";
+
+  /* ================= SEO DESCRIPTION ================= */
+
+  const seoDescription =
+    subCity?.seoDescription ||
+    subCity?.subDescription ||
+    "Premium escort service";
+
+  /* ================= OG TITLE ================= */
+
+  const ogTitle =
+    subCity?.seo?.ogTitle ||
+    subCity?.ogTitle ||
+    seoTitle;
+
+  /* ================= OG DESCRIPTION ================= */
+
+  const ogDescription =
+    subCity?.seo?.ogDescription ||
+    subCity?.ogDescription ||
+    seoDescription;
+
+  /* ================= TWITTER TITLE ================= */
+
+  const twitterTitle =
+    subCity?.seo?.twitterTitle ||
+    subCity?.twitterTitle ||
+    ogTitle;
+
+  /* ================= TWITTER DESCRIPTION ================= */
+
+  const twitterDescription =
+    subCity?.seo?.twitterDescription ||
+    subCity?.twitterDescription ||
+    ogDescription;
+
+  /* ================= FACEBOOK TITLE ================= */
+
+  const facebookTitle =
+    subCity?.seo?.facebookTitle ||
+    subCity?.facebookTitle ||
+    ogTitle;
+
+  /* ================= FACEBOOK DESCRIPTION ================= */
+
+  const facebookDescription =
+    subCity?.seo?.facebookDescription ||
+    subCity?.facebookDescription ||
+    ogDescription;
+
+  /* ================= CANONICAL ================= */
+
+  const canonicalUrl =
+    subCity?.canonical ||
+    pageUrl;
+
+  /* ================= IMAGE ================= */
+
+  const imageUrl =
+    subCity?.imageUrl ||
+    subCity?.image ||
+    "https://girlswithwine.com/images/girlswithwine.jpg";
+
+  return {
+
+    /* ================= SEO ================= */
+
+    title:
+      seoTitle,
+
+    description:
+      seoDescription,
+
+    alternates: {
+
+      canonical:
+        canonicalUrl,
+    },
+
+    /* ================= OPEN GRAPH ================= */
+
+    openGraph: {
 
       title:
-        subCity?.seoTitle ||
-        subCity?.heading,
+        facebookTitle ||
+
+        ogTitle,
 
       description:
-        subCity?.seoDescription ||
-        subCity?.subDescription,
+        facebookDescription ||
 
-      alternates: {
+        ogDescription,
 
-        canonical:
-          subCity?.canonical ||
-          pageUrl,
-      },
+      url:
+        canonicalUrl,
 
-      openGraph: {
+      siteName:
+        "Girls With Wine",
 
-        title:
-          subCity?.seoTitle ||
-          subCity?.heading,
+      locale:
+        "en_IN",
 
-        description:
-          subCity?.seoDescription ||
-          subCity?.subDescription,
+      type:
+        "website",
 
-        url:
-          subCity?.canonical ||
-          pageUrl,
+      images: [
 
-        siteName:
-          "Girls With Wine",
+        {
+          url:
+            imageUrl,
 
-        locale:
-          "en_IN",
+          width: 1200,
 
-        type:
-          "website",
-      },
-    };
-  }
+          height: 630,
+
+          alt:
+            ogTitle,
+        },
+      ],
+    },
+
+    /* ================= TWITTER ================= */
+
+    twitter: {
+
+      card:
+        "summary_large_image",
+
+      title:
+        twitterTitle,
+
+      description:
+        twitterDescription,
+
+      images: [
+        imageUrl,
+      ],
+    },
+
+    /* ================= EXTRA META ================= */
+
+    other: {
+
+      "og:title":
+        ogTitle,
+
+      "og:description":
+        ogDescription,
+
+      "twitter:title":
+        twitterTitle,
+
+      "twitter:description":
+        twitterDescription,
+
+      "facebook:title":
+        facebookTitle,
+
+      "facebook:description":
+        facebookDescription,
+    },
+
+    /* ================= ROBOTS ================= */
+
+    robots: {
+
+      index: true,
+
+      follow: true,
+    },
+  };
+}
 
   /* ================================================= */
   /* ================= GIRL SEO ====================== */
   /* ================================================= */
 
-  if (
-    result.type ===
-    "girl"
-  ) {
+ if (
+  result.type ===
+  "girl"
+) {
 
-    const girl =
-      result.data;
+  const girl =
+    result.data;
 
-    const pageUrl =
-      `https://girlswithwine.com/${slug}`;
+  const pageUrl =
+    `https://girlswithwine.com/${slug}`;
 
-    return {
+  /* ================= SEO TITLE ================= */
+
+  const seoTitle =
+    girl?.seo?.title ||
+    girl?.seoTitle ||
+    girl?.heading ||
+    "Girls With Wine";
+
+  /* ================= SEO DESCRIPTION ================= */
+
+  const seoDescription =
+    girl?.seo?.description ||
+    girl?.seoDescription ||
+    girl?.heading ||
+    "Premium escort profile";
+
+  /* ================= OG TITLE ================= */
+
+  const ogTitle =
+    girl?.seo?.ogTitle ||
+    girl?.ogTitle ||
+    seoTitle;
+
+  /* ================= OG DESCRIPTION ================= */
+
+  const ogDescription =
+    girl?.seo?.ogDescription ||
+    girl?.ogDescription ||
+    seoDescription;
+
+  /* ================= FACEBOOK TITLE ================= */
+
+  const facebookTitle =
+    girl?.seo?.facebookTitle ||
+    girl?.facebookTitle ||
+    ogTitle;
+
+  /* ================= FACEBOOK DESCRIPTION ================= */
+
+  const facebookDescription =
+    girl?.seo?.facebookDescription ||
+    girl?.facebookDescription ||
+    ogDescription;
+
+  /* ================= TWITTER TITLE ================= */
+
+  const twitterTitle =
+    girl?.seo?.twitterTitle ||
+    girl?.twitterTitle ||
+    ogTitle;
+
+  /* ================= TWITTER DESCRIPTION ================= */
+
+  const twitterDescription =
+    girl?.seo?.twitterDescription ||
+    girl?.twitterDescription ||
+    ogDescription;
+
+  /* ================= CANONICAL ================= */
+
+  const canonicalUrl =
+    girl?.seo?.canonical ||
+    girl?.canonical ||
+    pageUrl;
+
+  /* ================= IMAGE ================= */
+
+  const imageUrl =
+    girl?.imageUrl ||
+    girl?.profileImage ||
+    girl?.image ||
+    "https://girlswithwine.com/images/girlswithwine.jpg";
+
+  return {
+
+    /* ================= SEO ================= */
+
+    title:
+      seoTitle,
+
+    description:
+      seoDescription,
+
+    alternates: {
+
+      canonical:
+        canonicalUrl,
+    },
+
+    /* ================= OPEN GRAPH ================= */
+
+    openGraph: {
 
       title:
-        girl?.seoTitle ||
-        girl?.heading,
+        facebookTitle,
 
       description:
-        girl?.seoDescription ||
-        girl?.heading,
+        facebookDescription,
 
-      alternates: {
+      url:
+        canonicalUrl,
 
-        canonical:
-          girl?.canonical ||
-          pageUrl,
-      },
+      siteName:
+        "Girls With Wine",
 
-      openGraph: {
+      locale:
+        "en_IN",
 
-        title:
-          girl?.seoTitle ||
-          girl?.heading,
+      type:
+        "website",
 
-        description:
-          girl?.seoDescription ||
-          girl?.heading,
+      images: [
 
-        url:
-          girl?.canonical ||
-          pageUrl,
+        {
+          url:
+            imageUrl,
 
-        siteName:
-          "Girls With Wine",
+          width: 1200,
 
-        locale:
-          "en_IN",
+          height: 630,
 
-        type:
-          "website",
-      },
-    };
-  }
+          alt:
+            ogTitle,
+        },
+      ],
+    },
 
-  return {};
+    /* ================= TWITTER ================= */
+
+    twitter: {
+
+      card:
+        "summary_large_image",
+
+      title:
+        twitterTitle,
+
+      description:
+        twitterDescription,
+
+      images: [
+        imageUrl,
+      ],
+    },
+
+    /* ================= CUSTOM META ================= */
+
+    other: {
+
+      "facebook:title":
+        facebookTitle,
+
+      "facebook:description":
+        facebookDescription,
+
+      "og:title":
+        ogTitle,
+
+      "og:description":
+        ogDescription,
+
+      "twitter:title":
+        twitterTitle,
+
+      "twitter:description":
+        twitterDescription,
+    },
+
+    /* ================= ROBOTS ================= */
+
+    robots: {
+
+      index: true,
+
+      follow: true,
+    },
+  };
+}
+
+return {};
 }
 
 /* ================================================= */
