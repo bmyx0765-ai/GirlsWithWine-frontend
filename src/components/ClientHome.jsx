@@ -26,10 +26,10 @@ export default function ClientHome() {
 
   return (
     <>
-      <ZoomSlider />
+      {/* <ZoomSlider /> */}
 
       <div id="featured-models" className="scroll-mt-20">
-        <FeaturedModelsSection />
+        {/* <FeaturedModelsSection /> */}
       </div>
 
       {/* <CitySection /> */}
@@ -41,7 +41,7 @@ export default function ClientHome() {
 
       <TopReviewsSlider />
 
-      <LatestBlogsSection />
+      {/* <LatestBlogsSection /> */}
     </>
   );
 }

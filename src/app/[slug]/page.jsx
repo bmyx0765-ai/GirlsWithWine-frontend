@@ -110,36 +110,101 @@ async function getFaqSchema(type, id) {
       cache: "no-store",
     });
 
-    const data = await res.json();
-
-    const faqList = data?.[0]?.faqs || [];
-
-    if (!faqList?.length) {
+    if (!res.ok) {
       return null;
     }
 
+    const data = await res.json();
+
+    /* ================= NORMALIZE FAQS ================= */
+
+    let faqList = [];
+
+    // CASE 1
+    // [{ faqs:[...] }]
+
+    if (
+      Array.isArray(data) &&
+      data[0]?.faqs
+    ) {
+
+      faqList = data.flatMap(
+        (item) => item?.faqs || []
+      );
+
+    }
+
+    // CASE 2
+    // { faqs:[...] }
+
+    else if (data?.faqs) {
+
+      faqList = data.faqs;
+
+    }
+
+    // CASE 3
+    // direct faq array
+
+    else if (
+      Array.isArray(data)
+    ) {
+
+      faqList = data;
+
+    }
+
+    /* ================= FILTER ================= */
+
+    faqList = faqList.filter((faq) => {
+
+      return (
+        faq?.question &&
+        faq?.answer &&
+        faq?.showOn?.[type] === true
+      );
+
+    });
+
+    if (!faqList.length) {
+      return null;
+    }
+
+    /* ================= FAQ SCHEMA ================= */
+
     return {
+
       "@context": "https://schema.org",
+
       "@type": "FAQPage",
 
       mainEntity: faqList.map((faq) => ({
+
         "@type": "Question",
 
-        name: faq?.question || "",
+        name: faq.question,
 
         acceptedAnswer: {
+
           "@type": "Answer",
-          text: faq?.answer || "",
+
+          text: faq.answer,
         },
+
       })),
     };
 
   } catch (error) {
 
-  
+    console.log(
+      "FAQ SCHEMA ERROR:",
+      error
+    );
+
     return null;
 
   }
+
 }
 
 /* ================================================= */
