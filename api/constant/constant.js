@@ -242,3 +242,6 @@ export const DELETE_FAQ_URL =
 
 export const TOGGLE_FAQ_STATUS_URL =
   "/api/faqs/status";
+
+  export const GET_FAQS_BY_VISIBILITY_URL =
+  "/api/faqs/visibility";

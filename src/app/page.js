@@ -6,182 +6,273 @@ import Script from "next/script";
 /* ================= API URL ================= */
 
 function getApiUrl() {
+
   return (
     process.env.NEXT_PUBLIC_BASE_URL ||
     "http://127.0.0.1:5000"
   );
+
 }
 
-/* ================= FAQ FETCH ================= */
+/* =========================================================
+   GET FAQ DATA
+========================================================= */
 
-async function getFaqSchema() {
+async function getFaqData() {
+
   try {
 
-    /* ================= FETCH ================= */
+    /* =====================================================
+       TRUE FAQS
+       ONLY SHOW ON FRONTEND
+    ===================================================== */
 
-    const res = await fetch(
-      `${getApiUrl()}/api/faqs/type/homepage`,
+    const trueRes = await fetch(
+
+      `${getApiUrl()}/api/faqs/visibility?type=homepage&visible=true`,
+
       {
         cache: "no-store",
       }
+
     );
 
-    /* ================= API FAILED ================= */
+    /* =====================================================
+       FALSE FAQS
+       ONLY FOR SCHEMA
+    ===================================================== */
 
-    if (!res.ok) {
+    const falseRes = await fetch(
 
-      console.log("FAQ API FAILED");
+      `${getApiUrl()}/api/faqs/visibility?type=homepage&visible=false`,
 
-      return null;
-    }
+      {
+        cache: "no-store",
+      }
 
-    /* ================= RESPONSE ================= */
+    );
 
-    const data = await res.json();
+    /* =====================================================
+       RESPONSE JSON
+    ===================================================== */
 
-    console.log("FAQ DATA =>", data);
+    const trueData =
+      await trueRes.json();
 
-    /* ================= FAQ LIST ================= */
+    const falseData =
+      await falseRes.json();
 
-    let faqList = [];
+    
 
-    /* ================= IF API RETURNS OBJECT ================= */
+    /* =====================================================
+       EXTRACT FAQS
+    ===================================================== */
 
-    if (Array.isArray(data?.faqs)) {
+    const extractFaqs = (data) => {
 
-      faqList = data.faqs.flatMap((group) => {
+      let faqList = [];
 
-        /* ================= NESTED FAQS ================= */
+      // ARRAY
+      if (
+        Array.isArray(data)
+      ) {
 
-        if (Array.isArray(group?.faqs)) {
-          return group.faqs;
+        faqList = data;
+
+      }
+
+      // OBJECT
+      else if (
+        Array.isArray(data?.faqs)
+      ) {
+
+        faqList = data.faqs.flatMap(
+          (group) => {
+
+            // NESTED FAQS
+            if (
+              Array.isArray(group?.faqs)
+            ) {
+
+              return group.faqs;
+
+            }
+
+            // DIRECT FAQ
+            if (
+              group?.question &&
+              group?.answer
+            ) {
+
+              return [group];
+
+            }
+
+            return [];
+          }
+        );
+      }
+
+      /* =========================================
+         REMOVE INVALID FAQ
+      ========================================= */
+
+      faqList = faqList.filter(
+        (faq) => {
+
+          return (
+
+            faq &&
+
+            typeof faq === "object" &&
+
+            typeof faq.question ===
+              "string" &&
+
+            faq.question.trim() !==
+              "" &&
+
+            typeof faq.answer ===
+              "string" &&
+
+            faq.answer.trim() !==
+              ""
+
+          );
+
         }
-
-        /* ================= DIRECT FAQ ================= */
-
-        if (
-          group?.question &&
-          group?.answer
-        ) {
-          return [group];
-        }
-
-        return [];
-      });
-
-    }
-
-    /* ================= IF API RETURNS ARRAY ================= */
-
-    else if (Array.isArray(data)) {
-
-      faqList = data;
-
-    }
-
-    console.log("FINAL FAQ LIST =>", faqList);
-
-    /* ================= FILTER INVALID FAQS ================= */
-
-    faqList = faqList.filter((faq) => {
-
-      return (
-        faq &&
-        typeof faq === "object" &&
-
-        typeof faq.question === "string" &&
-        faq.question.trim() !== "" &&
-
-        typeof faq.answer === "string" &&
-        faq.answer.trim() !== ""
       );
 
-    });
+      return faqList;
+    };
 
-    console.log("FILTERED FAQS =>", faqList);
+    /* =====================================================
+       TRUE FAQ LIST
+    ===================================================== */
 
-    /* ================= EMPTY ================= */
+    const visibleFaqs =
+      extractFaqs(trueData);
 
-    if (!faqList.length) {
+    /* =====================================================
+       FALSE FAQ LIST
+    ===================================================== */
 
-      console.log("NO FAQ FOUND");
+    const hiddenFaqs =
+      extractFaqs(falseData);
 
-      return null;
-    }
+    /* =====================================================
+       ALL FAQ FOR SCHEMA
+    ===================================================== */
 
-    /* ================= FAQ SCHEMA ================= */
+    const allFaqs = [
+
+      ...visibleFaqs,
+
+      ...hiddenFaqs,
+
+    ];
+
+    /* =====================================================
+       FAQ SCHEMA
+    ===================================================== */
 
     const schema = {
 
-      "@context": "https://schema.org",
+      "@context":
+        "https://schema.org",
 
-      "@type": "FAQPage",
+      "@type":
+        "FAQPage",
 
-      mainEntity: faqList.map((faq) => ({
+      mainEntity:
+        allFaqs.map((faq) => ({
 
-        "@type": "Question",
+          "@type":
+            "Question",
 
-        name: faq.question,
+          name:
+            faq.question,
 
-        acceptedAnswer: {
+          acceptedAnswer: {
 
-          "@type": "Answer",
+            "@type":
+              "Answer",
 
-          text: faq.answer,
+            text:
+              faq.answer,
 
-        },
+          },
 
-      })),
+        })),
 
     };
 
-    console.log(
-      "FAQ SCHEMA =>",
-      JSON.stringify(schema, null, 2)
-    );
+    return {
 
-    return schema;
+      visibleFaqs,
+      hiddenFaqs,
+      schema,
+
+    };
 
   } catch (error) {
 
-    console.log(
-      "FAQ ERROR:",
-      error
-    );
+   
 
-    return null;
+    return {
+
+      visibleFaqs: [],
+      hiddenFaqs: [],
+      schema: null,
+
+    };
   }
 }
 
-/* ================= PAGE ================= */
+/* =========================================================
+   PAGE
+========================================================= */
 
 export default async function Home() {
 
-  const faqSchema =
-    await getFaqSchema();
+  const {
+    visibleFaqs,
+    schema,
+  } = await getFaqData();
+
+ 
 
   return (
+
     <>
 
-      {/* ================= FAQ SCHEMA ================= */}
+      {/* ===================================================
+         FAQ SCHEMA
+      =================================================== */}
 
-      {faqSchema && (
+      {schema && (
 
         <Script
           id="homepage-faq-schema"
           type="application/ld+json"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(faqSchema),
+            __html:
+              JSON.stringify(schema),
           }}
         />
 
       )}
 
-      {/* ================= HOME ================= */}
+      {/* ===================================================
+         HOME
+      =================================================== */}
 
-      <ClientHome />
+      <ClientHome
+        faqs={visibleFaqs}
+      />
 
     </>
+
   );
 }

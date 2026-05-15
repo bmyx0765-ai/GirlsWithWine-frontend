@@ -90,121 +90,308 @@ async function getFaqSchema(type, id) {
 
   try {
 
-    if (!id) return null;
+    /* =====================================================
+       CHECK ID
+    ===================================================== */
 
-    let url = "";
+    if (!id) {
+      return {
+        visibleFaqs: [],
+        schema: null,
+      };
+    }
+
+    /* =====================================================
+       BASE URL
+    ===================================================== */
+
+    let trueUrl = "";
+    let falseUrl = "";
+
+    /* =====================================================
+       CITY
+    ===================================================== */
 
     if (type === "city") {
-      url = `${getApiUrl()}/api/faqs/city/${id}`;
+
+      trueUrl =
+        `${getApiUrl()}/api/faqs/visibility?type=city&visible=true&cityId=${id}`;
+
+      falseUrl =
+        `${getApiUrl()}/api/faqs/visibility?type=city&visible=false&cityId=${id}`;
+
     }
+
+    /* =====================================================
+       SUBCITY
+    ===================================================== */
 
     else if (type === "subcity") {
-      url = `${getApiUrl()}/api/faqs/subcity/${id}`;
+
+      trueUrl =
+        `${getApiUrl()}/api/faqs/visibility?type=subcity&visible=true&subCityId=${id}`;
+
+      falseUrl =
+        `${getApiUrl()}/api/faqs/visibility?type=subcity&visible=false&subCityId=${id}`;
+
     }
+
+    /* =====================================================
+       GIRL
+    ===================================================== */
 
     else if (type === "girl") {
-      url = `${getApiUrl()}/api/faqs/girl/${id}`;
+
+      trueUrl =
+        `${getApiUrl()}/api/faqs/visibility?type=girl&visible=true&girlId=${id}`;
+
+      falseUrl =
+        `${getApiUrl()}/api/faqs/visibility?type=girl&visible=false&girlId=${id}`;
+
     }
 
-    const res = await fetch(url, {
-      cache: "no-store",
-    });
+    /* =====================================================
+       FETCH BOTH
+    ===================================================== */
 
-    if (!res.ok) {
-      return null;
-    }
+    const [
+      trueRes,
+      falseRes,
+    ] = await Promise.all([
 
-    const data = await res.json();
+      fetch(trueUrl, {
+        cache: "no-store",
+      }),
 
-    /* ================= NORMALIZE FAQS ================= */
+      fetch(falseUrl, {
+        cache: "no-store",
+      }),
 
-    let faqList = [];
+    ]);
 
-    // CASE 1
-    // [{ faqs:[...] }]
+    /* =====================================================
+       CHECK RESPONSE
+    ===================================================== */
 
     if (
-      Array.isArray(data) &&
-      data[0]?.faqs
+      !trueRes.ok &&
+      !falseRes.ok
     ) {
 
-      faqList = data.flatMap(
-        (item) => item?.faqs || []
+      return {
+        visibleFaqs: [],
+        schema: null,
+      };
+
+    }
+
+    /* =====================================================
+       JSON DATA
+    ===================================================== */
+
+    const trueData =
+      trueRes.ok
+        ? await trueRes.json()
+        : {};
+
+    const falseData =
+      falseRes.ok
+        ? await falseRes.json()
+        : {};
+
+   
+    /* =====================================================
+       EXTRACT FAQS
+    ===================================================== */
+
+    const extractFaqs = (data) => {
+
+      let faqList = [];
+
+      /* =========================================
+         CASE 1
+         { faqs:[...] }
+      ========================================= */
+
+      if (
+        Array.isArray(data?.faqs)
+      ) {
+
+        faqList = data.faqs.flatMap(
+          (group) => {
+
+            // NESTED FAQS
+            if (
+              Array.isArray(group?.faqs)
+            ) {
+
+              return group.faqs;
+
+            }
+
+            // DIRECT FAQ
+            if (
+              group?.question &&
+              group?.answer
+            ) {
+
+              return [group];
+
+            }
+
+            return [];
+          }
+        );
+      }
+
+      /* =========================================
+         CASE 2
+         DIRECT ARRAY
+      ========================================= */
+
+      else if (
+        Array.isArray(data)
+      ) {
+
+        faqList = data;
+
+      }
+
+      /* =========================================
+         FILTER INVALID FAQS
+      ========================================= */
+
+      faqList = faqList.filter(
+        (faq) => {
+
+          return (
+
+            faq &&
+
+            typeof faq ===
+              "object" &&
+
+            typeof faq.question ===
+              "string" &&
+
+            faq.question.trim() !==
+              "" &&
+
+            typeof faq.answer ===
+              "string" &&
+
+            faq.answer.trim() !==
+              ""
+
+          );
+
+        }
       );
 
+      return faqList;
+    };
+
+    /* =====================================================
+       WEBSITE SHOW FAQS
+       ONLY TRUE
+    ===================================================== */
+
+    const visibleFaqs =
+      extractFaqs(trueData);
+
+    /* =====================================================
+       HIDDEN FAQS
+       FALSE
+    ===================================================== */
+
+    const hiddenFaqs =
+      extractFaqs(falseData);
+
+    /* =====================================================
+       ALL FAQS FOR SCHEMA
+    ===================================================== */
+
+    const allFaqs = [
+
+      ...visibleFaqs,
+
+      ...hiddenFaqs,
+
+    ];
+
+    /* =====================================================
+       EMPTY
+    ===================================================== */
+
+    if (!allFaqs.length) {
+
+      return {
+        visibleFaqs: [],
+        schema: null,
+      };
+
     }
 
-    // CASE 2
-    // { faqs:[...] }
+    /* =====================================================
+       FAQ SCHEMA
+       TRUE + FALSE
+    ===================================================== */
 
-    else if (data?.faqs) {
+    const schema = {
 
-      faqList = data.faqs;
+      "@context":
+        "https://schema.org",
 
-    }
+      "@type":
+        "FAQPage",
 
-    // CASE 3
-    // direct faq array
+      mainEntity:
+        allFaqs.map((faq) => ({
 
-    else if (
-      Array.isArray(data)
-    ) {
+          "@type":
+            "Question",
 
-      faqList = data;
+          name:
+            faq.question,
 
-    }
+          acceptedAnswer: {
 
-    /* ================= FILTER ================= */
+            "@type":
+              "Answer",
 
-    faqList = faqList.filter((faq) => {
+            text:
+              faq.answer,
 
-      return (
-        faq?.question &&
-        faq?.answer &&
-        faq?.showOn?.[type] === true
-      );
+          },
 
-    });
+        })),
 
-    if (!faqList.length) {
-      return null;
-    }
+    };
 
-    /* ================= FAQ SCHEMA ================= */
+    /* =====================================================
+       RETURN
+    ===================================================== */
 
     return {
 
-      "@context": "https://schema.org",
+      // WEBSITE
+      visibleFaqs,
 
-      "@type": "FAQPage",
+      // SCHEMA
+      schema,
 
-      mainEntity: faqList.map((faq) => ({
-
-        "@type": "Question",
-
-        name: faq.question,
-
-        acceptedAnswer: {
-
-          "@type": "Answer",
-
-          text: faq.answer,
-        },
-
-      })),
     };
 
   } catch (error) {
 
-    console.log(
-      "FAQ SCHEMA ERROR:",
-      error
-    );
+    
+    return {
 
-    return null;
+      visibleFaqs: [],
+      schema: null,
 
+    };
   }
-
 }
 
 /* ================================================= */

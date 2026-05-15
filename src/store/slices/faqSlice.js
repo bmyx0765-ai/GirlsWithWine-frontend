@@ -18,6 +18,7 @@ import {
   UPDATE_FAQ_URL,
   DELETE_FAQ_URL,
   TOGGLE_FAQ_STATUS_URL,
+  GET_FAQS_BY_VISIBILITY_URL,
 } from "api/constant/constant";
 
 /* =========================================================
@@ -318,6 +319,92 @@ export const toggleFaqStatusThunk =
   );
 
 /* =========================================================
+ GET FAQ BY VISIBILITY
+========================================================= */
+
+export const getFaqsByVisibilityThunk =
+  createAsyncThunk(
+
+    "faq/getByVisibility",
+
+    async (
+      {
+        type,
+        visible,
+        cityId,
+        subCityId,
+        girlId,
+      },
+      { rejectWithValue }
+    ) => {
+
+      try {
+
+        const params =
+          new URLSearchParams();
+
+        // TYPE
+        if (type) {
+          params.append("type", type);
+        }
+
+        // VISIBLE
+        if (
+          visible !== undefined
+        ) {
+          params.append(
+            "visible",
+            visible
+          );
+        }
+
+        // CITY
+        if (cityId) {
+          params.append(
+            "cityId",
+            cityId
+          );
+        }
+
+        // SUBCITY
+        if (subCityId) {
+          params.append(
+            "subCityId",
+            subCityId
+          );
+        }
+
+        // GIRL
+        if (girlId) {
+          params.append(
+            "girlId",
+            girlId
+          );
+        }
+
+        const res =
+          await axiosInstance.get(
+            `${GET_FAQS_BY_VISIBILITY_URL}?${params.toString()}`
+          );
+
+        return normalizeFaqResponse(
+          res.data
+        );
+
+      } catch (err) {
+
+        return rejectWithValue(
+
+          err?.response?.data?.message ||
+
+          "Failed to fetch FAQs by visibility"
+
+        );
+      }
+    }
+  );
+
+/* =========================================================
    SLICE
 ========================================================= */
 
@@ -581,8 +668,8 @@ const faqSlice = createSlice({
       )
 
       /* ===================================================
-         TOGGLE STATUS
-      =================================================== */
+     TOGGLE STATUS
+  =================================================== */
 
       .addCase(
         toggleFaqStatusThunk.fulfilled,
@@ -595,7 +682,40 @@ const faqSlice = createSlice({
                 : faq
           );
         }
+      )
+
+      /* ===================================================
+         GET VISIBILITY
+      =================================================== */
+
+      .addCase(
+        getFaqsByVisibilityThunk.pending,
+        (state) => {
+
+          state.loading = true;
+          state.error = null;
+        }
+      )
+
+      .addCase(
+        getFaqsByVisibilityThunk.fulfilled,
+        (state, action) => {
+
+          state.loading = false;
+          state.faqs = action.payload;
+        }
+      )
+
+      .addCase(
+        getFaqsByVisibilityThunk.rejected,
+        (state, action) => {
+
+          state.loading = false;
+          state.error = action.payload;
+        }
       );
+
+
   },
 });
 
