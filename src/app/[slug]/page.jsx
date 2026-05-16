@@ -1,73 +1,23 @@
+/* ================================================= */
+/* ================= IMPORTS ======================= */
+/* ================================================= */
 
+import { cache } from "react";
 
 import CityGirlsPage from "@/components/CityGirlsPage";
 import GirlDetailsPage from "@/components/GirlDetailsPage";
 import Hash404 from "@/components/Hash404";
 import SubCityGirlsPage from "@/components/SubCityGirlsPage";
 
-
-
-
 /* ================================================= */
-/* ================= LAT LONG ====================== */
+/* ================= FETCH CONFIG ================== */
 /* ================================================= */
 
-async function getLatLong(cityName) {
-
-  try {
-
-    const API_KEY =
-      process.env.OPENCAGE_API_KEY;
-
-    if (!API_KEY || !cityName) {
-      return null;
-    }
-
-    const res = await fetch(
-      `https://api.opencagedata.com/geocode/v1/json?q=${cityName}&key=${API_KEY}`,
-      {
-        cache: "no-store",
-      }
-    );
-
-    if (!res.ok) {
-      return null;
-    }
-
-    const data = await res.json();
-
-    if (
-      !data?.results ||
-      data.results.length === 0
-    ) {
-      return null;
-    }
-
-    const result = data.results.find(
-      (item) =>
-        item?.components?.country ===
-        "India"
-    );
-
-    if (!result) {
-      return null;
-    }
-
-    return {
-      latitude:
-        result.geometry?.lat,
-      longitude:
-        result.geometry?.lng,
-    };
-
-  } catch (err) {
-
-    
-
-    return null;
-
-  }
-}
+const fetchConfig = {
+  next: {
+    revalidate: 3600,
+  },
+};
 
 /* ================================================= */
 /* ================= API URL ======================= */
@@ -83,425 +33,447 @@ function getApiUrl() {
 }
 
 /* ================================================= */
+/* ================= LAT LONG ====================== */
+/* ================================================= */
+
+const getLatLong = cache(
+  async function getLatLong(cityName) {
+
+    try {
+
+      const API_KEY =
+        process.env.OPENCAGE_API_KEY;
+
+      if (
+        !API_KEY ||
+        !cityName
+      ) {
+
+        return null;
+
+      }
+
+      const res = await fetch(
+        `https://api.opencagedata.com/geocode/v1/json?q=${cityName}&key=${API_KEY}`,
+        fetchConfig
+      );
+
+      if (!res.ok) {
+        return null;
+      }
+
+      const data =
+        await res.json();
+
+      if (
+        !data?.results ||
+        data.results.length === 0
+      ) {
+
+        return null;
+
+      }
+
+      const result =
+        data.results.find(
+          (item) =>
+            item?.components?.country ===
+            "India"
+        );
+
+      if (!result) {
+        return null;
+      }
+
+      return {
+
+        latitude:
+          result.geometry?.lat,
+
+        longitude:
+          result.geometry?.lng,
+
+      };
+
+    } catch (err) {
+
+      return null;
+
+    }
+  }
+);
+
+/* ================================================= */
 /* ================= FAQ SCHEMA ==================== */
 /* ================================================= */
 
-async function getFaqSchema(type, id) {
+const getFaqSchema = cache(
+  async function getFaqSchema(type, id) {
 
-  try {
+    try {
 
-    /* =====================================================
-       CHECK ID
-    ===================================================== */
+      if (!id) {
 
-    if (!id) {
-      return {
-        visibleFaqs: [],
-        schema: null,
-      };
-    }
+        return {
 
-    /* =====================================================
-       BASE URL
-    ===================================================== */
+          visibleFaqs: [],
+          schema: null,
 
-    let trueUrl = "";
-    let falseUrl = "";
+        };
 
-    /* =====================================================
-       CITY
-    ===================================================== */
-
-    if (type === "city") {
-
-      trueUrl =
-        `${getApiUrl()}/api/faqs/visibility?type=city&visible=true&cityId=${id}`;
-
-      falseUrl =
-        `${getApiUrl()}/api/faqs/visibility?type=city&visible=false&cityId=${id}`;
-
-    }
-
-    /* =====================================================
-       SUBCITY
-    ===================================================== */
-
-    else if (type === "subcity") {
-
-      trueUrl =
-        `${getApiUrl()}/api/faqs/visibility?type=subcity&visible=true&subCityId=${id}`;
-
-      falseUrl =
-        `${getApiUrl()}/api/faqs/visibility?type=subcity&visible=false&subCityId=${id}`;
-
-    }
-
-    /* =====================================================
-       GIRL
-    ===================================================== */
-
-    else if (type === "girl") {
-
-      trueUrl =
-        `${getApiUrl()}/api/faqs/visibility?type=girl&visible=true&girlId=${id}`;
-
-      falseUrl =
-        `${getApiUrl()}/api/faqs/visibility?type=girl&visible=false&girlId=${id}`;
-
-    }
-
-    /* =====================================================
-       FETCH BOTH
-    ===================================================== */
-
-    const [
-      trueRes,
-      falseRes,
-    ] = await Promise.all([
-
-      fetch(trueUrl, {
-        cache: "no-store",
-      }),
-
-      fetch(falseUrl, {
-        cache: "no-store",
-      }),
-
-    ]);
-
-    /* =====================================================
-       CHECK RESPONSE
-    ===================================================== */
-
-    if (
-      !trueRes.ok &&
-      !falseRes.ok
-    ) {
-
-      return {
-        visibleFaqs: [],
-        schema: null,
-      };
-
-    }
-
-    /* =====================================================
-       JSON DATA
-    ===================================================== */
-
-    const trueData =
-      trueRes.ok
-        ? await trueRes.json()
-        : {};
-
-    const falseData =
-      falseRes.ok
-        ? await falseRes.json()
-        : {};
-
-   
-    /* =====================================================
-       EXTRACT FAQS
-    ===================================================== */
-
-    const extractFaqs = (data) => {
-
-      let faqList = [];
-
-      /* =========================================
-         CASE 1
-         { faqs:[...] }
-      ========================================= */
-
-      if (
-        Array.isArray(data?.faqs)
-      ) {
-
-        faqList = data.faqs.flatMap(
-          (group) => {
-
-            // NESTED FAQS
-            if (
-              Array.isArray(group?.faqs)
-            ) {
-
-              return group.faqs;
-
-            }
-
-            // DIRECT FAQ
-            if (
-              group?.question &&
-              group?.answer
-            ) {
-
-              return [group];
-
-            }
-
-            return [];
-          }
-        );
       }
 
-      /* =========================================
-         CASE 2
-         DIRECT ARRAY
-      ========================================= */
+      let trueUrl = "";
+      let falseUrl = "";
+
+      /* ================= CITY ================= */
+
+      if (type === "city") {
+
+        trueUrl =
+          `${getApiUrl()}/api/faqs/visibility?type=city&visible=true&cityId=${id}`;
+
+        falseUrl =
+          `${getApiUrl()}/api/faqs/visibility?type=city&visible=false&cityId=${id}`;
+
+      }
+
+      /* ================= SUBCITY ================= */
 
       else if (
-        Array.isArray(data)
+        type === "subcity"
       ) {
 
-        faqList = data;
+        trueUrl =
+          `${getApiUrl()}/api/faqs/visibility?type=subcity&visible=true&subCityId=${id}`;
+
+        falseUrl =
+          `${getApiUrl()}/api/faqs/visibility?type=subcity&visible=false&subCityId=${id}`;
 
       }
 
-      /* =========================================
-         FILTER INVALID FAQS
-      ========================================= */
+      /* ================= GIRL ================= */
 
-      faqList = faqList.filter(
-        (faq) => {
+      else if (
+        type === "girl"
+      ) {
 
-          return (
+        trueUrl =
+          `${getApiUrl()}/api/faqs/visibility?type=girl&visible=true&girlId=${id}`;
 
-            faq &&
+        falseUrl =
+          `${getApiUrl()}/api/faqs/visibility?type=girl&visible=false&girlId=${id}`;
 
-            typeof faq ===
-              "object" &&
+      }
 
-            typeof faq.question ===
-              "string" &&
+      const [
+        trueRes,
+        falseRes,
+      ] = await Promise.all([
 
-            faq.question.trim() !==
-              "" &&
+        fetch(
+          trueUrl,
+          fetchConfig
+        ),
 
-            typeof faq.answer ===
-              "string" &&
+        fetch(
+          falseUrl,
+          fetchConfig
+        ),
 
-            faq.answer.trim() !==
-              ""
+      ]);
 
-          );
+      if (
+        !trueRes.ok &&
+        !falseRes.ok
+      ) {
 
-        }
-      );
+        return {
 
-      return faqList;
-    };
+          visibleFaqs: [],
+          schema: null,
 
-    /* =====================================================
-       WEBSITE SHOW FAQS
-       ONLY TRUE
-    ===================================================== */
+        };
 
-    const visibleFaqs =
-      extractFaqs(trueData);
+      }
 
-    /* =====================================================
-       HIDDEN FAQS
-       FALSE
-    ===================================================== */
+      const trueData =
+        trueRes.ok
+          ? await trueRes.json()
+          : {};
 
-    const hiddenFaqs =
-      extractFaqs(falseData);
+      const falseData =
+        falseRes.ok
+          ? await falseRes.json()
+          : {};
 
-    /* =====================================================
-       ALL FAQS FOR SCHEMA
-    ===================================================== */
+      const extractFaqs =
+        (data) => {
 
-    const allFaqs = [
+          let faqList = [];
 
-      ...visibleFaqs,
+          if (
+            Array.isArray(
+              data?.faqs
+            )
+          ) {
 
-      ...hiddenFaqs,
+            faqList =
+              data.faqs.flatMap(
+                (group) => {
 
-    ];
+                  if (
+                    Array.isArray(
+                      group?.faqs
+                    )
+                  ) {
 
-    /* =====================================================
-       EMPTY
-    ===================================================== */
+                    return group.faqs;
 
-    if (!allFaqs.length) {
+                  }
+
+                  if (
+                    group?.question &&
+                    group?.answer
+                  ) {
+
+                    return [group];
+
+                  }
+
+                  return [];
+
+                }
+              );
+
+          }
+
+          else if (
+            Array.isArray(data)
+          ) {
+
+            faqList = data;
+
+          }
+
+          faqList =
+            faqList.filter(
+              (faq) => {
+
+                return (
+
+                  faq &&
+
+                  typeof faq.question ===
+                    "string" &&
+
+                  faq.question.trim() !==
+                    "" &&
+
+                  typeof faq.answer ===
+                    "string" &&
+
+                  faq.answer.trim() !==
+                    ""
+
+                );
+
+              }
+            );
+
+          return faqList;
+
+        };
+
+      const visibleFaqs =
+        extractFaqs(
+          trueData
+        );
+
+      const hiddenFaqs =
+        extractFaqs(
+          falseData
+        );
+
+      const allFaqs = [
+
+        ...visibleFaqs,
+
+        ...hiddenFaqs,
+
+      ];
+
+      if (!allFaqs.length) {
+
+        return {
+
+          visibleFaqs: [],
+          schema: null,
+
+        };
+
+      }
+
+      const schema = {
+
+        "@context":
+          "https://schema.org",
+
+        "@type":
+          "FAQPage",
+
+        mainEntity:
+          allFaqs.map(
+            (faq) => ({
+
+              "@type":
+                "Question",
+
+              name:
+                faq.question,
+
+              acceptedAnswer: {
+
+                "@type":
+                  "Answer",
+
+                text:
+                  faq.answer,
+
+              },
+
+            })
+          ),
+
+      };
 
       return {
+
+        visibleFaqs,
+        schema,
+
+      };
+
+    } catch (error) {
+
+      return {
+
         visibleFaqs: [],
         schema: null,
+
       };
 
     }
-
-    /* =====================================================
-       FAQ SCHEMA
-       TRUE + FALSE
-    ===================================================== */
-
-    const schema = {
-
-      "@context":
-        "https://schema.org",
-
-      "@type":
-        "FAQPage",
-
-      mainEntity:
-        allFaqs.map((faq) => ({
-
-          "@type":
-            "Question",
-
-          name:
-            faq.question,
-
-          acceptedAnswer: {
-
-            "@type":
-              "Answer",
-
-            text:
-              faq.answer,
-
-          },
-
-        })),
-
-    };
-
-    /* =====================================================
-       RETURN
-    ===================================================== */
-
-    return {
-
-      // WEBSITE
-      visibleFaqs,
-
-      // SCHEMA
-      schema,
-
-    };
-
-  } catch (error) {
-
-    
-    return {
-
-      visibleFaqs: [],
-      schema: null,
-
-    };
   }
-}
+);
 
 /* ================================================= */
 /* ================= CHECK SLUG ==================== */
 /* ================================================= */
 
-async function checkSlug(slug) {
+const checkSlug = cache(
+  async function checkSlug(slug) {
 
-  try {
+    try {
 
-    /* ================= GIRL ================= */
+      const [
+        girlRes,
+        cityRes,
+        subCityRes,
+      ] = await Promise.all([
 
-    const girlRes = await fetch(
-      `${getApiUrl()}/api/girls/${slug}`,
-      {
-        cache: "no-store",
+        fetch(
+          `${getApiUrl()}/api/girls/${slug}`,
+          fetchConfig
+        ),
+
+        fetch(
+          `${getApiUrl()}/api/cities/${slug}`,
+          fetchConfig
+        ),
+
+        fetch(
+          `${getApiUrl()}/api/subcities/${slug}`,
+          fetchConfig
+        ),
+
+      ]);
+
+      /* ================= GIRL ================= */
+
+      if (girlRes.ok) {
+
+        const girlData =
+          await girlRes.json();
+
+        if (
+          girlData &&
+          girlData._id &&
+          !girlData.message
+        ) {
+
+          return {
+
+            type: "girl",
+            data: girlData,
+
+          };
+
+        }
       }
-    );
 
-    if (girlRes.ok) {
+      /* ================= CITY ================= */
 
-      const girlData =
-        await girlRes.json();
+      if (cityRes.ok) {
 
-      if (
-        girlData &&
-        girlData._id &&
-        !girlData.message
-      ) {
+        const cityData =
+          await cityRes.json();
 
-        return {
-          type: "girl",
-          data: girlData,
-        };
+        if (
+          cityData?.city?._id
+        ) {
 
+          return {
+
+            type: "city",
+            data: cityData,
+
+          };
+
+        }
       }
+
+      /* ================= SUBCITY ================= */
+
+      if (subCityRes.ok) {
+
+        const subCityData =
+          await subCityRes.json();
+
+        if (
+          subCityData?.subCity?._id
+        ) {
+
+          return {
+
+            type: "subcity",
+            data:
+              subCityData.subCity,
+
+          };
+
+        }
+      }
+
+      return null;
+
+    } catch (err) {
+
+      return null;
 
     }
-
-    /* ================= CITY ================= */
-
-    const cityRes = await fetch(
-      `${getApiUrl()}/api/cities/${slug}`,
-      {
-        cache: "no-store",
-      }
-    );
-
-    if (cityRes.ok) {
-
-      const cityData =
-        await cityRes.json();
-
-      if (
-        cityData &&
-        cityData.city &&
-        cityData.city._id
-      ) {
-
-        return {
-          type: "city",
-          data: cityData,
-        };
-
-      }
-
-    }
-
-    /* ================= SUBCITY ================= */
-
-    const subCityRes = await fetch(
-      `${getApiUrl()}/api/subcities/${slug}`,
-      {
-        cache: "no-store",
-      }
-    );
-
-    if (subCityRes.ok) {
-
-      const subCityData =
-        await subCityRes.json();
-
-      if (
-        subCityData &&
-        subCityData.subCity &&
-        subCityData.subCity._id
-      ) {
-
-        return {
-          type: "subcity",
-          data: subCityData.subCity,
-        };
-
-      }
-
-    }
-
-    /* ================= INVALID ================= */
-
-    return null;
-
-  } catch (err) {
-
-   
-
-    return null;
-
   }
-
-}
+);
 
 /* ================================================= */
 /* ================= SEO =========================== */
@@ -530,8 +502,10 @@ export async function generateMetadata({
         "Page not found",
 
       robots: {
+
         index: false,
         follow: false,
+
       },
 
       openGraph: {
@@ -544,122 +518,143 @@ export async function generateMetadata({
 
         type:
           "website",
+
       },
+
     };
 
   }
 
   /* ================================================= */
-  /* ================= CITY SEO ====================== */
+  /* ================= DATA ========================== */
   /* ================================================= */
 
- if (
-  result.type ===
-  "city"
-) {
+  let data = null;
 
-  const { city } =
-    result.data;
+  if (
+    result.type === "city"
+  ) {
 
-  /* ================= CITY NAME ================= */
+    data =
+      result.data.city;
 
-  const cityNameRaw =
-    city?.mainCity ||
-    city?.name ||
-    slug;
+  }
 
-  const cityName =
-    cityNameRaw
-      ?.split(" ")
-      ?.map(
-        (word) =>
-          word.charAt(0).toUpperCase() +
-          word.slice(1).toLowerCase()
-      )
-      ?.join(" ");
+  else {
 
-  /* ================= PAGE URL ================= */
+    data =
+      result.data;
+
+  }
+
+  /* ================================================= */
+  /* ================= URL =========================== */
+  /* ================================================= */
 
   const pageUrl =
     `https://girlswithwine.com/${slug}`;
 
-  /* ================= IMAGE ================= */
+  /* ================================================= */
+  /* ================= IMAGE ========================= */
+  /* ================================================= */
 
   const imageUrl =
-    city?.imageUrl ||
-    city?.image ||
+    data?.imageUrl ||
+    data?.profileImage ||
+    data?.image ||
     "https://girlswithwine.com/images/girlswithwine.jpg";
 
-  /* ================= SEO TITLE ================= */
+  /* ================================================= */
+  /* ================= SEO TITLE ===================== */
+  /* ================================================= */
 
   const seoTitle =
-    city?.seo?.title ||
-    city?.seoTitle ||
-    city?.heading ||
-    `${cityName} Escort Service`;
+    data?.seo?.title ||
+    data?.seoTitle ||
+    data?.heading ||
+    "Girls With Wine";
 
-  /* ================= SEO DESCRIPTION ================= */
+  /* ================================================= */
+  /* ================= SEO DESCRIPTION =============== */
+  /* ================================================= */
 
   const seoDescription =
-    city?.seo?.description ||
-    city?.seoDescription ||
-    city?.subDescription ||
-    `Book verified call girls and independent escorts in ${cityName} with private and 24/7 booking.`;
+    data?.seo?.description ||
+    data?.seoDescription ||
+    data?.subDescription ||
+    data?.heading ||
+    "Premium escort service";
 
-  /* ================= OG TITLE ================= */
+  /* ================================================= */
+  /* ================= OG TITLE ====================== */
+  /* ================================================= */
 
   const ogTitle =
-    city?.seo?.ogTitle ||
-    city?.ogTitle ||
+    data?.seo?.ogTitle ||
+    data?.ogTitle ||
     seoTitle;
 
-  /* ================= OG DESCRIPTION ================= */
+  /* ================================================= */
+  /* ================= OG DESCRIPTION ================ */
+  /* ================================================= */
 
   const ogDescription =
-    city?.seo?.ogDescription ||
-    city?.ogDescription ||
+    data?.seo?.ogDescription ||
+    data?.ogDescription ||
     seoDescription;
 
-  /* ================= FACEBOOK TITLE ================= */
+  /* ================================================= */
+  /* ================= FACEBOOK TITLE ================ */
+  /* ================================================= */
 
   const facebookTitle =
-    city?.seo?.facebookTitle ||
-    city?.facebookTitle ||
+    data?.seo?.facebookTitle ||
+    data?.facebookTitle ||
     ogTitle;
 
-  /* ================= FACEBOOK DESCRIPTION ================= */
+  /* ================================================= */
+  /* ================= FACEBOOK DESCRIPTION ========== */
+  /* ================================================= */
 
   const facebookDescription =
-    city?.seo?.facebookDescription ||
-    city?.facebookDescription ||
+    data?.seo?.facebookDescription ||
+    data?.facebookDescription ||
     ogDescription;
 
-  /* ================= TWITTER TITLE ================= */
+  /* ================================================= */
+  /* ================= TWITTER TITLE ================ */
+  /* ================================================= */
 
   const twitterTitle =
-    city?.seo?.twitterTitle ||
-    city?.twitterTitle ||
+    data?.seo?.twitterTitle ||
+    data?.twitterTitle ||
     ogTitle;
 
-  /* ================= TWITTER DESCRIPTION ================= */
+  /* ================================================= */
+  /* ================= TWITTER DESCRIPTION =========== */
+  /* ================================================= */
 
   const twitterDescription =
-    city?.seo?.twitterDescription ||
-    city?.twitterDescription ||
+    data?.seo?.twitterDescription ||
+    data?.twitterDescription ||
     ogDescription;
 
-  /* ================= SEO KEYWORDS ================= */
+  /* ================================================= */
+  /* ================= KEYWORDS ====================== */
+  /* ================================================= */
 
   const seoKeywords =
-    city?.seo?.seoKeywords ||
-    city?.seoKeywords ||
+    data?.seo?.seoKeywords ||
+    data?.seoKeywords ||
     "";
 
-  /* ================= CANONICAL ================= */
+  /* ================================================= */
+  /* ================= CANONICAL ===================== */
+  /* ================================================= */
 
   const canonicalUrl =
-    city?.seo?.canonical ||
-    city?.canonical ||
+    data?.seo?.canonical ||
+    data?.canonical ||
     pageUrl;
 
   return {
@@ -675,16 +670,17 @@ export async function generateMetadata({
     keywords:
       seoKeywords
         ? seoKeywords
-          .split(",")
-          .map((k) =>
-            k.trim()
-          )
+            .split(",")
+            .map((k) =>
+              k.trim()
+            )
         : [],
 
     alternates: {
 
       canonical:
         canonicalUrl,
+
     },
 
     /* ================= OPEN GRAPH ================= */
@@ -692,192 +688,9 @@ export async function generateMetadata({
     openGraph: {
 
       title:
-        facebookTitle,
-
-      description:
-        facebookDescription,
-
-      url:
-        canonicalUrl,
-
-      siteName:
-        "Girls With Wine",
-
-      locale:
-        "en_IN",
-
-      type:
-        "website",
-
-      images: [
-
-        {
-          url:
-            imageUrl,
-
-          width: 1200,
-
-          height: 630,
-
-          alt:
-            ogTitle,
-        },
-      ],
-    },
-
-    /* ================= TWITTER ================= */
-
-    twitter: {
-
-      card:
-        "summary_large_image",
-
-      title:
-        twitterTitle,
-
-      description:
-        twitterDescription,
-
-      images: [
-        imageUrl,
-      ],
-    },
-
-    /* ================= CUSTOM META ================= */
-
-    other: {
-
-      "facebook:title":
-        facebookTitle,
-
-      "facebook:description":
-        facebookDescription,
-    },
-
-    /* ================= ROBOTS ================= */
-
-    robots: {
-
-      index: true,
-
-      follow: true,
-    },
-  };
-}
-
-  /* ================================================= */
-  /* ================= SUBCITY SEO =================== */
-  /* ================================================= */
-
-
-if (
-  result.type ===
-  "subcity"
-) {
-
-  const subCity =
-    result.data;
-
-  const pageUrl =
-    `https://girlswithwine.com/${slug}`;
-
-  /* ================= SEO TITLE ================= */
-
-  const seoTitle =
-    subCity?.seoTitle ||
-    subCity?.heading ||
-    "Girls With Wine";
-
-  /* ================= SEO DESCRIPTION ================= */
-
-  const seoDescription =
-    subCity?.seoDescription ||
-    subCity?.subDescription ||
-    "Premium escort service";
-
-  /* ================= OG TITLE ================= */
-
-  const ogTitle =
-    subCity?.seo?.ogTitle ||
-    subCity?.ogTitle ||
-    seoTitle;
-
-  /* ================= OG DESCRIPTION ================= */
-
-  const ogDescription =
-    subCity?.seo?.ogDescription ||
-    subCity?.ogDescription ||
-    seoDescription;
-
-  /* ================= TWITTER TITLE ================= */
-
-  const twitterTitle =
-    subCity?.seo?.twitterTitle ||
-    subCity?.twitterTitle ||
-    ogTitle;
-
-  /* ================= TWITTER DESCRIPTION ================= */
-
-  const twitterDescription =
-    subCity?.seo?.twitterDescription ||
-    subCity?.twitterDescription ||
-    ogDescription;
-
-  /* ================= FACEBOOK TITLE ================= */
-
-  const facebookTitle =
-    subCity?.seo?.facebookTitle ||
-    subCity?.facebookTitle ||
-    ogTitle;
-
-  /* ================= FACEBOOK DESCRIPTION ================= */
-
-  const facebookDescription =
-    subCity?.seo?.facebookDescription ||
-    subCity?.facebookDescription ||
-    ogDescription;
-
-  /* ================= CANONICAL ================= */
-
-  const canonicalUrl =
-    subCity?.canonical ||
-    pageUrl;
-
-  /* ================= IMAGE ================= */
-
-  const imageUrl =
-    subCity?.imageUrl ||
-    subCity?.image ||
-    "https://girlswithwine.com/images/girlswithwine.jpg";
-
-  return {
-
-    /* ================= SEO ================= */
-
-    title:
-      seoTitle,
-
-    description:
-      seoDescription,
-
-    alternates: {
-
-      canonical:
-        canonicalUrl,
-    },
-
-    /* ================= OPEN GRAPH ================= */
-
-    openGraph: {
-
-      title:
-        facebookTitle ||
-
         ogTitle,
 
       description:
-        facebookDescription ||
-
         ogDescription,
 
       url:
@@ -905,7 +718,9 @@ if (
           alt:
             ogTitle,
         },
+
       ],
+
     },
 
     /* ================= TWITTER ================= */
@@ -924,6 +739,7 @@ if (
       images: [
         imageUrl,
       ],
+
     },
 
     /* ================= EXTRA META ================= */
@@ -936,17 +752,18 @@ if (
       "og:description":
         ogDescription,
 
+      "facebook:title":
+        facebookTitle,
+
+      "facebook:description":
+        facebookDescription,
+
       "twitter:title":
         twitterTitle,
 
       "twitter:description":
         twitterDescription,
 
-      "facebook:title":
-        facebookTitle,
-
-      "facebook:description":
-        facebookDescription,
     },
 
     /* ================= ROBOTS ================= */
@@ -954,226 +771,36 @@ if (
     robots: {
 
       index: true,
-
       follow: true,
+
     },
+
   };
-}
-
-  /* ================================================= */
-  /* ================= GIRL SEO ====================== */
-  /* ================================================= */
-
- if (
-  result.type ===
-  "girl"
-) {
-
-  const girl =
-    result.data;
-
-  const pageUrl =
-    `https://girlswithwine.com/${slug}`;
-
-  /* ================= SEO TITLE ================= */
-
-  const seoTitle =
-    girl?.seo?.title ||
-    girl?.seoTitle ||
-    girl?.heading ||
-    "Girls With Wine";
-
-  /* ================= SEO DESCRIPTION ================= */
-
-  const seoDescription =
-    girl?.seo?.description ||
-    girl?.seoDescription ||
-    girl?.heading ||
-    "Premium escort profile";
-
-  /* ================= OG TITLE ================= */
-
-  const ogTitle =
-    girl?.seo?.ogTitle ||
-    girl?.ogTitle ||
-    seoTitle;
-
-  /* ================= OG DESCRIPTION ================= */
-
-  const ogDescription =
-    girl?.seo?.ogDescription ||
-    girl?.ogDescription ||
-    seoDescription;
-
-  /* ================= FACEBOOK TITLE ================= */
-
-  const facebookTitle =
-    girl?.seo?.facebookTitle ||
-    girl?.facebookTitle ||
-    ogTitle;
-
-  /* ================= FACEBOOK DESCRIPTION ================= */
-
-  const facebookDescription =
-    girl?.seo?.facebookDescription ||
-    girl?.facebookDescription ||
-    ogDescription;
-
-  /* ================= TWITTER TITLE ================= */
-
-  const twitterTitle =
-    girl?.seo?.twitterTitle ||
-    girl?.twitterTitle ||
-    ogTitle;
-
-  /* ================= TWITTER DESCRIPTION ================= */
-
-  const twitterDescription =
-    girl?.seo?.twitterDescription ||
-    girl?.twitterDescription ||
-    ogDescription;
-
-  /* ================= CANONICAL ================= */
-
-  const canonicalUrl =
-    girl?.seo?.canonical ||
-    girl?.canonical ||
-    pageUrl;
-
-  /* ================= IMAGE ================= */
-
-  const imageUrl =
-    girl?.imageUrl ||
-    girl?.profileImage ||
-    girl?.image ||
-    "https://girlswithwine.com/images/girlswithwine.jpg";
-
-  return {
-
-    /* ================= SEO ================= */
-
-    title:
-      seoTitle,
-
-    description:
-      seoDescription,
-
-    alternates: {
-
-      canonical:
-        canonicalUrl,
-    },
-
-    /* ================= OPEN GRAPH ================= */
-
-    openGraph: {
-
-      title:
-        facebookTitle,
-
-      description:
-        facebookDescription,
-
-      url:
-        canonicalUrl,
-
-      siteName:
-        "Girls With Wine",
-
-      locale:
-        "en_IN",
-
-      type:
-        "website",
-
-      images: [
-
-        {
-          url:
-            imageUrl,
-
-          width: 1200,
-
-          height: 630,
-
-          alt:
-            ogTitle,
-        },
-      ],
-    },
-
-    /* ================= TWITTER ================= */
-
-    twitter: {
-
-      card:
-        "summary_large_image",
-
-      title:
-        twitterTitle,
-
-      description:
-        twitterDescription,
-
-      images: [
-        imageUrl,
-      ],
-    },
-
-    /* ================= CUSTOM META ================= */
-
-    other: {
-
-      "facebook:title":
-        facebookTitle,
-
-      "facebook:description":
-        facebookDescription,
-
-      "og:title":
-        ogTitle,
-
-      "og:description":
-        ogDescription,
-
-      "twitter:title":
-        twitterTitle,
-
-      "twitter:description":
-        twitterDescription,
-    },
-
-    /* ================= ROBOTS ================= */
-
-    robots: {
-
-      index: true,
-
-      follow: true,
-    },
-  };
-}
-
-return {};
 }
 
 /* ================================================= */
 /* ================= PAGE ========================== */
 /* ================================================= */
 
-
-
-
 export default async function Page({
   params,
 }) {
 
-  const { slug } = await params;
+  const { slug } =
+    await params;
 
-  /* ================= INVALID URL ================= */
+  /* ================================================= */
+  /* ================= DECODE SLUG =================== */
+  /* ================================================= */
 
   const decodedSlug =
-    decodeURIComponent(slug || "");
+    decodeURIComponent(
+      slug || ""
+    );
+
+  /* ================================================= */
+  /* ================= INVALID URL =================== */
+  /* ================================================= */
 
   if (
     decodedSlug.includes("#") ||
@@ -1187,7 +814,9 @@ export default async function Page({
       <div className="min-h-screen flex items-center justify-center bg-white">
 
         <h1 className="text-4xl md:text-6xl font-black text-slate-900">
+
           404 Not Found
+
         </h1>
 
       </div>
@@ -1196,29 +825,51 @@ export default async function Page({
 
   }
 
-  /* ================= CHECK SLUG ================= */
+  /* ================================================= */
+  /* ================= CHECK SLUG ==================== */
+  /* ================================================= */
 
   const result =
-    await checkSlug(decodedSlug);
+    await checkSlug(
+      decodedSlug
+    );
 
-  /* ================= 404 ================= */
+  /* ================================================= */
+  /* ================= NOT FOUND ===================== */
+  /* ================================================= */
 
-  
+  if (!result) {
+
+    return (
+
+      <div className="min-h-screen flex items-center justify-center bg-white">
+
+        <h1 className="text-4xl md:text-6xl font-black text-slate-900">
+
+          404 Not Found
+
+        </h1>
+
+      </div>
+
+    );
+
+  }
+
   /* ================================================= */
   /* ================= CITY PAGE ===================== */
   /* ================================================= */
 
-
-  if (result.type === "city") {
+  if (
+    result.type === "city"
+  ) {
 
     const { city } =
       result.data;
 
     /* ================================================= */
-    /* ================= DEBUG RESPONSE ================ */
+    /* ================= FAQ SCHEMA ==================== */
     /* ================================================= */
-
-
 
     const faqSchema =
       await getFaqSchema(
@@ -1226,16 +877,24 @@ export default async function Page({
         city?._id
       );
 
+    /* ================================================= */
+    /* ================= LATITUDE ====================== */
+    /* ================================================= */
+
     let latitude =
       city?.latitude;
 
     let longitude =
       city?.longitude;
 
+    /* ================================================= */
+    /* ================= CITY NAME ===================== */
+    /* ================================================= */
+
     const cityNameRaw =
       city?.mainCity ||
       city?.name ||
-      slug;
+      decodedSlug;
 
     const cityName =
       cityNameRaw
@@ -1246,6 +905,10 @@ export default async function Page({
             word.slice(1).toLowerCase()
         )
         ?.join(" ");
+
+    /* ================================================= */
+    /* ================= GET LAT LONG ================== */
+    /* ================================================= */
 
     if (
       !latitude ||
@@ -1269,20 +932,20 @@ export default async function Page({
     }
 
     /* ================================================= */
-    /* ================= URL =========================== */
+    /* ================= PAGE URL ====================== */
     /* ================================================= */
 
     const pageUrl =
-      `https://girlswithwine.com/${slug}`;
+      `https://girlswithwine.com/${decodedSlug}`;
 
     /* ================================================= */
-    /* ================= IMAGE ========================= */
+    /* ================= IMAGE URL ===================== */
     /* ================================================= */
 
     const imageUrl =
       city?.imageUrl ||
       city?.image ||
-      "";
+      "https://girlswithwine.com/images/girlswithwine.jpg";
 
     /* ================================================= */
     /* ================= SEO DATA ====================== */
@@ -1291,20 +954,19 @@ export default async function Page({
     const canonicalUrl =
       city?.seo?.canonical ||
       city?.canonical ||
-      pageUrl ||
-      "";
+      pageUrl;
 
     const seoTitle =
       city?.seo?.title ||
       city?.seoTitle ||
       city?.heading ||
-      "";
+      `${cityName} Escort Service`;
 
     const seoDescription =
       city?.seo?.description ||
       city?.seoDescription ||
       city?.subDescription ||
-      "";
+      `Book verified call girls and escorts in ${cityName}.`;
 
     const seoKeywords =
       city?.seo?.seoKeywords ||
@@ -1320,6 +982,14 @@ export default async function Page({
       city?.seo?.serviceType ||
       "";
 
+    /* ================================================= */
+    /* ================= FAQ JSON FIX ================== */
+    /* ================================================= */
+
+    const faqJson =
+      faqSchema?.schema ||
+      faqSchema ||
+      null;
 
     /* ================================================= */
     /* ================= BREADCRUMB ==================== */
@@ -1341,7 +1011,8 @@ export default async function Page({
 
           position: 1,
 
-          name: "Home",
+          name:
+            "Home",
 
           item:
             "https://girlswithwine.com/",
@@ -1353,17 +1024,15 @@ export default async function Page({
 
           position: 2,
 
-          ...(cityName && {
-            name:
-              cityName,
-          }),
+          name:
+            cityName,
 
-          ...(canonicalUrl && {
-            item:
-              canonicalUrl,
-          }),
+          item:
+            canonicalUrl,
         },
+
       ],
+
     };
 
     /* ================================================= */
@@ -1378,20 +1047,14 @@ export default async function Page({
       "@type":
         "LocalBusiness",
 
-      ...(seoTitle && {
-        name:
-          seoTitle,
-      }),
+      name:
+        seoTitle,
 
-      ...(canonicalUrl && {
-        url:
-          canonicalUrl,
-      }),
+      url:
+        canonicalUrl,
 
-      ...(imageUrl && {
-        image:
-          imageUrl,
-      }),
+      image:
+        imageUrl,
 
       telephone:
         "+91-XXXXXXXXXX",
@@ -1399,60 +1062,53 @@ export default async function Page({
       priceRange:
         "₹2999 - ₹19999",
 
-      ...(seoDescription && {
-        description:
-          seoDescription,
-      }),
+      description:
+        seoDescription,
 
-      ...(seoKeywords && {
-        keywords:
-          seoKeywords,
-      }),
+      keywords:
+        seoKeywords,
 
       address: {
 
         "@type":
           "PostalAddress",
 
-        ...(cityName && {
-          addressLocality:
-            cityName,
-        }),
+        addressLocality:
+          cityName,
 
-        ...(city?.state ||
-          city?.stateName
-          ? {
-            addressRegion:
-              city?.state ||
-              city?.stateName,
-          }
-          : {}),
+        addressRegion:
+          city?.state ||
+          city?.stateName ||
+          "",
 
         addressCountry:
           "IN",
+
       },
 
       ...(latitude &&
         longitude && {
-        geo: {
 
-          "@type":
-            "GeoCoordinates",
+          geo: {
 
-          latitude,
+            "@type":
+              "GeoCoordinates",
 
-          longitude,
-        },
-      }),
+            latitude,
+
+            longitude,
+
+          },
+
+        }),
 
       openingHours:
         "Mo-Su 00:00-23:59",
 
-      ...(canonicalUrl && {
-        sameAs: [
-          canonicalUrl,
-        ],
-      }),
+      sameAs: [
+        canonicalUrl,
+      ],
+
     };
 
     /* ================================================= */
@@ -1467,10 +1123,8 @@ export default async function Page({
       "@type":
         "Service",
 
-      ...(seoTitle && {
-        name:
-          seoTitle,
-      }),
+      name:
+        seoTitle,
 
       provider: {
 
@@ -1482,38 +1136,30 @@ export default async function Page({
 
         url:
           "https://girlswithwine.com/",
+
       },
 
-      ...(canonicalUrl && {
-        url:
-          canonicalUrl,
-      }),
+      url:
+        canonicalUrl,
 
       areaServed: {
 
         "@type":
           "City",
 
-        ...(cityName && {
-          name:
-            cityName,
-        }),
+        name:
+          cityName,
+
       },
 
-      ...(serviceTypes && {
-        serviceType:
-          serviceTypes,
-      }),
+      serviceType:
+        serviceTypes,
 
-      ...(seoDescription && {
-        description:
-          seoDescription,
-      }),
+      description:
+        seoDescription,
 
-      ...(seoKeywords && {
-        keywords:
-          seoKeywords,
-      }),
+      keywords:
+        seoKeywords,
 
       offers: {
 
@@ -1528,28 +1174,37 @@ export default async function Page({
 
         highPrice:
           "19999",
+
       },
+
     };
 
     return (
+
       <>
-       <Hash404 />
+        <Hash404 />
 
-        {/* FAQ SCHEMA */}
+        {/* ================================================= */}
+        {/* ================= FAQ SCHEMA ==================== */}
+        {/* ================================================= */}
 
-        {faqSchema && (
+        {faqJson && (
+
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
               __html:
                 JSON.stringify(
-                  faqSchema
+                  faqJson
                 ),
             }}
           />
+
         )}
 
-        {/* BREADCRUMB SCHEMA */}
+        {/* ================================================= */}
+        {/* ================= BREADCRUMB ==================== */}
+        {/* ================================================= */}
 
         <script
           type="application/ld+json"
@@ -1561,7 +1216,9 @@ export default async function Page({
           }}
         />
 
-        {/* LOCAL BUSINESS SCHEMA */}
+        {/* ================================================= */}
+        {/* ================= LOCAL BUSINESS ================ */}
+        {/* ================================================= */}
 
         <script
           type="application/ld+json"
@@ -1573,7 +1230,9 @@ export default async function Page({
           }}
         />
 
-        {/* SERVICE SCHEMA */}
+        {/* ================================================= */}
+        {/* ================= SERVICE ======================= */}
+        {/* ================================================= */}
 
         <script
           type="application/ld+json"
@@ -1585,10 +1244,13 @@ export default async function Page({
           }}
         />
 
-        {/* GEO */}
+        {/* ================================================= */}
+        {/* ================= GEO META ====================== */}
+        {/* ================================================= */}
 
         {latitude &&
           longitude && (
+
             <>
               <meta
                 name="geo.region"
@@ -1612,9 +1274,12 @@ export default async function Page({
                 content={`${latitude}, ${longitude}`}
               />
             </>
+
           )}
 
-
+        {/* ================================================= */}
+        {/* ================= PAGE ========================== */}
+        {/* ================================================= */}
 
         <CityGirlsPage
           params={{
@@ -1622,9 +1287,10 @@ export default async function Page({
               decodedSlug,
           }}
         />
-
       </>
+
     );
+
   }
 
   /* ================================================= */
@@ -1632,8 +1298,7 @@ export default async function Page({
   /* ================================================= */
 
   if (
-    result.type ===
-    "subcity"
+    result.type === "subcity"
   ) {
 
     const faqSchema =
@@ -1643,18 +1308,22 @@ export default async function Page({
       );
 
     return (
+
       <>
-      <Hash404 />
-        {faqSchema && (
+        <Hash404 />
+
+        {faqSchema?.schema && (
+
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
               __html:
                 JSON.stringify(
-                  faqSchema
+                  faqSchema.schema
                 ),
             }}
           />
+
         )}
 
         <SubCityGirlsPage
@@ -1663,6 +1332,7 @@ export default async function Page({
           }
         />
       </>
+
     );
 
   }
@@ -1672,8 +1342,7 @@ export default async function Page({
   /* ================================================= */
 
   if (
-    result.type ===
-    "girl"
+    result.type === "girl"
   ) {
 
     const faqSchema =
@@ -1683,18 +1352,22 @@ export default async function Page({
       );
 
     return (
+
       <>
-      <Hash404 />
-        {faqSchema && (
+        <Hash404 />
+
+        {faqSchema?.schema && (
+
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
               __html:
                 JSON.stringify(
-                  faqSchema
+                  faqSchema.schema
                 ),
             }}
           />
+
         )}
 
         <GirlDetailsPage
@@ -1703,26 +1376,11 @@ export default async function Page({
           }
         />
       </>
-    );
-
-  }
-
-
-  if (!result) {
-
-    return (
-
-      <div className="min-h-screen flex items-center justify-center bg-white">
-
-        <h1 className="text-4xl md:text-6xl font-black text-slate-900">
-          404 Not Found
-        </h1>
-
-      </div>
 
     );
 
   }
+
   /* ================================================= */
   /* ================= FALLBACK ====================== */
   /* ================================================= */
@@ -1732,10 +1390,13 @@ export default async function Page({
     <div className="min-h-screen flex items-center justify-center bg-white">
 
       <h1 className="text-4xl md:text-6xl font-black text-slate-900">
+
         404 Not Found
+
       </h1>
 
     </div>
 
   );
+
 }
