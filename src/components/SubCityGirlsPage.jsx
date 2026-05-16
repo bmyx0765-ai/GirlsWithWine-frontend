@@ -39,19 +39,19 @@ const createWhatsAppURL = (name, number) => {
 /* ================= COMPONENT ================= */
 
 const SubCityGirlsPage = ({ data }) => {
-  console.log("🟢 1. PROPS DATA RECEIVED:", data);
+
 
   const router = useRouter();
   const dispatch = useDispatch();
 
   /* ================= REDUX SELECTORS ================= */
   const { cityGirls = [], cityLoading = false } = useSelector((state) => {
-    console.log("🔵 2. REDUX SELECTOR (girls state):", state.girls);
+
     return state.girls || {};
   });
 
   const { subCities: allSubCitiesInCity = [] } = useSelector((state) => {
-    console.log("🟣 3. REDUX SELECTOR (subCity state):", state.subCity);
+
     return state.subCity || {};
   });
 
@@ -78,31 +78,31 @@ const SubCityGirlsPage = ({ data }) => {
     updatedAt,
   } = data;
 
-  console.log("📦 5. DESTRUCTURED VARIABLES:", { _id, name, cityId: city?._id, subCitiesCount: subCities?.length });
+  
 
   const finalName = name || "Premium Area";
   const cityHeading = heading || `${finalName} Call Girls`;
 
   /* ================= DATA FETCHING ================= */
   useEffect(() => {
-    console.log("🚀 6. USE-EFFECT TRIGGERED - ID:", _id);
+   
     if (_id) {
       // Fetch girls specific to this sub-city
       dispatch(getGirlsBySubCityThunk(_id));
     }
 
     if (city?._id) {
-      // Fetch all sibling areas for the navigation/meta section
+    
       dispatch(fetchSubCitiesByCity(city._id));
     }
   }, [_id, city?._id, dispatch]);
 
   /* ================= DATA PROCESSING ================= */
   const finalGirls = cityGirls?.length ? cityGirls : initialGirls;
-  console.log("💃 7. FINAL GIRLS LIST TO RENDER:", { count: finalGirls.length, source: cityGirls?.length ? "Redux" : "InitialProps" });
+  
 
   const formattedDate = useMemo(() => {
-    console.log("📅 8. MEMO DATE CALCULATION - updatedAt:", updatedAt);
+  
     if (!updatedAt) return "";
     return new Date(updatedAt).toLocaleDateString("en-IN", {
       day: "numeric",
@@ -114,20 +114,17 @@ const SubCityGirlsPage = ({ data }) => {
   const subCitiesList = useMemo(() => {
     // If Redux has the full list of areas for the city, use it; otherwise fallback to prop data
     const list = allSubCitiesInCity?.length ? allSubCitiesInCity : (city?.subCities?.length ? city.subCities : subCities);
-    console.log("📍 9. MEMO SUBCITIES LIST CALCULATION:", {
-      source: allSubCitiesInCity?.length ? "ReduxState" : "CityParent",
-      listLength: list?.length || 0
-    });
+   
     return Array.isArray(list) ? list : [];
   }, [allSubCitiesInCity, city, subCities]);
 
-  console.log("🖼️ 10. RENDERING START");
+
 
   return (
     <>
       {/* ================= MAIN CONTENT ================== */}
       <div className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto mb-20 mt-10">
-        
+
         {/* HERO/HEADING SECTION */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-pink-50 border border-pink-100 text-[#B30059] px-5 py-2.5 rounded-full text-sm font-bold mb-6 shadow-sm">
@@ -164,7 +161,7 @@ const SubCityGirlsPage = ({ data }) => {
           ) : (
             finalGirls.map((girl, index) => {
               if (index === 0) console.log("📝 11. MAPPING GIRLS - Sample Girl Name:", girl?.name);
-              
+
               const wp = formatPhone(girl?.whatsappNumber || city?.whatsappNumber);
               const call = formatPhone(girl?.phoneNumber || city?.phoneNumber);
 
@@ -190,7 +187,7 @@ const SubCityGirlsPage = ({ data }) => {
                       <h3 className="text-2xl font-bold text-gray-900 group-hover:text-[#B30059] transition-colors">
                         {girl?.heading || girl?.name}
                       </h3>
-                      
+
                       <div
                         className="text-base text-gray-600 mt-3 line-clamp-2 leading-relaxed"
                         dangerouslySetInnerHTML={{
@@ -270,7 +267,7 @@ const SubCityGirlsPage = ({ data }) => {
       {/* ================= META/LOCATION LINKS SECTION ================== */}
       {console.log("🏁 12. FINAL META SECTION PROPS:", { subCitiesCount: subCitiesList.length })}
       <CityMetaSection
-        subCities={subCitiesList} 
+        subCities={subCitiesList}
         tags={tags || []}
       />
     </>
