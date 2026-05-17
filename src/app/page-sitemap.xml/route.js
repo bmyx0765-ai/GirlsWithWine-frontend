@@ -1,6 +1,6 @@
 export async function GET() {
   const response = await fetch(
-    "https://girlswithwinebackend.vercel.app/sitemap.xml",
+    "https://girlswithwinebackend.vercel.app/page-sitemap.xml",
     {
       cache: "no-store",
     }
