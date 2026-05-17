@@ -671,13 +671,15 @@ export async function generateMetadata({
       seoDescription,
 
     keywords:
-      seoKeywords
-        ? seoKeywords
-            .split(",")
-            .map((k) =>
-              k.trim()
-            )
-        : [],
+  typeof seoKeywords === "string"
+    ? seoKeywords
+        .split(",")
+        .map((k) =>
+          k.trim()
+        )
+    : Array.isArray(seoKeywords)
+    ? seoKeywords
+    : [],
 
     alternates: {
 
