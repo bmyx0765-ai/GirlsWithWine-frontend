@@ -2,7 +2,7 @@
 /* ================= IMPORTS ======================= */
 /* ================================================= */
 
-import { cache } from "react";
+// import { cache } from "react";
 
 import CityGirlsPage from "@/components/CityGirlsPage";
 import GirlDetailsPage from "@/components/GirlDetailsPage";
@@ -36,7 +36,7 @@ function getApiUrl() {
 /* ================= LAT LONG ====================== */
 /* ================================================= */
 
-const getLatLong = cache(
+const getLatLong = 
   async function getLatLong(cityName) {
 
     try {
@@ -101,13 +101,13 @@ const getLatLong = cache(
 
     }
   }
-);
+
 
 /* ================================================= */
 /* ================= FAQ SCHEMA ==================== */
 /* ================================================= */
 
-const getFaqSchema = cache(
+const getFaqSchema = 
   async function getFaqSchema(type, id) {
 
     try {
@@ -365,13 +365,13 @@ const getFaqSchema = cache(
 
     }
   }
-);
+
 
 /* ================================================= */
 /* ================= CHECK SLUG ==================== */
 /* ================================================= */
 
-const checkSlug = cache(
+const checkSlug = 
   async function checkSlug(slug) {
 
     try {
@@ -473,7 +473,7 @@ const checkSlug = cache(
 
     }
   }
-);
+
 
 /* ================================================= */
 /* ================= SEO =========================== */
