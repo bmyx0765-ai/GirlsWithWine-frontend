@@ -1,8 +1,16 @@
 /* ================================================= */
-/* ================= IMPORTS ======================= */
+/* ================= NEXT CONFIG =================== */
 /* ================================================= */
 
-import { cache } from "react";
+export const dynamic = "force-dynamic";
+
+export const revalidate = 0;
+
+export const fetchCache = "force-no-store";
+
+/* ================================================= */
+/* ================= IMPORTS ======================= */
+/* ================================================= */
 
 import CityGirlsPage from "@/components/CityGirlsPage";
 import GirlDetailsPage from "@/components/GirlDetailsPage";
@@ -14,9 +22,7 @@ import SubCityGirlsPage from "@/components/SubCityGirlsPage";
 /* ================================================= */
 
 const fetchConfig = {
-  next: {
-    revalidate: 3600,
-  },
+  cache: "no-store",
 };
 
 /* ================================================= */
@@ -27,7 +33,7 @@ function getApiUrl() {
 
   return (
     process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:5000"
+    "https://girlswithwinebackend.vercel.app"
   );
 
 }
@@ -36,325 +42,83 @@ function getApiUrl() {
 /* ================= LAT LONG ====================== */
 /* ================================================= */
 
-const getLatLong = cache(
-  async function getLatLong(cityName) {
+async function getLatLong(cityName) {
 
-    try {
+  try {
 
-      const API_KEY =
-        process.env.OPENCAGE_API_KEY;
+    const API_KEY =
+      process.env.OPENCAGE_API_KEY;
 
-      if (
-        !API_KEY ||
-        !cityName
-      ) {
-
-        return null;
-
-      }
-
-      const res = await fetch(
-        `https://api.opencagedata.com/geocode/v1/json?q=${cityName}&key=${API_KEY}`,
-        fetchConfig
-      );
-
-      if (!res.ok) {
-        return null;
-      }
-
-      const data =
-        await res.json();
-
-      if (
-        !data?.results ||
-        data.results.length === 0
-      ) {
-
-        return null;
-
-      }
-
-      const result =
-        data.results.find(
-          (item) =>
-            item?.components?.country ===
-            "India"
-        );
-
-      if (!result) {
-        return null;
-      }
-
-      return {
-
-        latitude:
-          result.geometry?.lat,
-
-        longitude:
-          result.geometry?.lng,
-
-      };
-
-    } catch (err) {
+    if (
+      !API_KEY ||
+      !cityName
+    ) {
 
       return null;
 
     }
+
+    const res = await fetch(
+      `https://api.opencagedata.com/geocode/v1/json?q=${cityName}&key=${API_KEY}`,
+      {
+        cache: "no-store",
+      }
+    );
+
+    if (!res.ok) {
+      return null;
+    }
+
+    const data =
+      await res.json();
+
+    if (
+      !data?.results ||
+      data.results.length === 0
+    ) {
+
+      return null;
+
+    }
+
+    const result =
+      data.results.find(
+        (item) =>
+          item?.components?.country ===
+          "India"
+      );
+
+    if (!result) {
+      return null;
+    }
+
+    return {
+
+      latitude:
+        result.geometry?.lat,
+
+      longitude:
+        result.geometry?.lng,
+
+    };
+
+  } catch (err) {
+
+    return null;
+
   }
-);
+
+}
 
 /* ================================================= */
 /* ================= FAQ SCHEMA ==================== */
 /* ================================================= */
 
-const getFaqSchema = cache(
-  async function getFaqSchema(type, id) {
+async function getFaqSchema(type, id) {
 
-    try {
+  try {
 
-      if (!id) {
-
-        return {
-
-          visibleFaqs: [],
-          schema: null,
-
-        };
-
-      }
-
-      let trueUrl = "";
-      let falseUrl = "";
-
-      /* ================= CITY ================= */
-
-      if (type === "city") {
-
-        trueUrl =
-          `${getApiUrl()}/api/faqs/visibility?type=city&visible=true&cityId=${id}`;
-
-        falseUrl =
-          `${getApiUrl()}/api/faqs/visibility?type=city&visible=false&cityId=${id}`;
-
-      }
-
-      /* ================= SUBCITY ================= */
-
-      else if (
-        type === "subcity"
-      ) {
-
-        trueUrl =
-          `${getApiUrl()}/api/faqs/visibility?type=subcity&visible=true&subCityId=${id}`;
-
-        falseUrl =
-          `${getApiUrl()}/api/faqs/visibility?type=subcity&visible=false&subCityId=${id}`;
-
-      }
-
-      /* ================= GIRL ================= */
-
-      else if (
-        type === "girl"
-      ) {
-
-        trueUrl =
-          `${getApiUrl()}/api/faqs/visibility?type=girl&visible=true&girlId=${id}`;
-
-        falseUrl =
-          `${getApiUrl()}/api/faqs/visibility?type=girl&visible=false&girlId=${id}`;
-
-      }
-
-      const [
-        trueRes,
-        falseRes,
-      ] = await Promise.all([
-
-        fetch(
-          trueUrl,
-          fetchConfig
-        ),
-
-        fetch(
-          falseUrl,
-          fetchConfig
-        ),
-
-      ]);
-
-      if (
-        !trueRes.ok &&
-        !falseRes.ok
-      ) {
-
-        return {
-
-          visibleFaqs: [],
-          schema: null,
-
-        };
-
-      }
-
-      const trueData =
-        trueRes.ok
-          ? await trueRes.json()
-          : {};
-
-      const falseData =
-        falseRes.ok
-          ? await falseRes.json()
-          : {};
-
-      const extractFaqs =
-        (data) => {
-
-          let faqList = [];
-
-          if (
-            Array.isArray(
-              data?.faqs
-            )
-          ) {
-
-            faqList =
-              data.faqs.flatMap(
-                (group) => {
-
-                  if (
-                    Array.isArray(
-                      group?.faqs
-                    )
-                  ) {
-
-                    return group.faqs;
-
-                  }
-
-                  if (
-                    group?.question &&
-                    group?.answer
-                  ) {
-
-                    return [group];
-
-                  }
-
-                  return [];
-
-                }
-              );
-
-          }
-
-          else if (
-            Array.isArray(data)
-          ) {
-
-            faqList = data;
-
-          }
-
-          faqList =
-            faqList.filter(
-              (faq) => {
-
-                return (
-
-                  faq &&
-
-                  typeof faq.question ===
-                    "string" &&
-
-                  faq.question.trim() !==
-                    "" &&
-
-                  typeof faq.answer ===
-                    "string" &&
-
-                  faq.answer.trim() !==
-                    ""
-
-                );
-
-              }
-            );
-
-          return faqList;
-
-        };
-
-      const visibleFaqs =
-        extractFaqs(
-          trueData
-        );
-
-      const hiddenFaqs =
-        extractFaqs(
-          falseData
-        );
-
-      const allFaqs = [
-
-        ...visibleFaqs,
-
-        ...hiddenFaqs,
-
-      ];
-
-      if (!allFaqs.length) {
-
-        return {
-
-          visibleFaqs: [],
-          schema: null,
-
-        };
-
-      }
-
-      const schema = {
-
-        "@context":
-          "https://schema.org",
-
-        "@type":
-          "FAQPage",
-
-        mainEntity:
-          allFaqs.map(
-            (faq) => ({
-
-              "@type":
-                "Question",
-
-              name:
-                faq.question,
-
-              acceptedAnswer: {
-
-                "@type":
-                  "Answer",
-
-                text:
-                  faq.answer,
-
-              },
-
-            })
-          ),
-
-      };
-
-      return {
-
-        visibleFaqs,
-        schema,
-
-      };
-
-    } catch (error) {
+    if (!id) {
 
       return {
 
@@ -364,116 +128,355 @@ const getFaqSchema = cache(
       };
 
     }
+
+    let trueUrl = "";
+    let falseUrl = "";
+
+    if (type === "city") {
+
+      trueUrl =
+        `${getApiUrl()}/api/faqs/visibility?type=city&visible=true&cityId=${id}`;
+
+      falseUrl =
+        `${getApiUrl()}/api/faqs/visibility?type=city&visible=false&cityId=${id}`;
+
+    }
+
+    else if (
+      type === "subcity"
+    ) {
+
+      trueUrl =
+        `${getApiUrl()}/api/faqs/visibility?type=subcity&visible=true&subCityId=${id}`;
+
+      falseUrl =
+        `${getApiUrl()}/api/faqs/visibility?type=subcity&visible=false&subCityId=${id}`;
+
+    }
+
+    else if (
+      type === "girl"
+    ) {
+
+      trueUrl =
+        `${getApiUrl()}/api/faqs/visibility?type=girl&visible=true&girlId=${id}`;
+
+      falseUrl =
+        `${getApiUrl()}/api/faqs/visibility?type=girl&visible=false&girlId=${id}`;
+
+    }
+
+    const [
+      trueRes,
+      falseRes,
+    ] = await Promise.all([
+
+      fetch(
+        trueUrl,
+        {
+          cache: "no-store",
+        }
+      ),
+
+      fetch(
+        falseUrl,
+        {
+          cache: "no-store",
+        }
+      ),
+
+    ]);
+
+    if (
+      !trueRes.ok &&
+      !falseRes.ok
+    ) {
+
+      return {
+
+        visibleFaqs: [],
+        schema: null,
+
+      };
+
+    }
+
+    const trueData =
+      trueRes.ok
+        ? await trueRes.json()
+        : {};
+
+    const falseData =
+      falseRes.ok
+        ? await falseRes.json()
+        : {};
+
+    const extractFaqs =
+      (data) => {
+
+        let faqList = [];
+
+        if (
+          Array.isArray(
+            data?.faqs
+          )
+        ) {
+
+          faqList =
+            data.faqs.flatMap(
+              (group) => {
+
+                if (
+                  Array.isArray(
+                    group?.faqs
+                  )
+                ) {
+
+                  return group.faqs;
+
+                }
+
+                if (
+                  group?.question &&
+                  group?.answer
+                ) {
+
+                  return [group];
+
+                }
+
+                return [];
+
+              }
+            );
+
+        }
+
+        else if (
+          Array.isArray(data)
+        ) {
+
+          faqList = data;
+
+        }
+
+        faqList =
+          faqList.filter(
+            (faq) => {
+
+              return (
+
+                faq &&
+
+                typeof faq.question ===
+                  "string" &&
+
+                faq.question.trim() !==
+                  "" &&
+
+                typeof faq.answer ===
+                  "string" &&
+
+                faq.answer.trim() !==
+                  ""
+
+              );
+
+            }
+          );
+
+        return faqList;
+
+      };
+
+    const visibleFaqs =
+      extractFaqs(
+        trueData
+      );
+
+    const hiddenFaqs =
+      extractFaqs(
+        falseData
+      );
+
+    const allFaqs = [
+
+      ...visibleFaqs,
+
+      ...hiddenFaqs,
+
+    ];
+
+    if (!allFaqs.length) {
+
+      return {
+
+        visibleFaqs: [],
+        schema: null,
+
+      };
+
+    }
+
+    const schema = {
+
+      "@context":
+        "https://schema.org",
+
+      "@type":
+        "FAQPage",
+
+      mainEntity:
+        allFaqs.map(
+          (faq) => ({
+
+            "@type":
+              "Question",
+
+            name:
+              faq.question,
+
+            acceptedAnswer: {
+
+              "@type":
+                "Answer",
+
+              text:
+                faq.answer,
+
+            },
+
+          })
+        ),
+
+    };
+
+    return {
+
+      visibleFaqs,
+      schema,
+
+    };
+
+  } catch (error) {
+
+    return {
+
+      visibleFaqs: [],
+      schema: null,
+
+    };
+
   }
-);
+
+}
 
 /* ================================================= */
 /* ================= CHECK SLUG ==================== */
 /* ================================================= */
 
-const checkSlug = cache(
-  async function checkSlug(slug) {
+async function checkSlug(slug) {
 
-    try {
+  try {
 
-      const [
-        girlRes,
-        cityRes,
-        subCityRes,
-      ] = await Promise.all([
+    const [
+      girlRes,
+      cityRes,
+      subCityRes,
+    ] = await Promise.all([
 
-        fetch(
-          `${getApiUrl()}/api/girls/${slug}`,
-          fetchConfig
-        ),
-
-        fetch(
-          `${getApiUrl()}/api/cities/${slug}`,
-          fetchConfig
-        ),
-
-        fetch(
-          `${getApiUrl()}/api/subcities/${slug}`,
-          fetchConfig
-        ),
-
-      ]);
-
-      /* ================= GIRL ================= */
-
-      if (girlRes.ok) {
-
-        const girlData =
-          await girlRes.json();
-
-        if (
-          girlData &&
-          girlData._id &&
-          !girlData.message
-        ) {
-
-          return {
-
-            type: "girl",
-            data: girlData,
-
-          };
-
+      fetch(
+        `${getApiUrl()}/api/girls/${slug}`,
+        {
+          cache: "no-store",
         }
-      }
+      ),
 
-      /* ================= CITY ================= */
-
-      if (cityRes.ok) {
-
-        const cityData =
-          await cityRes.json();
-
-        if (
-          cityData?.city?._id
-        ) {
-
-          return {
-
-            type: "city",
-            data: cityData,
-
-          };
-
+      fetch(
+        `${getApiUrl()}/api/cities/${slug}`,
+        {
+          cache: "no-store",
         }
-      }
+      ),
 
-      /* ================= SUBCITY ================= */
-
-      if (subCityRes.ok) {
-
-        const subCityData =
-          await subCityRes.json();
-
-        if (
-          subCityData?.subCity?._id
-        ) {
-
-          return {
-
-            type: "subcity",
-            data:
-              subCityData.subCity,
-
-          };
-
+      fetch(
+        `${getApiUrl()}/api/subcities/${slug}`,
+        {
+          cache: "no-store",
         }
+      ),
+
+    ]);
+
+    if (girlRes.ok) {
+
+      const girlData =
+        await girlRes.json();
+
+      if (
+        girlData &&
+        girlData._id &&
+        !girlData.message
+      ) {
+
+        return {
+
+          type: "girl",
+          data: girlData,
+
+        };
+
       }
-
-      return null;
-
-    } catch (err) {
-
-      return null;
-
     }
+
+    if (cityRes.ok) {
+
+      const cityData =
+        await cityRes.json();
+
+      if (
+        cityData?.city?._id
+      ) {
+
+        return {
+
+          type: "city",
+          data: cityData,
+
+        };
+
+      }
+    }
+
+    if (subCityRes.ok) {
+
+      const subCityData =
+        await subCityRes.json();
+
+      if (
+        subCityData?.subCity?._id
+      ) {
+
+        return {
+
+          type: "subcity",
+          data:
+            subCityData.subCity,
+
+        };
+
+      }
+    }
+
+    return null;
+
+  } catch (err) {
+
+    return null;
+
   }
-);
+
+}
 
 /* ================================================= */
 /* ================= SEO =========================== */
