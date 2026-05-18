@@ -443,13 +443,12 @@ export default function AllCities() {
 
                               {city.imageUrl ? (
 
-                                <Image
+                                <img
                                   src={convertCloudinaryUrl(
                                     city.imageUrl
                                   )}
                                   alt={city.mainCity}
-                                  fill
-                                  className="object-cover"
+                                  className="w-full h-full object-cover"
                                 />
 
                               ) : (
@@ -779,21 +778,21 @@ export default function AllCities() {
 
                   <div className="relative h-48 rounded-2xl overflow-hidden shadow-md">
 
-                   <Image
-  src={
-    selectedCity.imageUrl
-      ? convertCloudinaryUrl(
-          selectedCity.imageUrl
-        )
-      : "/placeholder.jpg"
-  }
-  alt={
-    selectedCity.imageAlt ||
-    "City Image"
-  }
-  fill
-  className="object-cover"
-/>
+                    <Image
+                      src={
+                        selectedCity.imageUrl
+                          ? convertCloudinaryUrl(
+                            selectedCity.imageUrl
+                          )
+                          : "/placeholder.jpg"
+                      }
+                      alt={
+                        selectedCity.imageAlt ||
+                        "City Image"
+                      }
+                      fill
+                      className="object-cover"
+                    />
 
                     <div className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-blue-600 uppercase">
 
