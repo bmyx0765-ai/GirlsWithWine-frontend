@@ -19,6 +19,7 @@ import GirlDetailsSkeleton from "@/components/GirlDetailsSkeleton";
 import Image from "next/image";
 import ImageSlider from "@/components/ImageSlider";
 import CommonFaq from "./CommonFaq";
+import { convertCloudinaryUrl } from "@/utils/convertCloudinaryUrl";
 
 export default function GirlDetailsPage() {
     const dispatch = useDispatch();
@@ -229,7 +230,25 @@ export default function GirlDetailsPage() {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                             {cityGirls?.filter((g) => g._id !== singleGirl._id).slice(0, 4).map((girl) => (
                                 <div key={girl._id} onClick={() => router.push(`/${girl.permalink}`)} className="group cursor-pointer bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all">
-                                    <img src={girl.imageUrl} className="w-full h-40 object-cover" alt={girl.name} />
+                                    <img
+                                        src={
+                                            girl?.imageUrl
+                                                ? convertCloudinaryUrl(
+                                                    girl.imageUrl
+                                                )
+                                                : "/placeholder.jpg"
+                                        }
+                                        className="w-full h-40 object-cover"
+                                        alt={
+                                            girl?.name ||
+                                            "Girl Image"
+                                        }
+                                        loading="lazy"
+                                        onError={(e) => {
+                                            e.currentTarget.src =
+                                                "/placeholder.jpg";
+                                        }}
+                                    />
                                     <div className="p-4 text-center">
                                         <h3 className="font-bold text-sm text-gray-900 line-clamp-1">{girl.name || "Profile"}</h3>
                                         <p className="text-[10px] text-gray-400 font-bold uppercase">{girl.age} yrs • {girl.city?.[0]?.mainCity || "City"}</p>
@@ -275,13 +294,24 @@ export default function GirlDetailsPage() {
 
 
                                         <div className="w-20 h-20 mx-auto rounded-full bg-gray-200 overflow-hidden mb-4">
-                                            <Image
-                                                src={review.userImage}
-                                                alt={review.userName || "User"}
-                                                width={80}
-                                                height={80}
+                                            <img
+                                                src={
+                                                    review?.userImage
+                                                        ? convertCloudinaryUrl(
+                                                            review.userImage
+                                                        )
+                                                        : "/placeholder-user.png"
+                                                }
+                                                alt={
+                                                    review?.userName ||
+                                                    "User"
+                                                }
                                                 className="object-cover w-full h-full"
-                                                unoptimized
+                                                loading="lazy"
+                                                onError={(e) => {
+                                                    e.currentTarget.src =
+                                                        "/placeholder-user.png";
+                                                }}
                                             />
                                         </div>
 
@@ -322,20 +352,20 @@ export default function GirlDetailsPage() {
 
                 </div>
 
-               
 
-                   
 
-                        <CommonFaq
-                            type="girl"
-                            girlId={singleGirl?._id}
-                            title={`${singleGirl?.name || "Profile"} FAQs`}
-                            subTitle={`Find answers related to booking process, availability, privacy, pricing, and services for ${singleGirl?.name || "this profile"}.`}
-                        />
 
-                 
 
-             
+                <CommonFaq
+                    type="girl"
+                    girlId={singleGirl?._id}
+                    title={`${singleGirl?.name || "Profile"} FAQs`}
+                    subTitle={`Find answers related to booking process, availability, privacy, pricing, and services for ${singleGirl?.name || "this profile"}.`}
+                />
+
+
+
+
 
                 <ReportAbuseSection />
                 <CitySection loading={listLoading} cities={cities} />

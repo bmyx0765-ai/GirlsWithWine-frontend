@@ -8,6 +8,7 @@ import { getGirlsByCityThunk } from "@/store/slices/girlSlice";
 import { getCityPageThunk, getCitiesThunk } from "@/store/slices/citySlice";
 import CommonFaq from "./CommonFaq";
 import CityMetaSection from "./CityMetaSection";
+import { convertCloudinaryUrl } from "@/utils/convertCloudinaryUrl";
 
 /* ================= SKELETON ================= */
 const GirlCardSkeleton = () => (
@@ -115,7 +116,7 @@ export default function CityGirlsPage({ params }) {
     });
   }, [cityObj?.updatedAt]);
 
-    useEffect(() => {
+  useEffect(() => {
     // Force scroll to top on initial page load
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
@@ -164,9 +165,25 @@ export default function CityGirlsPage({ params }) {
                   {/* IMAGE */}
                   <div className="w-full sm:w-40 h-52 sm:h-40 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                     <img
-                      src={girl.imageUrl || "/placeholder.jpg"}
-                      alt={girl.imageAlt}
+                      src={
+                        girl?.imageUrl
+                          ? convertCloudinaryUrl(
+                            girl.imageUrl
+                          )
+                          : "/placeholder.jpg"
+                      }
+                      alt={
+                        girl?.imageAlt ||
+                        girl?.heading ||
+                        girl?.name ||
+                        "Girl Image"
+                      }
                       className="w-full h-full object-cover"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          "/placeholder.jpg";
+                      }}
                     />
                   </div>
 
@@ -247,8 +264,8 @@ export default function CityGirlsPage({ params }) {
                 key={i}
                 onClick={() => setCurrentPage(i + 1)}
                 className={`px-4 py-1 rounded-lg ${currentPage === i + 1
-                    ? "bg-[#B30059] text-white"
-                    : "border"
+                  ? "bg-[#B30059] text-white"
+                  : "border"
                   }`}
               >
                 {i + 1}
@@ -291,9 +308,9 @@ export default function CityGirlsPage({ params }) {
       </div>
 
       <CityMetaSection
-  subCities={singleCity?.subCities || []}
-  tags={singleCity?.tags || []}
-/>
+        subCities={singleCity?.subCities || []}
+        tags={singleCity?.tags || []}
+      />
     </>
   );
 }
