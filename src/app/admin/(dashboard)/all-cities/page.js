@@ -778,7 +778,7 @@ export default function AllCities() {
 
                   <div className="relative h-48 rounded-2xl overflow-hidden shadow-md">
 
-                    <Image
+                     <img
                       src={
                         selectedCity.imageUrl
                           ? convertCloudinaryUrl(
@@ -790,8 +790,7 @@ export default function AllCities() {
                         selectedCity.imageAlt ||
                         "City Image"
                       }
-                      fill
-                      className="object-cover"
+                      className="w-full h-full object-cover"
                     />
 
                     <div className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-blue-600 uppercase">
