@@ -4,6 +4,19 @@ const nextConfig = {
 
   reactCompiler: true,
 
+  /* =========================================
+     TURBOPACK ROOT FIX
+  ========================================= */
+
+  turbopack: {
+
+    root: __dirname,
+  },
+
+  /* =========================================
+     CLOUDINARY REWRITE
+  ========================================= */
+
   async rewrites() {
 
     return [
@@ -18,9 +31,17 @@ const nextConfig = {
     ];
   },
 
+  /* =========================================
+     NEXT IMAGE CONFIG
+  ========================================= */
+
   images: {
 
     remotePatterns: [
+
+      /* =========================================
+         MAIN DOMAIN
+      ========================================= */
 
       {
         protocol: "https",
@@ -28,11 +49,19 @@ const nextConfig = {
         pathname: "/uploads/**",
       },
 
+      /* =========================================
+         CLOUDINARY
+      ========================================= */
+
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
         pathname: "/**",
       },
+
+      /* =========================================
+         WORDPRESS BLOG
+      ========================================= */
 
       {
         protocol: "https",
@@ -40,11 +69,19 @@ const nextConfig = {
         pathname: "/**",
       },
 
+      /* =========================================
+         WORDPRESS CDN
+      ========================================= */
+
       {
         protocol: "https",
         hostname: "i0.wp.com",
         pathname: "/**",
       },
+
+      /* =========================================
+         GRAVATAR
+      ========================================= */
 
       {
         protocol: "https",
@@ -52,8 +89,30 @@ const nextConfig = {
         pathname: "/**",
       },
 
+      /* =========================================
+         LOCALHOST DEV
+      ========================================= */
+
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3000",
+        pathname: "/uploads/**",
+      },
+
     ],
   },
+
+  /* =========================================
+     PERFORMANCE
+  ========================================= */
+
+  compress: true,
+
+  poweredByHeader: false,
+
+  productionBrowserSourceMaps:
+    false,
 };
 
 export default nextConfig;
