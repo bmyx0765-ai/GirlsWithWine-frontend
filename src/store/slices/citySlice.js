@@ -668,49 +668,64 @@ export const deleteCityThunk =
    UPDATE CITY
 ======================================================= */
 
-export const updateCityThunk =
-  createAsyncThunk(
-    "city/update",
+export const updateCityThunk = createAsyncThunk(
+  "city/update",
 
-    async (
-      { cityId, formData },
-      { rejectWithValue }
-    ) => {
-      try {
+  async (
+    { cityId, formData },
+    { rejectWithValue }
+  ) => {
 
-        const res =
-          await axiosInstance.put(
-            `${UPDATE_CITY_URL}/${cityId}`,
-            formData,
-            {
-              headers: {
-                "Content-Type":
-                  "multipart/form-data",
-              },
-            }
-          );
+    try {
+
+      // DEBUG
+      for (let pair of formData.entries()) {
 
         console.log(
-          "UPDATE RESPONSE :",
-          res.data
-        );
-
-        return (
-          res.data?.data ||
-          res.data?.city ||
-          res.data
-        );
-
-      } catch (error) {
-
-        return rejectWithValue(
-          error.response?.data
-            ?.message ||
-            "Failed to update city"
+          pair[0],
+          pair[1]
         );
       }
+
+      const res =
+        await axiosInstance.put(
+          `${UPDATE_CITY_URL}/${cityId}`,
+          formData
+        );
+
+      console.log(
+        "UPDATE RESPONSE :",
+        res.data
+      );
+
+      return (
+        res.data?.data ||
+        res.data?.city ||
+        res.data
+      );
+
+    } catch (error) {
+
+      console.log(
+        "UPDATE ERROR :",
+        error
+      );
+
+      console.log(
+        "ERROR RESPONSE :",
+        error.response?.data
+      );
+
+      return rejectWithValue(
+        error.response?.data ||
+        {
+          message:
+            "Failed to update city",
+        }
+      );
     }
-  );
+  }
+);
 
 /* =======================================================
    UPDATE STATUS (FULL FIXED ✅)

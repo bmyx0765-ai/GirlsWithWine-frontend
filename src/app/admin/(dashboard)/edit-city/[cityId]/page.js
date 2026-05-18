@@ -98,27 +98,94 @@ const EditCity = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+
+  e.preventDefault();
+
+  try {
 
     const fd = new FormData();
-    Object.entries(form).forEach(([key, value]) => {
-      if (key === "tags") {
-        const tagArray = value.split(",").map(t => t.trim()).filter(t => t !== "");
-        tagArray.forEach(tag => fd.append("tags[]", tag));
-      } else {
-        fd.append(key, value);
+
+    Object.entries(form).forEach(
+      ([key, value]) => {
+
+        if (key === "tags") {
+
+          const tagArray = value
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t !== "");
+
+          tagArray.forEach((tag) =>
+            fd.append("tags[]", tag)
+          );
+
+        } else {
+
+          fd.append(
+            key,
+            value || ""
+          );
+        }
       }
-    });
+    );
 
-    if (image) fd.append("image", image);
+    // IMAGE
+    if (image) {
 
-    const res = await dispatch(updateCityThunk({ cityId, formData: fd }));
-    if (res.meta.requestStatus === "fulfilled") {
-      toast.success("City updated successfully!");
-      router.push("/admin/all-cities");
+      fd.append(
+        "image",
+        image
+      );
     }
-  };
+
+    // DEBUG
+    for (let pair of fd.entries()) {
+      console.log(
+        pair[0],
+        pair[1]
+      );
+    }
+
+    const res = await dispatch(
+      updateCityThunk({
+        cityId,
+        formData: fd,
+      })
+    );
+
+    console.log(res);
+
+    if (
+      res.meta.requestStatus ===
+      "fulfilled"
+    ) {
+
+      toast.success(
+        "City updated successfully!"
+      );
+
+      router.push(
+        "/admin/all-cities"
+      );
+
+    } else {
+
+      toast.error(
+        res.payload?.message ||
+        "Update failed"
+      );
+    }
+
+  } catch (error) {
+
+    console.log(error);
+
+    toast.error(
+      "Something went wrong"
+    );
+  }
+};
 
   if (!initialLoaded) {
     return (

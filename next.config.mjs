@@ -1,29 +1,38 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+
   reactCompiler: true,
 
-  images: {
-    remotePatterns: [
+  async rewrites() {
 
-      /* ================= LOCAL ================= */
+    return [
 
       {
-        protocol: "http",
-        hostname: "localhost",
-        port: "5000",
-        pathname: "/uploads/**",
+        source: "/uploads/:path*",
+
+        destination:
+          "https://res.cloudinary.com/dd8zulgom/image/upload/:path*",
       },
 
-      /* ================= API SERVER ================= */
+    ];
+  },
+
+  images: {
+
+    remotePatterns: [
 
       {
         protocol: "https",
-        hostname: "api4.girlswithwine.in",
+        hostname: "girlswithwine.com",
         pathname: "/uploads/**",
       },
 
-      /* ================= WORDPRESS BLOG ================= */
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
 
       {
         protocol: "https",
@@ -31,27 +40,15 @@ const nextConfig = {
         pathname: "/**",
       },
 
-      /* ================= WORDPRESS CDN ================= */
-
       {
         protocol: "https",
         hostname: "i0.wp.com",
         pathname: "/**",
       },
 
-      /* ================= GRAVATAR ================= */
-
       {
         protocol: "https",
         hostname: "secure.gravatar.com",
-        pathname: "/**",
-      },
-
-      /* ================= MAIN WEBSITE ================= */
-
-      {
-        protocol: "https",
-        hostname: "girlswithwine.com",
         pathname: "/**",
       },
 
