@@ -2,10 +2,23 @@ export const convertCloudinaryUrl = (
   url
 ) => {
 
-  if (!url) return "";
+  if (!url) {
+    return "/placeholder.jpg";
+  }
 
-  return url.replace(
-    "https://res.cloudinary.com/dd8zulgom/image/upload",
-    "https://girlswithwine.com/uploads"
-  );
+  // Cloudinary URL → Custom Domain
+
+  if (
+    url.includes(
+      "res.cloudinary.com"
+    )
+  ) {
+
+    return url.replace(
+      "https://res.cloudinary.com/dd8zulgom/image/upload",
+      "https://girlswithwine.com/uploads"
+    );
+  }
+
+  return url;
 };

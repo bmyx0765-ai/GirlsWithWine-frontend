@@ -1,11 +1,9 @@
-
-
-
 "use client";
 
 import React, {
   useEffect,
   useState,
+  useMemo,
 } from "react";
 
 import {
@@ -89,6 +87,7 @@ const TableSkeleton = () => {
           <td className="p-4 text-center">
             <div className="h-8 bg-gray-200 rounded-lg w-24 mx-auto"></div>
           </td>
+
         </tr>
       ))}
     </>
@@ -147,13 +146,20 @@ export default function AllCities() {
     );
 
   const paginatedCities =
-    cities?.slice(
-      (currentPage - 1) *
-      pageSize,
+    useMemo(() => {
 
-      currentPage *
-      pageSize
-    );
+      return cities?.slice(
+        (currentPage - 1) *
+        pageSize,
+
+        currentPage *
+        pageSize
+      );
+
+    }, [
+      cities,
+      currentPage,
+    ]);
 
   /* =========================================
      FETCH
@@ -349,7 +355,7 @@ export default function AllCities() {
 
           <div className="overflow-x-auto">
 
-            <table className="w-full text-left border-collapse">
+            <table className="w-full table-fixed text-left border-collapse">
 
               <thead>
 
@@ -359,23 +365,23 @@ export default function AllCities() {
                     #
                   </th>
 
-                  <th className="px-6 py-5">
+                  <th className="px-6 py-5 w-[300px]">
                     City Info
                   </th>
 
-                  <th className="px-6 py-5">
+                  <th className="px-6 py-5 w-[170px]">
                     Contact
                   </th>
 
-                  <th className="px-6 py-5">
+                  <th className="px-6 py-5 w-[150px]">
                     Created
                   </th>
 
-                  <th className="px-6 py-5">
+                  <th className="px-6 py-5 w-[130px]">
                     Status
                   </th>
 
-                  <th className="px-6 py-5 text-center">
+                  <th className="px-6 py-5 text-center w-[150px]">
                     Actions
                   </th>
 
@@ -419,7 +425,7 @@ export default function AllCities() {
                         key={
                           city._id
                         }
-                        className="hover:bg-blue-50/30 transition-colors group"
+                        className="hover:bg-blue-50/30 transition-colors"
                       >
 
                         {/* INDEX */}
@@ -439,16 +445,21 @@ export default function AllCities() {
 
                           <div className="flex items-center gap-3">
 
-                            <div className="relative w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100 overflow-hidden shadow-sm">
+                            <div className="relative min-w-[48px] min-h-[48px] w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100 overflow-hidden shadow-sm">
 
                               {city.imageUrl ? (
 
-                                <img
+                                <Image
                                   src={convertCloudinaryUrl(
                                     city.imageUrl
                                   )}
-                                  alt={city.mainCity}
-                                  className="w-full h-full object-cover"
+                                  alt={
+                                    city.mainCity
+                                  }
+                                  fill
+                                  sizes="48px"
+                                  loading="lazy"
+                                  className="object-cover"
                                 />
 
                               ) : (
@@ -456,11 +467,12 @@ export default function AllCities() {
                                 <MapPinIcon className="w-6 h-6 text-blue-500" />
 
                               )}
+
                             </div>
 
-                            <div>
+                            <div className="min-w-0">
 
-                              <div className="font-bold text-gray-900 text-base">
+                              <div className="font-bold text-gray-900 text-base truncate">
 
                                 {
                                   city.mainCity
@@ -468,7 +480,7 @@ export default function AllCities() {
 
                               </div>
 
-                              <div className="text-gray-400 text-xs truncate max-w-[180px]">
+                              <div className="text-gray-400 text-xs truncate max-w-[220px]">
 
                                 {
                                   city.heading
@@ -490,19 +502,27 @@ export default function AllCities() {
 
                             <div className="flex items-center gap-2 text-xs text-gray-600">
 
-                              <PhoneIcon className="w-3 h-3 text-blue-400" />
+                              <PhoneIcon className="w-3 h-3 text-blue-400 shrink-0" />
 
-                              {city.phoneNumber ||
-                                "N/A"}
+                              <span className="truncate">
+
+                                {city.phoneNumber ||
+                                  "N/A"}
+
+                              </span>
 
                             </div>
 
                             <div className="flex items-center gap-2 text-xs text-gray-600">
 
-                              <ChatBubbleLeftRightIcon className="w-3 h-3 text-green-400" />
+                              <ChatBubbleLeftRightIcon className="w-3 h-3 text-green-400 shrink-0" />
 
-                              {city.whatsappNumber ||
-                                "N/A"}
+                              <span className="truncate">
+
+                                {city.whatsappNumber ||
+                                  "N/A"}
+
+                              </span>
 
                             </div>
 
@@ -632,9 +652,7 @@ export default function AllCities() {
             </table>
           </div>
 
-          {/* =========================================
-             PAGINATION
-          ========================================= */}
+          {/* PAGINATION */}
 
           <div className="bg-gray-50/50 px-6 py-4 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
 
@@ -734,9 +752,7 @@ export default function AllCities() {
           </div>
         </div>
 
-        {/* =========================================
-           DRAWER
-        ========================================= */}
+        {/* DRAWER */}
 
         <Drawer
           anchor="right"
@@ -774,11 +790,9 @@ export default function AllCities() {
 
                 <div className="p-6 overflow-y-auto flex-1 space-y-6">
 
-                  {/* IMAGE */}
-
                   <div className="relative h-48 rounded-2xl overflow-hidden shadow-md">
 
-                     <img
+                    <img
                       src={
                         selectedCity.imageUrl
                           ? convertCloudinaryUrl(
@@ -793,173 +807,7 @@ export default function AllCities() {
                       className="w-full h-full object-cover"
                     />
 
-                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-blue-600 uppercase">
-
-                      {
-                        selectedCity.status
-                      }
-
-                    </div>
-
                   </div>
-
-                  {/* TITLE */}
-
-                  <div className="space-y-1">
-
-                    <h4 className="text-2xl font-bold text-gray-900">
-
-                      {
-                        selectedCity.mainCity
-                      }
-
-                    </h4>
-
-                    <p className="text-blue-600 font-medium text-xs">
-
-                      {
-                        selectedCity.heading
-                      }
-
-                    </p>
-
-                  </div>
-
-                  {/* CONTACT */}
-
-                  <div className="grid grid-cols-2 gap-3">
-
-                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-
-                      <label className="text-[9px] text-gray-400 font-bold uppercase block mb-1">
-
-                        Phone
-
-                      </label>
-
-                      <p className="text-xs font-semibold text-gray-700">
-
-                        {selectedCity.phoneNumber ||
-                          "-"}
-
-                      </p>
-
-                    </div>
-
-                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-
-                      <label className="text-[9px] text-gray-400 font-bold uppercase block mb-1">
-
-                        WhatsApp
-
-                      </label>
-
-                      <p className="text-xs font-semibold text-green-600">
-
-                        {selectedCity.whatsappNumber ||
-                          "-"}
-
-                      </p>
-
-                    </div>
-
-                  </div>
-
-                  {/* DESCRIPTION */}
-
-                  <div className="space-y-2">
-
-                    <h5 className="text-xs font-bold text-gray-900 border-l-4 border-blue-600 pl-2">
-
-                      Full Description
-
-                    </h5>
-
-                    <div
-                      className="text-xs text-gray-600 leading-relaxed prose prose-blue max-w-full"
-                      dangerouslySetInnerHTML={{
-                        __html:
-                          selectedCity.description,
-                      }}
-                    />
-
-                  </div>
-
-                  {/* SEO */}
-
-                  {selectedCity.seoTitle && (
-
-                    <div className="space-y-3 p-5 bg-blue-50/50 rounded-2xl border border-blue-100">
-
-                      <h5 className="text-xs font-bold text-blue-900">
-
-                        SEO Meta Info
-
-                      </h5>
-
-                      <div className="space-y-2">
-
-                        <p className="text-xs text-blue-700 font-medium">
-
-                          Title:
-
-                          <span className="font-normal italic px-1">
-
-                            "
-                            {
-                              selectedCity.seoTitle
-                            }
-                            "
-
-                          </span>
-
-                        </p>
-
-                        <div className="flex flex-wrap gap-1">
-
-                          {selectedCity.seoKeywords
-                            ?.split(
-                              ","
-                            )
-                            .map(
-                              (
-                                tag,
-                                i
-                              ) => (
-
-                                <span
-                                  key={i}
-                                  className="bg-white text-[9px] px-2 py-0.5 rounded-md text-blue-500 font-bold border border-blue-100"
-                                >
-
-                                  #
-                                  {tag.trim()}
-
-                                </span>
-                              )
-                            )}
-
-                        </div>
-
-                      </div>
-
-                    </div>
-                  )}
-
-                </div>
-
-                {/* FOOTER */}
-
-                <div className="p-6 border-t border-gray-100 bg-gray-50/30">
-
-                  <Link
-                    href={`/admin/edit-city/${selectedCity._id}`}
-                    className="block w-full text-center py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
-                  >
-
-                    Edit City Details
-
-                  </Link>
 
                 </div>
               </>

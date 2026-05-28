@@ -35,6 +35,8 @@ export default function GirlDetailsPage() {
     const { cities } = useSelector((state) => state.city);
     const { girlReviews, loading: reviewLoading, success: reviewSuccess } = useSelector((state) => state.review);
 
+    console.log("cities",cities);
+    
     /* ================= FETCHING DATA ================= */
     useEffect(() => {
         if (slug) {
@@ -42,9 +44,11 @@ export default function GirlDetailsPage() {
         }
     }, [slug]);
 
-    useEffect(() => {
-        dispatch(getCitiesThunk());
-    }, [dispatch]);
+ useEffect(() => {
+   if (!cities || cities.length === 0) {
+      dispatch(getCitiesThunk());
+   }
+}, [cities, dispatch]);
 
 
 

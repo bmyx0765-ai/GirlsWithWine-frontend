@@ -40,23 +40,26 @@ export default function CityGirlsPage({ params }) {
     if (!cityName) return;
     setPageLoading(true);
     dispatch(getCityPageThunk(cityName));
-  }, [cityName, dispatch]);
+  }, [cityName,]);
 
   /* ================= FETCH GIRLS ================= */
   useEffect(() => {
     if (!singleCity?._id) return;
 
     dispatch(getGirlsByCityThunk(singleCity._id))
+
       .unwrap()
       .finally(() => setPageLoading(false));
-  }, [singleCity?._id, dispatch]);
+  }, [singleCity?._id]);
+
+  console.log("CityGirlsPage Rendered", { cityName, singleCity, cityGirls });
 
   /* ================= FETCH ALL CITIES (FIX REFRESH) ================= */
-  useEffect(() => {
-    if (!cities || cities.length === 0) {
-      dispatch(getCitiesThunk());
-    }
-  }, [cities, dispatch]);
+  // useEffect(() => {
+  //   if (!cities || cities.length === 0) {
+  //     dispatch(getCitiesThunk());
+  //   }
+  // }, [cities]);
 
   /* ================= HELPERS ================= */
 

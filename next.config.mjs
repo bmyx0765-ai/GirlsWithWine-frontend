@@ -2,7 +2,11 @@
 
 const nextConfig = {
 
-  reactCompiler: true,
+  reactStrictMode: true,
+
+  experimental: {
+    reactCompiler: true,
+  },
 
   /* =========================================
      CLOUDINARY REWRITE
@@ -13,7 +17,8 @@ const nextConfig = {
     return [
 
       {
-        source: "/uploads/:path*",
+        source:
+          "/uploads/:path*",
 
         destination:
           "https://res.cloudinary.com/dd8zulgom/image/upload/:path*",
@@ -36,8 +41,10 @@ const nextConfig = {
 
       {
         protocol: "https",
-        hostname: "girlswithwine.com",
-        pathname: "/uploads/**",
+        hostname:
+          "girlswithwine.com",
+        pathname:
+          "/uploads/**",
       },
 
       /* =========================================
@@ -46,8 +53,10 @@ const nextConfig = {
 
       {
         protocol: "https",
-        hostname: "res.cloudinary.com",
-        pathname: "/**",
+        hostname:
+          "res.cloudinary.com",
+        pathname:
+          "/**",
       },
 
       /* =========================================
@@ -56,8 +65,10 @@ const nextConfig = {
 
       {
         protocol: "https",
-        hostname: "blog.girlswithwine.com",
-        pathname: "/**",
+        hostname:
+          "blog.girlswithwine.com",
+        pathname:
+          "/**",
       },
 
       /* =========================================
@@ -66,8 +77,10 @@ const nextConfig = {
 
       {
         protocol: "https",
-        hostname: "i0.wp.com",
-        pathname: "/**",
+        hostname:
+          "i0.wp.com",
+        pathname:
+          "/**",
       },
 
       /* =========================================
@@ -76,8 +89,10 @@ const nextConfig = {
 
       {
         protocol: "https",
-        hostname: "secure.gravatar.com",
-        pathname: "/**",
+        hostname:
+          "secure.gravatar.com",
+        pathname:
+          "/**",
       },
 
       /* =========================================
@@ -86,12 +101,21 @@ const nextConfig = {
 
       {
         protocol: "http",
-        hostname: "localhost",
+        hostname:
+          "localhost",
         port: "3000",
-        pathname: "/uploads/**",
+        pathname:
+          "/uploads/**",
       },
 
     ],
+
+    formats: [
+      "image/avif",
+      "image/webp",
+    ],
+
+    minimumCacheTTL: 60 * 60 * 24 * 30,
   },
 
   /* =========================================
@@ -104,6 +128,8 @@ const nextConfig = {
 
   productionBrowserSourceMaps:
     false,
+
+  swcMinify: true,
 };
 
 export default nextConfig;
