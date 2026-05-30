@@ -15,12 +15,6 @@ import Link from "next/link";
 
 import Image from "next/image";
 
-import {
-  getCitiesThunk,
-  deleteCityThunk,
-  updateCityStatusThunk,
-} from "@/store/slices/citySlice";
-
 import Drawer from "@mui/material/Drawer";
 
 import { toast } from "react-toastify";
@@ -35,8 +29,14 @@ import {
 } from "@heroicons/react/24/outline";
 
 import {
+  getCitiesThunk,
+  deleteCityThunk,
+  updateCityStatusThunk,
+} from "@/store/slices/citySlice";
+
+import {
   convertCloudinaryUrl,
-} from "@/utils/convertCloudinaryUrl.js";
+} from "@/utils/convertCloudinaryUrl";
 
 /* =========================================
    SKELETON
@@ -56,36 +56,39 @@ const TableSkeleton = () => {
         >
 
           <td className="p-4">
-            <div className="h-4 bg-gray-200 rounded w-8"></div>
+            <div className="h-4 w-8 bg-gray-200 rounded" />
           </td>
 
           <td className="p-4">
             <div className="flex items-center gap-3">
 
-              <div className="w-12 h-12 bg-gray-200 rounded-xl"></div>
+              <div className="w-12 h-12 bg-gray-200 rounded-xl" />
 
               <div className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-24"></div>
-                <div className="h-3 bg-gray-200 rounded w-32"></div>
+
+                <div className="h-4 w-28 bg-gray-200 rounded" />
+
+                <div className="h-3 w-40 bg-gray-200 rounded" />
+
               </div>
 
             </div>
           </td>
 
           <td className="p-4">
-            <div className="h-4 bg-gray-200 rounded w-20"></div>
+            <div className="h-4 w-20 bg-gray-200 rounded" />
           </td>
 
           <td className="p-4">
-            <div className="h-4 bg-gray-200 rounded w-20"></div>
+            <div className="h-4 w-20 bg-gray-200 rounded" />
           </td>
 
           <td className="p-4">
-            <div className="h-8 bg-gray-200 rounded-full w-20"></div>
+            <div className="h-8 w-20 bg-gray-200 rounded-full" />
           </td>
 
-          <td className="p-4 text-center">
-            <div className="h-8 bg-gray-200 rounded-lg w-24 mx-auto"></div>
+          <td className="p-4">
+            <div className="h-8 w-24 bg-gray-200 rounded-lg mx-auto" />
           </td>
 
         </tr>
@@ -95,7 +98,7 @@ const TableSkeleton = () => {
 };
 
 /* =========================================
-   MAIN COMPONENT
+   MAIN
 ========================================= */
 
 export default function AllCities() {
@@ -107,7 +110,8 @@ export default function AllCities() {
     cities = [],
     loading,
   } = useSelector(
-    (s) => s.city
+    (state) =>
+      state.city
   );
 
   const [open, setOpen] =
@@ -118,17 +122,15 @@ export default function AllCities() {
     setSelectedCity,
   ] = useState(null);
 
-  const [deleteId, setDeleteId] =
-    useState(null);
+  const [
+    deleteId,
+    setDeleteId,
+  ] = useState(null);
 
   const [
     statusLoadingId,
     setStatusLoadingId,
   ] = useState(null);
-
-  /* =========================================
-     PAGINATION
-  ========================================= */
 
   const [
     currentPage,
@@ -137,32 +139,8 @@ export default function AllCities() {
 
   const pageSize = 10;
 
-  const totalItems =
-    cities?.length || 0;
-
-  const totalPages =
-    Math.ceil(
-      totalItems / pageSize
-    );
-
-  const paginatedCities =
-    useMemo(() => {
-
-      return cities?.slice(
-        (currentPage - 1) *
-        pageSize,
-
-        currentPage *
-        pageSize
-      );
-
-    }, [
-      cities,
-      currentPage,
-    ]);
-
   /* =========================================
-     FETCH
+     FETCH ONLY ONCE
   ========================================= */
 
   useEffect(() => {
@@ -174,28 +152,55 @@ export default function AllCities() {
   }, [dispatch]);
 
   /* =========================================
+     PAGINATION
+  ========================================= */
+
+  const totalPages =
+    Math.ceil(
+      cities.length /
+      pageSize
+    );
+
+  const paginatedCities =
+    useMemo(() => {
+
+      const start =
+        (currentPage - 1) *
+        pageSize;
+
+      return cities.slice(
+        start,
+        start + pageSize
+      );
+
+    }, [
+      cities,
+      currentPage,
+    ]);
+
+  /* =========================================
      DELETE
   ========================================= */
 
   const handleDelete =
-    async (cityId) => {
+    async (id) => {
 
       if (
         !window.confirm(
-          "Delete this city permanently?"
+          "Delete this city?"
         )
       ) {
         return;
       }
 
-      setDeleteId(cityId);
+      setDeleteId(id);
 
       try {
 
         const action =
           await dispatch(
             deleteCityThunk(
-              cityId
+              id
             )
           );
 
@@ -206,18 +211,14 @@ export default function AllCities() {
         ) {
 
           toast.success(
-            "City removed successfully"
-          );
-
-          dispatch(
-            getCitiesThunk()
+            "Deleted successfully"
           );
         }
 
       } catch (error) {
 
         toast.error(
-          "Failed to delete city"
+          "Delete failed"
         );
 
       } finally {
@@ -237,12 +238,6 @@ export default function AllCities() {
         city._id
       );
 
-      const newStatus =
-        city.status ===
-          "Active"
-          ? "Inactive"
-          : "Active";
-
       try {
 
         const action =
@@ -250,8 +245,12 @@ export default function AllCities() {
             updateCityStatusThunk(
               {
                 id: city._id,
+
                 status:
-                  newStatus,
+                  city.status ===
+                    "Active"
+                    ? "Inactive"
+                    : "Active",
               }
             )
           );
@@ -263,26 +262,14 @@ export default function AllCities() {
         ) {
 
           toast.success(
-            `City is now ${newStatus}`
-          );
-
-          await dispatch(
-            getCitiesThunk()
-          );
-
-        } else {
-
-          toast.error(
-            "Status update failed"
+            "Status updated"
           );
         }
 
       } catch (error) {
 
-        console.error(error);
-
         toast.error(
-          "Something went wrong"
+          "Status failed"
         );
 
       } finally {
@@ -308,7 +295,7 @@ export default function AllCities() {
 
   return (
 
-    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 font-sans">
+    <div className="min-h-screen bg-[#F8F9FC] p-4 md:p-8">
 
       <div className="max-w-7xl mx-auto space-y-6">
 
@@ -316,20 +303,20 @@ export default function AllCities() {
            HEADER
         ========================================= */}
 
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="bg-white p-6 rounded-3xl border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
 
           <div>
 
-            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            <h2 className="text-3xl font-black text-gray-900">
 
               Cities Directory
 
             </h2>
 
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="text-sm text-gray-500 mt-1">
 
-              Manage service locations,
-              contact info, and SEO content.
+              Manage service locations
+              and SEO content.
 
             </p>
 
@@ -337,51 +324,50 @@ export default function AllCities() {
 
           <Link
             href="/admin/create-city"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-100 transition-all active:scale-95 flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold transition-all"
           >
 
-            <span>+</span>
-
-            Add New City
+            + Add New City
 
           </Link>
+
         </div>
 
         {/* =========================================
            TABLE
         ========================================= */}
 
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden">
 
           <div className="overflow-x-auto">
 
-            <table className="w-full table-fixed text-left border-collapse">
+            <table className="w-full table-fixed border-collapse">
 
               <thead>
 
-                <tr className="bg-gray-50/50 text-gray-500 text-xs uppercase tracking-widest font-bold border-b border-gray-100">
+                <tr className="bg-gray-50 text-xs uppercase text-gray-500">
 
                   <th className="px-6 py-5 w-16">
                     #
                   </th>
 
-                  <th className="px-6 py-5 w-[300px]">
-                    City Info
+                  <th className="px-6 py-5 w-[320px] text-left">
+                    City
                   </th>
 
-                  <th className="px-6 py-5 w-[170px]">
+                  <th className="px-6 py-5 w-[170px] text-left">
                     Contact
                   </th>
 
-                  <th className="px-6 py-5 w-[150px]">
+                  <th className="px-6 py-5 w-[150px] text-left">
                     Created
                   </th>
 
-                  <th className="px-6 py-5 w-[130px]">
+                  <th className="px-6 py-5 w-[120px] text-left">
                     Status
                   </th>
 
-                  <th className="px-6 py-5 text-center w-[150px]">
+                  <th className="px-6 py-5 w-[150px] text-center">
                     Actions
                   </th>
 
@@ -389,29 +375,11 @@ export default function AllCities() {
 
               </thead>
 
-              <tbody className="divide-y divide-gray-50">
+              <tbody>
 
-                {loading &&
-                  paginatedCities.length ===
-                  0 ? (
+                {loading ? (
 
                   <TableSkeleton />
-
-                ) : paginatedCities.length ===
-                  0 ? (
-
-                  <tr>
-
-                    <td
-                      colSpan={6}
-                      className="text-center py-20 text-gray-400"
-                    >
-
-                      No city records found.
-
-                    </td>
-
-                  </tr>
 
                 ) : (
 
@@ -425,46 +393,55 @@ export default function AllCities() {
                         key={
                           city._id
                         }
-                        className="hover:bg-blue-50/30 transition-colors"
+                        className="border-b border-gray-100 hover:bg-blue-50/20"
                       >
 
                         {/* INDEX */}
 
-                        <td className="px-6 py-4 text-gray-400 font-mono text-xs">
+                        <td className="px-6 py-4 text-xs text-gray-400">
 
-                          {(currentPage -
-                            1) *
-                            pageSize +
-                            (index + 1)}
+                          {(currentPage - 1) * pageSize + index + 1}
 
                         </td>
 
-                        {/* CITY INFO */}
+                        {/* CITY */}
 
                         <td className="px-6 py-4">
 
                           <div className="flex items-center gap-3">
 
-                            <div className="relative min-w-[48px] min-h-[48px] w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100 overflow-hidden shadow-sm">
+                            <div className="relative w-12 h-12 min-w-[48px] rounded-xl overflow-hidden bg-gray-100">
 
                               {city.imageUrl ? (
 
                                 <Image
-                                  src={convertCloudinaryUrl(
+                                  src={
                                     city.imageUrl
-                                  )}
-                                  alt={
-                                    city.mainCity
+                                      ? convertCloudinaryUrl(
+                                        city.imageUrl
+                                      )
+                                      : "/placeholder.jpg"
                                   }
-                                  fill
-                                  sizes="48px"
+                                  alt={city.mainCity}
+                                  width={48}
+                                  height={48}
+                                  quality={50}
                                   loading="lazy"
-                                  className="object-cover"
+                                  unoptimized
+                                  onError={(e) => {
+                                    e.currentTarget.src =
+                                      "/placeholder.jpg";
+                                  }}
+                                  className="object-cover rounded-xl"
                                 />
 
                               ) : (
 
-                                <MapPinIcon className="w-6 h-6 text-blue-500" />
+                                <div className="w-full h-full flex items-center justify-center">
+
+                                  <MapPinIcon className="w-5 h-5 text-blue-500" />
+
+                                </div>
 
                               )}
 
@@ -472,21 +449,21 @@ export default function AllCities() {
 
                             <div className="min-w-0">
 
-                              <div className="font-bold text-gray-900 text-base truncate">
+                              <h3 className="font-bold text-gray-900 truncate">
 
                                 {
                                   city.mainCity
                                 }
 
-                              </div>
+                              </h3>
 
-                              <div className="text-gray-400 text-xs truncate max-w-[220px]">
+                              <p className="text-xs text-gray-400 truncate">
 
                                 {
                                   city.heading
                                 }
 
-                              </div>
+                              </p>
 
                             </div>
 
@@ -498,13 +475,13 @@ export default function AllCities() {
 
                         <td className="px-6 py-4">
 
-                          <div className="space-y-1">
+                          <div className="space-y-1 text-xs">
 
-                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                            <div className="flex items-center gap-2">
 
-                              <PhoneIcon className="w-3 h-3 text-blue-400 shrink-0" />
+                              <PhoneIcon className="w-3 h-3 text-blue-500" />
 
-                              <span className="truncate">
+                              <span>
 
                                 {city.phoneNumber ||
                                   "N/A"}
@@ -513,11 +490,11 @@ export default function AllCities() {
 
                             </div>
 
-                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                            <div className="flex items-center gap-2">
 
-                              <ChatBubbleLeftRightIcon className="w-3 h-3 text-green-400 shrink-0" />
+                              <ChatBubbleLeftRightIcon className="w-3 h-3 text-green-500" />
 
-                              <span className="truncate">
+                              <span>
 
                                 {city.whatsappNumber ||
                                   "N/A"}
@@ -534,20 +511,9 @@ export default function AllCities() {
 
                         <td className="px-6 py-4 text-sm text-gray-500">
 
-                          {city.createdAt
-                            ? new Date(
-                              city.createdAt
-                            ).toLocaleDateString(
-                              "en-GB",
-                              {
-                                day: "2-digit",
-                                month:
-                                  "short",
-                                year:
-                                  "numeric",
-                              }
-                            )
-                            : "N/A"}
+                          {new Date(
+                            city.createdAt
+                          ).toLocaleDateString()}
 
                         </td>
 
@@ -558,7 +524,7 @@ export default function AllCities() {
                           {statusLoadingId ===
                             city._id ? (
 
-                            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
 
                           ) : (
 
@@ -568,10 +534,10 @@ export default function AllCities() {
                                   city
                                 )
                               }
-                              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight transition-all shadow-sm ${city.status ===
+                              className={`px-3 py-1 rounded-full text-[10px] font-bold ${city.status ===
                                 "Active"
-                                ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                : "bg-red-100 text-red-700 hover:bg-red-200"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
                                 }`}
                             >
 
@@ -582,13 +548,14 @@ export default function AllCities() {
                             </button>
 
                           )}
+
                         </td>
 
                         {/* ACTIONS */}
 
                         <td className="px-6 py-4">
 
-                          <div className="flex justify-center items-center gap-2">
+                          <div className="flex justify-center gap-2">
 
                             <button
                               onClick={() =>
@@ -596,19 +563,19 @@ export default function AllCities() {
                                   city
                                 )
                               }
-                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                              className="p-2 rounded-xl hover:bg-blue-50"
                             >
 
-                              <EyeIcon className="w-5 h-5" />
+                              <EyeIcon className="w-5 h-5 text-blue-600" />
 
                             </button>
 
                             <Link
                               href={`/admin/edit-city/${city._id}`}
-                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                              className="p-2 rounded-xl hover:bg-blue-50"
                             >
 
-                              <PencilSquareIcon className="w-5 h-5" />
+                              <PencilSquareIcon className="w-5 h-5 text-blue-600" />
 
                             </Link>
 
@@ -622,19 +589,10 @@ export default function AllCities() {
                                   city._id
                                 )
                               }
-                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all disabled:opacity-50"
+                              className="p-2 rounded-xl hover:bg-red-50"
                             >
 
-                              {deleteId ===
-                                city._id ? (
-
-                                <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-
-                              ) : (
-
-                                <TrashIcon className="w-5 h-5" />
-
-                              )}
+                              <TrashIcon className="w-5 h-5 text-red-500" />
 
                             </button>
 
@@ -650,109 +608,129 @@ export default function AllCities() {
               </tbody>
 
             </table>
+
           </div>
 
-          {/* PAGINATION */}
+          {/* =========================================
+             PAGINATION
+          ========================================= */}
 
-          <div className="bg-gray-50/50 px-6 py-4 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+          {!loading &&
+            cities.length > pageSize && (
 
-            <p className="text-xs text-gray-500 font-medium tracking-wide">
+              <div className="bg-gray-50/50 px-6 py-4 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
 
-              Showing
+                <p className="text-xs text-gray-500 font-medium">
 
-              <span className="text-blue-600 font-bold px-1">
+                  Showing
 
-                {
-                  paginatedCities.length
-                }
+                  <span className="text-blue-600 font-bold px-1">
 
-              </span>
+                    {paginatedCities.length}
 
-              of {totalItems} cities
+                  </span>
 
-            </p>
+                  of
 
-            {totalPages > 1 && (
+                  <span className="text-blue-600 font-bold px-1">
 
-              <div className="flex items-center gap-1">
+                    {cities.length}
 
-                <button
-                  onClick={() =>
-                    setCurrentPage(
-                      (p) =>
-                        Math.max(
-                          1,
-                          p - 1
-                        )
-                    )
-                  }
-                  disabled={
-                    currentPage ===
-                    1
-                  }
-                  className="px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 disabled:opacity-30 hover:bg-gray-50 transition-all text-xs font-bold"
-                >
+                  </span>
 
-                  Prev
+                  cities
 
-                </button>
+                </p>
 
-                {Array.from(
-                  {
-                    length:
-                      totalPages,
-                  },
-                  (_, i) =>
-                    i + 1
-                ).map((num) => (
+                <div className="flex items-center gap-2 flex-wrap justify-center">
+
+                  {/* PREV */}
 
                   <button
-                    key={num}
                     onClick={() =>
                       setCurrentPage(
-                        num
+                        (prev) =>
+                          Math.max(
+                            prev - 1,
+                            1
+                          )
                       )
                     }
-                    className={`w-9 h-9 rounded-xl text-xs font-bold transition-all ${currentPage ===
-                      num
-                      ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                      : "bg-white text-gray-500 border border-gray-100 hover:bg-gray-50"
-                      }`}
+                    disabled={
+                      currentPage === 1
+                    }
+                    className="px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                   >
 
-                    {num}
+                    Prev
 
                   </button>
-                ))}
 
-                <button
-                  onClick={() =>
-                    setCurrentPage(
-                      (p) =>
-                        Math.min(
-                          totalPages,
-                          p + 1
+                  {/* PAGE NUMBERS */}
+
+                  {Array.from(
+                    {
+                      length:
+                        totalPages,
+                    },
+                    (_, i) =>
+                      i + 1
+                  ).map((page) => (
+
+                    <button
+                      key={page}
+                      onClick={() =>
+                        setCurrentPage(
+                          page
                         )
-                    )
-                  }
-                  disabled={
-                    currentPage ===
-                    totalPages
-                  }
-                  className="px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 disabled:opacity-30 hover:bg-gray-50 transition-all text-xs font-bold"
-                >
+                      }
+                      className={`w-10 h-10 rounded-xl text-sm font-bold transition-all ${currentPage ===
+                        page
+                        ? "bg-blue-600 text-white shadow-lg shadow-blue-100"
+                        : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                        }`}
+                    >
 
-                  Next
+                      {page}
 
-                </button>
+                    </button>
+
+                  ))}
+
+                  {/* NEXT */}
+
+                  <button
+                    onClick={() =>
+                      setCurrentPage(
+                        (prev) =>
+                          Math.min(
+                            prev + 1,
+                            totalPages
+                          )
+                      )
+                    }
+                    disabled={
+                      currentPage ===
+                      totalPages
+                    }
+                    className="px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  >
+
+                    Next
+
+                  </button>
+
+                </div>
 
               </div>
+
             )}
 
-          </div>
         </div>
 
-        {/* DRAWER */}
+        {/* =========================================
+           DRAWER
+        ========================================= */}
 
         <Drawer
           anchor="right"
@@ -762,60 +740,38 @@ export default function AllCities() {
           }
         >
 
-          <div className="w-[100vw] sm:w-[450px] bg-white h-full flex flex-col">
+          <div className="w-[100vw] sm:w-[450px] h-full bg-white">
 
             {selectedCity && (
 
-              <>
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <div className="p-6">
 
-                  <h3 className="text-xl font-black text-gray-900">
+                <div className="relative h-56 rounded-2xl overflow-hidden">
 
-                    City Overview
-
-                  </h3>
-
-                  <button
-                    onClick={() =>
-                      setOpen(false)
+                  <Image
+                    src={convertCloudinaryUrl(
+                      selectedCity.imageUrl
+                    )}
+                    alt={
+                      selectedCity.mainCity
                     }
-                    className="text-gray-400 hover:text-black text-2xl font-light"
-                  >
-
-                    ×
-
-                  </button>
+                    fill
+                    quality={70}
+                    className="object-cover"
+                  />
 
                 </div>
 
-                <div className="p-6 overflow-y-auto flex-1 space-y-6">
+              </div>
 
-                  <div className="relative h-48 rounded-2xl overflow-hidden shadow-md">
-
-                    <img
-                      src={
-                        selectedCity.imageUrl
-                          ? convertCloudinaryUrl(
-                            selectedCity.imageUrl
-                          )
-                          : "/placeholder.jpg"
-                      }
-                      alt={
-                        selectedCity.imageAlt ||
-                        "City Image"
-                      }
-                      className="w-full h-full object-cover"
-                    />
-
-                  </div>
-
-                </div>
-              </>
             )}
 
           </div>
+
         </Drawer>
+
       </div>
+
     </div>
   );
 }

@@ -1,13 +1,15 @@
-export const convertCloudinaryUrl = (
-  url
-) => {
+export const convertCloudinaryUrl = (url) => {
 
-  if (!url) {
-    return "/placeholder.jpg";
+  // ❌ invalid url
+  if (
+    !url ||
+    typeof url !== "string" ||
+    url.trim() === ""
+  ) {
+    return "";
   }
 
-  // Cloudinary URL → Custom Domain
-
+  // ✅ Cloudinary URL → Custom Domain
   if (
     url.includes(
       "res.cloudinary.com"
@@ -20,5 +22,6 @@ export const convertCloudinaryUrl = (
     );
   }
 
+  // ✅ already valid
   return url;
 };

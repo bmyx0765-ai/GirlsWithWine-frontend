@@ -27,6 +27,19 @@ export default function ImageSlider({
   ] = useState(false);
 
   /* =========================================
+     FILTER VALID IMAGES
+  ========================================= */
+
+  const validImages =
+    images.filter(
+      (img) =>
+        img &&
+        typeof img ===
+          "string" &&
+        img.trim() !== ""
+    );
+
+  /* =========================================
      AUTO SLIDE
   ========================================= */
 
@@ -34,7 +47,7 @@ export default function ImageSlider({
 
     if (
       isHovering ||
-      images.length <= 1
+      validImages.length <= 1
     ) {
       return;
     }
@@ -46,7 +59,7 @@ export default function ImageSlider({
           (prev) =>
 
             prev ===
-            images.length - 1
+            validImages.length - 1
               ? 0
               : prev + 1
         );
@@ -59,7 +72,7 @@ export default function ImageSlider({
       );
 
   }, [
-    images.length,
+    validImages.length,
     isHovering,
   ]);
 
@@ -67,17 +80,16 @@ export default function ImageSlider({
      NO IMAGE
   ========================================= */
 
-  if (!images.length) {
+  if (
+    !validImages.length
+  ) {
 
     return (
-
       <div className="relative w-full h-[420px] md:h-[520px] rounded-3xl overflow-hidden border bg-gray-100 flex items-center justify-center">
 
-        <img
-          src="/placeholder.jpg"
-          alt="Placeholder"
-          className="w-full h-full object-cover"
-        />
+        <span className="text-gray-400 text-sm">
+          No Image
+        </span>
 
       </div>
     );
@@ -92,7 +104,7 @@ export default function ImageSlider({
     setCurrent(
 
       current === 0
-        ? images.length -
+        ? validImages.length -
           1
         : current - 1
     );
@@ -107,7 +119,7 @@ export default function ImageSlider({
     setCurrent(
 
       current ===
-        images.length - 1
+        validImages.length - 1
         ? 0
         : current + 1
     );
@@ -126,8 +138,7 @@ export default function ImageSlider({
       typeof url !==
         "string"
     ) {
-
-      return "/placeholder.jpg";
+      return "";
     }
 
     return convertCloudinaryUrl(
@@ -157,7 +168,7 @@ export default function ImageSlider({
 
       <img
         src={getImageUrl(
-          images[current]
+          validImages[current]
         )}
         alt={`Profile ${
           current + 1
@@ -166,8 +177,12 @@ export default function ImageSlider({
         loading="lazy"
         onError={(e) => {
 
-          e.currentTarget.src =
-            "/placeholder.jpg";
+          // stop infinite loop
+          e.currentTarget.onerror =
+            null;
+
+          e.currentTarget.style.display =
+            "none";
         }}
       />
 
@@ -175,7 +190,7 @@ export default function ImageSlider({
          LEFT BUTTON
       ========================================= */}
 
-      {images.length >
+      {validImages.length >
         1 && (
 
         <button
@@ -194,7 +209,7 @@ export default function ImageSlider({
          RIGHT BUTTON
       ========================================= */}
 
-      {images.length >
+      {validImages.length >
         1 && (
 
         <button
@@ -213,12 +228,12 @@ export default function ImageSlider({
          DOTS
       ========================================= */}
 
-      {images.length >
+      {validImages.length >
         1 && (
 
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
 
-          {images.map(
+          {validImages.map(
             (
               _,
               i
@@ -243,22 +258,6 @@ export default function ImageSlider({
 
         </div>
       )}
-
-      {/* =========================================
-         ONLINE TAG
-      ========================================= */}
-
-      <div className="absolute top-4 left-4 bg-white/90 px-3 py-1.5 rounded-2xl flex items-center gap-2 shadow-sm">
-
-        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-
-        <span className="text-[10px] font-black uppercase text-slate-800">
-
-          Online Now
-
-        </span>
-
-      </div>
 
     </div>
   );
