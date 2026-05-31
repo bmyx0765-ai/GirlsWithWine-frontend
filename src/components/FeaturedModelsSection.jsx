@@ -6,6 +6,7 @@ import {
 
 import {
   useEffect,
+  useState,
 } from "react";
 
 import {
@@ -28,6 +29,9 @@ export default function FeaturedModelsSection() {
 
   const router =
     useRouter();
+
+  const [imageErrors, setImageErrors] =
+    useState({});
 
   const {
     girls,
@@ -60,7 +64,7 @@ export default function FeaturedModelsSection() {
       <span key={i}>
 
         {i <
-        rating
+          rating
           ? "⭐"
           : "☆"}
 
@@ -79,7 +83,7 @@ export default function FeaturedModelsSection() {
     if (
       !url ||
       typeof url !==
-        "string"
+      "string"
     ) {
 
       return "/placeholder.jpg";
@@ -138,9 +142,9 @@ export default function FeaturedModelsSection() {
                   model
                 ) =>
                   model.showOnHomepage ===
-                    true &&
+                  true &&
                   model.status ===
-                    "Active"
+                  "Active"
               )
 
               ?.map(
@@ -164,33 +168,57 @@ export default function FeaturedModelsSection() {
                        IMAGE
                     ========================================= */}
 
-                    <div className="relative overflow-hidden">
+                    {
+                      imageErrors[model._id] ? (
 
-                      <img
-                        src={getImageUrl(
-                          model.imageUrl
-                        )}
-                        alt={
-                          model.imageAlt ||
-                          model.heading ||
-                          model.name
-                        }
-                        className="w-full h-[260px] md:h-[300px] object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                        onError={(
-                          e
-                        ) => {
+                        <div className="w-full h-[260px] md:h-[300px] bg-gray-100 flex items-center justify-center text-gray-400">
+                          No Image
+                        </div>
 
-                          e.currentTarget.src =
-                            "/placeholder.jpg";
-                        }}
-                      />
+                      ) : (
 
-                      {/* OVERLAY */}
+                        <img
+                          src={getImageUrl(
+                            model.imageUrl
+                          )}
+                          alt={
+                            model.imageAlt ||
+                            model.heading ||
+                            model.name
+                          }
+                          className="w-full h-[260px] md:h-[300px] object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                          onLoad={() => {
 
-                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition duration-300"></div>
+                            console.log(
+                              "IMAGE LOADED =>",
+                              model.imageUrl
+                            );
 
-                    </div>
+                          }}
+                          onError={() => {
+
+                            console.error(
+                              "IMAGE NOT FOUND =>",
+                              model.imageUrl
+                            );
+
+                            setImageErrors(
+                              (prev) => ({
+
+                                ...prev,
+
+                                [model._id]:
+                                  true,
+
+                              })
+                            );
+
+                          }}
+                        />
+
+                      )
+                    }
 
                     {/* =========================================
                        INFO

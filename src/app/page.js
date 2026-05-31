@@ -236,7 +236,6 @@ async function getFaqData() {
 export default async function Home() {
 
   const {
-    visibleFaqs,
     schema,
   } = await getFaqData();
 
@@ -269,7 +268,6 @@ export default async function Home() {
       =================================================== */}
 
       <ClientHome
-        faqs={visibleFaqs}
       />
 
     </>

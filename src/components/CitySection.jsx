@@ -81,95 +81,87 @@ const CitySection = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 
             {activeCities?.length >
-            0 ? (
+              0 ? (
 
-              activeCities.map(
-                (city) => {
+              activeCities.map((city) => {
 
-                  /* =========================================
-                     SLUG
-                  ========================================= */
+                console.log(
+                  "CITY OBJECT =>",
+                  city
+                );
 
-                  const cleanSlug =
-                    city?.slug
-                      ?.replace(
-                        "#",
-                        ""
-                      )
-                      ?.replace(
-                        "%23",
-                        ""
-                      )
-                      ?.trim()
-                      ?.toLowerCase();
+                const cleanSlug =
+                  city?.slug
+                    ?.replace("#", "")
+                    ?.replace("%23", "")
+                    ?.trim()
+                    ?.toLowerCase();
 
-                  /* =========================================
-                     INVALID SLUG
-                  ========================================= */
+                console.log(
+                  "CITY SLUG =>",
+                  city?.slug
+                );
 
-                  if (
-                    !cleanSlug
-                  ) {
+                console.log(
+                  "CLEAN SLUG =>",
+                  cleanSlug
+                );
 
-                    return null;
-                  }
+                const url =
+                  `/${cleanSlug}`;
 
-                  /* =========================================
-                     URL
-                  ========================================= */
+                console.log(
+                  "CITY URL =>",
+                  url
+                );
 
-                  const url =
-                    `/${cleanSlug}`;
+                return (
+                  <Link
+                    key={city?._id}
+                    href={url}
 
-                  return (
+                    scroll={true}
+                    replace={false}
+                    prefetch={false}
+                    className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md hover:border-[#00B9BE]/30 transition-all duration-300 active:scale-[0.98]"
+                  >
 
-                    <Link
-                      key={
-                        city?._id
-                      }
-                      href={url}
-                      scroll={true}
-                      replace={false}
-                      prefetch={false}
-                      className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md hover:border-[#00B9BE]/30 transition-all duration-300 active:scale-[0.98]"
-                    >
-
-                      {/* =========================================
+                    {/* =========================================
                          ICON
                       ========================================= */}
 
-                      <div className="flex-shrink-0 flex items-center justify-center rounded-xl w-10 h-10 bg-gray-50 text-gray-400 group-hover:bg-[#00B9BE] group-hover:text-white transition-colors duration-300">
+                    <div className="flex-shrink-0 flex items-center justify-center rounded-xl w-10 h-10 bg-gray-50 text-gray-400 group-hover:bg-[#00B9BE] group-hover:text-white transition-colors duration-300">
 
-                        <FiMapPin className="text-lg" />
+                      <FiMapPin className="text-lg" />
 
-                      </div>
+                    </div>
 
-                      {/* =========================================
+                    {/* =========================================
                          TEXT
                       ========================================= */}
 
-                      <div className="overflow-hidden">
+                    <div className="overflow-hidden">
 
-                        <p className="text-sm font-bold text-gray-700 group-hover:text-[#00B9BE] transition-colors truncate">
+                      <p className="text-sm font-bold text-gray-700 group-hover:text-[#00B9BE] transition-colors truncate">
 
-                          {
-                            city?.mainCity
-                          }
+                        {
+                          city?.mainCity
+                        }
 
-                        </p>
+                      </p>
 
-                        <p className="text-[11px] text-gray-400 uppercase tracking-wider group-hover:text-gray-500 transition-colors">
+                      <p className="text-[11px] text-gray-400 uppercase tracking-wider group-hover:text-gray-500 transition-colors">
 
-                          View Profiles
+                        View Profiles
 
-                        </p>
+                      </p>
 
-                      </div>
+                    </div>
 
-                    </Link>
+                  </Link>
 
-                  );
-                }
+                );
+              }
               )
 
             ) : (

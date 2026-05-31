@@ -3,6 +3,7 @@
 import {
   useEffect,
   useRef,
+  useState,
 } from "react";
 
 import {
@@ -38,6 +39,9 @@ export default function TopReviewsSlider() {
 
   const scrollRef =
     useRef(null);
+
+  const [imageErrors, setImageErrors] =
+    useState({});
 
   const {
     topReviews,
@@ -87,7 +91,7 @@ export default function TopReviewsSlider() {
     if (
       !url ||
       typeof url !==
-        "string"
+      "string"
     ) {
 
       return "/placeholder-user.png";
@@ -238,105 +242,52 @@ export default function TopReviewsSlider() {
                      USER
                   ========================================= */}
 
-                  <div className="flex items-center gap-4 pt-6 border-t">
+                  <div className="w-12 h-12 rounded-full overflow-hidden border flex-shrink-0 bg-gray-100">
 
-                    {/* IMAGE */}
+                    {imageErrors[review._id] ? (
 
-                    <div className="w-12 h-12 rounded-full overflow-hidden border flex-shrink-0 bg-gray-100">
+                      <div className="w-full h-full flex items-center justify-center text-[10px] text-red-500 font-medium text-center px-1">
+                        No Image
+                      </div>
+
+                    ) : (
 
                       <img
                         src={
-                          review
-                            ?.girl
-                            ?.imageUrl
+                          review?.girl?.imageUrl
                             ? getImageUrl(
-                              review
-                                .girl
-                                .imageUrl
+                              review.girl.imageUrl
                             )
-                            : "/placeholder-user.png"
+                            : ""
                         }
                         alt={
-                          review
-                            ?.girl
-                            ?.name ||
+                          review?.girl?.name ||
                           "User"
                         }
                         className="w-full h-full object-cover"
                         loading="lazy"
-                        onError={(
-                          e
-                        ) => {
+                        onError={() => {
 
-                          e.currentTarget.src =
-                            "/placeholder-user.png";
+                          console.error(
+                            "IMAGE ERROR =>",
+                            review?.girl?.imageUrl
+                          );
+
+                          setImageErrors(
+                            (prev) => ({
+
+                              ...prev,
+
+                              [review._id]:
+                                true,
+
+                            })
+                          );
+
                         }}
                       />
 
-                    </div>
-
-                    {/* INFO */}
-
-                    <div className="flex flex-col grow">
-
-                      <h4 className="font-bold text-gray-900">
-
-                        {
-                          review.userName
-                        }
-
-                      </h4>
-
-                      <p className="text-xs text-gray-500">
-
-                        Visited{" "}
-
-                        <span className="text-[#A3195B] font-medium">
-
-                          {
-                            review
-                              .girl
-                              ?.name
-                          }
-
-                        </span>
-
-                      </p>
-
-                    </div>
-
-                    {/* =========================================
-                       RATING
-                    ========================================= */}
-
-                    <div className="flex">
-
-                      {[...Array(5)].map(
-                        (
-                          _,
-                          i
-                        ) => (
-
-                          <span
-                            key={
-                              i
-                            }
-                            className={`text-lg ${
-                              i <
-                              (review.rating ||
-                                5)
-                                ? "text-amber-400"
-                                : "text-gray-200"
-                              }`}
-                          >
-
-                            ★
-
-                          </span>
-                        )
-                      )}
-
-                    </div>
+                    )}
 
                   </div>
 

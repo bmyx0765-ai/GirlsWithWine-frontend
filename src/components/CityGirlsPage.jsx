@@ -2,13 +2,34 @@
 
 /* ================= IMPORTS ================= */
 import { useEffect, useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { getGirlsByCityThunk } from "@/store/slices/girlSlice";
 import { getCityPageThunk, getCitiesThunk } from "@/store/slices/citySlice";
-import CommonFaq from "./CommonFaq";
-import CityMetaSection from "./CityMetaSection";
 import { convertCloudinaryUrl } from "@/utils/convertCloudinaryUrl";
+import Image from "next/image";
+import { useInView } from "react-intersection-observer";
+
+const CommonFaq = dynamic(
+  () => import("./CommonFaq"),
+  {
+    loading: () => (
+      <div className="py-10 text-center">
+        Loading FAQs...
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const CityMetaSection = dynamic(
+  () => import("./CityMetaSection"),
+  {
+    loading: () => null,
+    ssr: false,
+  }
+);
 
 /* ================= SKELETON ================= */
 const GirlCardSkeleton = () => (
@@ -31,10 +52,16 @@ export default function CityGirlsPage({ params }) {
   const { cityGirls } = useSelector((state) => state.girls);
 
   const [pageLoading, setPageLoading] = useState(true);
+  const [imageErrors, setImageErrors] =
+    useState({});
   const [currentPage, setCurrentPage] = useState(1);
 
   const ITEMS_PER_PAGE = 5;
 
+  const { ref: faqRef, inView: faqInView } = useInView({
+    triggerOnce: true,
+    rootMargin: "200px",
+  });
   /* ================= FETCH CITY PAGE ================= */
   useEffect(() => {
     if (!cityName) return;
@@ -52,14 +79,9 @@ export default function CityGirlsPage({ params }) {
       .finally(() => setPageLoading(false));
   }, [singleCity?._id]);
 
-  console.log("CityGirlsPage Rendered", { cityName, singleCity, cityGirls });
 
-  /* ================= FETCH ALL CITIES (FIX REFRESH) ================= */
-  // useEffect(() => {
-  //   if (!cities || cities.length === 0) {
-  //     dispatch(getCitiesThunk());
-  //   }
-  // }, [cities]);
+
+
 
   /* ================= HELPERS ================= */
 
@@ -166,28 +188,42 @@ export default function CityGirlsPage({ params }) {
                   className="cursor-pointer bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition border flex flex-col sm:flex-row gap-4"
                 >
                   {/* IMAGE */}
-                  <div className="w-full sm:w-40 h-52 sm:h-40 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                    <img
-                      src={
-                        girl?.imageUrl
-                          ? convertCloudinaryUrl(
-                            girl.imageUrl
-                          )
-                          : "/placeholder.jpg"
-                      }
-                      alt={
-                        girl?.imageAlt ||
-                        girl?.heading ||
-                        girl?.name ||
-                        "Girl Image"
-                      }
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.src =
-                          "/placeholder.jpg";
-                      }}
-                    />
+                  <div className="relative w-full sm:w-40 h-52 sm:h-40 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+
+                    {imageErrors[girl._id] ? (
+
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                        No Image
+                      </div>
+
+                    ) : (
+
+                      <Image
+                        src={
+                          girl?.imageUrl
+                            ? convertCloudinaryUrl(girl.imageUrl)
+                            : "/placeholder.jpg"
+                        }
+                        alt={
+                          girl?.imageAlt ||
+                          girl?.heading ||
+                          girl?.name ||
+                          "Girl Image"
+                        }
+                        fill
+                        sizes="(max-width: 640px) 100vw, 160px"
+                        className="object-cover"
+                        loading="lazy"
+                        onError={() => {
+                          setImageErrors((prev) => ({
+                            ...prev,
+                            [girl._id]: true,
+                          }));
+                        }}
+                      />
+
+                    )}
+
                   </div>
 
                   {/* CONTENT */}
@@ -295,25 +331,39 @@ export default function CityGirlsPage({ params }) {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24">
-
+      <div
+        ref={faqRef}
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24"
+      >
         <div className="bg-white rounded-[2.5rem] p-6 sm:p-12 shadow-sm border border-gray-100">
 
-          <CommonFaq
-            type="city"
-            cityId={singleCity?._id}
-            title={`FAQs – ${finalName} Call Girls & VIP Escorts`}
-            subTitle={`Find answers to the most common questions related to ${finalName} escort services, booking process, privacy, and availability.`}
-          />
+          {faqInView ? (
+            <CommonFaq
+              type="city"
+              cityId={singleCity?._id}
+              title={`FAQs – ${finalName} Call Girls & VIP Escorts`}
+              subTitle={`Find answers to the most common questions related to ${finalName} escort services, booking process, privacy, and availability.`}
+            />
+          ) : (
+            <div className="space-y-4 animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/3" />
+              <div className="h-4 bg-gray-100 rounded w-full" />
+              <div className="h-4 bg-gray-100 rounded w-5/6" />
+              <div className="h-14 bg-gray-100 rounded" />
+              <div className="h-14 bg-gray-100 rounded" />
+              <div className="h-14 bg-gray-100 rounded" />
+            </div>
+          )}
 
         </div>
-
       </div>
 
-      <CityMetaSection
-        subCities={singleCity?.subCities || []}
-        tags={singleCity?.tags || []}
-      />
+    {faqInView && (
+  <CityMetaSection
+    subCities={singleCity?.subCities || []}
+    tags={singleCity?.tags || []}
+  />
+)}
     </>
   );
 }

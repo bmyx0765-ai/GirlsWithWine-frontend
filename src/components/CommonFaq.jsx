@@ -48,11 +48,7 @@ const CommonFaq = ({
 
       dispatch(getFaqsByGirlThunk(girlId));
 
-    } else {
-
-      dispatch(getFaqsThunk());
-
-    }
+    } 
 
   }, [dispatch, type, cityId, subCityId, girlId]);
 
