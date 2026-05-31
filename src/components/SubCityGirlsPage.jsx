@@ -1,7 +1,7 @@
 "use client";
 
 /* ================= IMPORTS ================= */
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { FiMapPin, FiMessageCircle, FiPhoneCall } from "react-icons/fi";
@@ -40,6 +40,7 @@ const createWhatsAppURL = (name, number) => {
 
 const SubCityGirlsPage = ({ data }) => {
 
+  const [imageErrors, setImageErrors] = useState({});
 
   const router = useRouter();
   const dispatch = useDispatch();
@@ -57,7 +58,6 @@ const SubCityGirlsPage = ({ data }) => {
 
   /* ================= NO DATA GUARD ================= */
   if (!data) {
-    console.warn("⚠️ 4. DATA IS NULL OR UNDEFINED");
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <h2 className="text-3xl font-bold text-gray-900">No Data Found</h2>
@@ -78,31 +78,31 @@ const SubCityGirlsPage = ({ data }) => {
     updatedAt,
   } = data;
 
-  
+
 
   const finalName = name || "Premium Area";
   const cityHeading = heading || `${finalName} Call Girls`;
 
   /* ================= DATA FETCHING ================= */
   useEffect(() => {
-   
+
     if (_id) {
       // Fetch girls specific to this sub-city
       dispatch(getGirlsBySubCityThunk(_id));
     }
 
     if (city?._id) {
-    
+
       dispatch(fetchSubCitiesByCity(city._id));
     }
   }, [_id, city?._id, dispatch]);
 
   /* ================= DATA PROCESSING ================= */
   const finalGirls = cityGirls?.length ? cityGirls : initialGirls;
-  
+
 
   const formattedDate = useMemo(() => {
-  
+
     if (!updatedAt) return "";
     return new Date(updatedAt).toLocaleDateString("en-IN", {
       day: "numeric",
@@ -114,7 +114,7 @@ const SubCityGirlsPage = ({ data }) => {
   const subCitiesList = useMemo(() => {
     // If Redux has the full list of areas for the city, use it; otherwise fallback to prop data
     const list = allSubCitiesInCity?.length ? allSubCitiesInCity : (city?.subCities?.length ? city.subCities : subCities);
-   
+
     return Array.isArray(list) ? list : [];
   }, [allSubCitiesInCity, city, subCities]);
 
@@ -160,7 +160,7 @@ const SubCityGirlsPage = ({ data }) => {
             </div>
           ) : (
             finalGirls.map((girl, index) => {
-              if (index === 0) console.log("📝 11. MAPPING GIRLS - Sample Girl Name:", girl?.name);
+
 
               const wp = formatPhone(girl?.whatsappNumber || city?.whatsappNumber);
               const call = formatPhone(girl?.phoneNumber || city?.phoneNumber);
@@ -173,12 +173,57 @@ const SubCityGirlsPage = ({ data }) => {
                 >
                   {/* PROFILE IMAGE */}
                   <div className="w-full md:w-56 h-72 md:h-52 rounded-[1.5rem] overflow-hidden bg-gray-100 shrink-0 shadow-inner relative">
-                    <img
-                      src={girl?.imageUrl || girl?.imageUrls?.[0] || "/placeholder.jpg"}
-                      alt={girl?.imageAlt || girl?.name || "Premium Profile"}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
+
+                    {!girl?.imageUrl && !girl?.imageUrls?.[0] ? (
+
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
+                        <p className="text-red-500 font-semibold">
+                          No Image Found
+                        </p>
+
+                        <p className="text-gray-400 text-sm mt-1">
+                          Image URL not available
+                        </p>
+                      </div>
+
+                    ) : imageErrors[girl?._id] ? (
+
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
+                        <p className="text-red-500 font-semibold">
+                          Failed To Load Image
+                        </p>
+
+                        <p className="text-gray-400 text-sm mt-1">
+                          Please try again later
+                        </p>
+                      </div>
+
+                    ) : (
+
+                      <img
+                        src={
+                          girl?.imageUrl ||
+                          girl?.imageUrls?.[0]
+                        }
+                        alt={
+                          girl?.imageAlt ||
+                          girl?.name ||
+                          "Premium Profile"
+                        }
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        loading="lazy"
+                        onError={() => {
+                          setImageErrors((prev) => ({
+                            ...prev,
+                            [girl?._id]: true,
+                          }));
+                        }}
+                      />
+
+                    )}
+
                     <div className="absolute top-3 left-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white shadow-sm"></div>
+
                   </div>
 
                   {/* PROFILE DETAILS */}
@@ -265,10 +310,11 @@ const SubCityGirlsPage = ({ data }) => {
       </div>
 
       {/* ================= META/LOCATION LINKS SECTION ================== */}
-      {console.log("🏁 12. FINAL META SECTION PROPS:", { subCitiesCount: subCitiesList.length })}
+
       <CityMetaSection
         subCities={subCitiesList}
         tags={tags || []}
+        cityName={city?.mainCity}
       />
     </>
   );

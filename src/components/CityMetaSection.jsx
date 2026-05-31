@@ -12,6 +12,7 @@ import {
 const CityMetaSection = ({
   subCities = [],
   tags = [],
+  cityName
 }) => {
 
   /* ================= REMOVE DUPLICATES ================= */
@@ -114,7 +115,9 @@ const CityMetaSection = ({
                 <Link
                   key={item?._id}
 
-                  href={`/${item?.slug}`}
+                  href={`/${cityName}/${item?.slug}`}
+
+                  target="_blank"
 
                   className="
                     group

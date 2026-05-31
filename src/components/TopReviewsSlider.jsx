@@ -211,7 +211,7 @@ export default function TopReviewsSlider() {
                     ) {
 
                       router.push(
-                        `/${review.girl.permalink}`
+                        `/call-girls/${review.girl.permalink}`
                       );
                     }
                   }}

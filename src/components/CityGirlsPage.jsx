@@ -183,7 +183,7 @@ export default function CityGirlsPage({ params }) {
                 <div
                   key={girl._id}
                   onClick={() =>
-                    router.push(`/${girl.permalink}`)
+                    router.push(`/call-girls/${girl.permalink}`)
                   }
                   className="cursor-pointer bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition border flex flex-col sm:flex-row gap-4"
                 >
@@ -358,12 +358,14 @@ export default function CityGirlsPage({ params }) {
         </div>
       </div>
 
-    {faqInView && (
-  <CityMetaSection
-    subCities={singleCity?.subCities || []}
-    tags={singleCity?.tags || []}
-  />
-)}
+      {faqInView && (
+        <CityMetaSection
+          subCities={singleCity?.subCities || []}
+          tags={singleCity?.tags || []}
+          cityName={finalName.toLowerCase()}
+
+        />
+      )}
     </>
   );
 }

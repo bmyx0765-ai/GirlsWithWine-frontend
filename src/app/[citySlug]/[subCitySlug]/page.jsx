@@ -8,7 +8,7 @@ function getApiUrl() {
     "https://girlswithwinebackend.vercel.app"
   );
 
-} 
+}
 
 async function getFaqSchema(subCityId) {
   try {
@@ -175,38 +175,51 @@ async function getFaqSchema(subCityId) {
 
 async function checkSlug(subCitySlug) {
 
+
+
   try {
 
-    const subCityRes = await fetch(
-      `${getApiUrl()}/api/subcities/${subCitySlug}`,
-      {
-        cache: "no-store",
-      }
-    );
+    const apiUrl =
+      `${getApiUrl()}/api/subcities/${subCitySlug}`;
+
+
+
+    const subCityRes =
+      await fetch(
+        apiUrl,
+        {
+          cache: "no-store",
+        }
+      );
+
 
     if (!subCityRes.ok) {
+
+
       return null;
     }
 
     const subCityData =
       await subCityRes.json();
 
+
     if (
       !subCityData?.subCity?._id
     ) {
+
+
       return null;
     }
 
+
     return {
-
       type: "subcity",
-
-      data:
-        subCityData.subCity,
-
+      data: subCityData.subCity,
+      seo: subCityData.seo,
     };
 
   } catch (err) {
+
 
     return null;
 
@@ -221,7 +234,7 @@ export async function generateMetadata({
   const {
     citySlug,
     subCitySlug,
-  } = params;
+  } = await params;
 
   const subCity =
     await checkSlug(
@@ -243,8 +256,11 @@ export async function generateMetadata({
 
   }
 
-  const data =
-    subCity.data;
+const data =
+  subCity.data;
+
+const seo =
+  subCity.seo || {};
 
   const pageUrl =
     `https://girlswithwine.com/${citySlug}/${subCitySlug}`;
@@ -252,18 +268,18 @@ export async function generateMetadata({
   const imageUrl =
     "https://girlswithwine.com/images/girlswithwine.jpg";
 
-  const seoTitle =
-    data?.seo?.title ||
-    data?.seoTitle ||
-    data?.heading ||
-    "Girls With Wine";
+ const seoTitle =
+  seo?.title ||
+  data?.seoTitle ||
+  data?.heading ||
+  "Girls With Wine";
 
-  const seoDescription =
-    data?.seo?.description ||
-    data?.seoDescription ||
-    data?.subDescription ||
-    data?.heading ||
-    "Premium escort service";
+const seoDescription =
+  seo?.description ||
+  data?.seoDescription ||
+  data?.subDescription ||
+  data?.heading ||
+  "Premium escort service";
 
   // const seoKeywords =
   //   data?.seo?.seoKeywords ||
@@ -360,7 +376,9 @@ export default async function Page({
   const {
     citySlug,
     subCitySlug,
-  } = params;
+  } = await params;
+
+
 
   const decodedSlug =
     decodeURIComponent(
@@ -403,7 +421,6 @@ export default async function Page({
 
   const faqSchema =
     await getFaqSchema(
-      "subcity",
       result.data?._id
     );
 

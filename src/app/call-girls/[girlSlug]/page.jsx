@@ -1,3 +1,6 @@
+import GirlDetailsPage from "@/components/GirlDetailsPage";
+import Hash404 from "@/components/Hash404";
+
 function getApiUrl() {
 
   return (
@@ -235,40 +238,35 @@ async function getFaqSchema(girlId) {
 
 async function checkSlug(girlSlug) {
 
+ 
+
   try {
 
-    const girlRes = await fetch(
-      `${getApiUrl()}/api/girls/${girlSlug}`,
-      {
-        cache: "no-store",
-      }
-    );
+    const url =
+      `${getApiUrl()}/api/girls/${girlSlug}`;
 
-    if (!girlRes.ok) {
-      return null;
-    }
+
+
+    const girlRes =
+      await fetch(
+        url,
+        {
+          cache:
+            "no-store",
+        }
+      );
+
+
 
     const girlData =
       await girlRes.json();
 
-    if (
-      !girlData ||
-      !girlData._id ||
-      girlData.message
-    ) {
-      return null;
-    }
 
-    return {
 
-      type: "girl",
-
-      data:
-        girlData,
-
-    };
+    return girlData;
 
   } catch (err) {
+
 
     return null;
 
@@ -280,8 +278,9 @@ export async function generateMetadata({
   params,
 }) {
 
-  const { girlSlug } =
-    params;
+  const {
+    girlSlug,
+  } = await params;
 
   const result =
     await checkSlug(
@@ -309,9 +308,8 @@ export async function generateMetadata({
 
   }
 
-  const data =
-    result.data;
-
+const data =
+  result;
   const pageUrl =
     `https://girlswithwine.com/call-girls/${girlSlug}`;
 
@@ -493,8 +491,10 @@ export default async function Page({
   params,
 }) {
 
-  const { girlSlug } =
-    params;
+   const {
+    girlSlug,
+  } = await params;
+
 
   const decodedSlug =
     decodeURIComponent(
@@ -535,14 +535,14 @@ export default async function Page({
 
   }
 
-  const girl =
-    result.data;
+const girl =
+  result;
 
-  const faqSchema =
-    await getFaqSchema(
-      "girl",
-      girl?._id
-    );
+
+ const faqSchema =
+  await getFaqSchema(
+    girl?._id
+  );
 
   const faqJson =
     faqSchema?.schema ||

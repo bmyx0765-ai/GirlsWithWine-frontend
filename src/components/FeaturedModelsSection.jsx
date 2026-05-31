@@ -157,8 +157,10 @@ export default function FeaturedModelsSection() {
                       model._id
                     }
                     onClick={() =>
-                      router.push(
-                        `/${model.permalink}`
+                      window.open(
+                        `/call-girls/${model.permalink}`,
+                        "_blank",
+                        "noopener,noreferrer"
                       )
                     }
                     className="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer bg-white"
@@ -190,18 +192,12 @@ export default function FeaturedModelsSection() {
                           loading="lazy"
                           onLoad={() => {
 
-                            console.log(
-                              "IMAGE LOADED =>",
-                              model.imageUrl
-                            );
+
 
                           }}
                           onError={() => {
 
-                            console.error(
-                              "IMAGE NOT FOUND =>",
-                              model.imageUrl
-                            );
+
 
                             setImageErrors(
                               (prev) => ({
