@@ -200,25 +200,35 @@
 
 
 
-
-
 "use client";
 
-import React from "react";
-import { useRouter } from "next/navigation";
+import React, { useMemo } from "react";
+import Link from "next/link";
 import { FiMapPin } from "react-icons/fi";
 
 const CitySection = ({ loading, cities = [] }) => {
-  const router = useRouter();
-
   const skeletonItems = new Array(12).fill(0);
 
-  const activeCities = cities.filter((city) => city?.status === "Active");
+  const activeCities = useMemo(() => {
+    return cities
+      .filter((city) => city?.status === "Active")
+      .map((city) => {
+        const cleanSlug = city?.slug
+          ?.replace("#", "")
+          ?.replace("%23", "")
+          ?.replace(/^\/+|\/+$/g, "")
+          ?.trim()
+          ?.toLowerCase();
 
-  const handleCityClick = (url) => {
-    window.history.pushState(null, "", url);
-    router.push(url);
-  };
+        if (!cleanSlug) return null;
+
+        return {
+          ...city,
+          url: `/${cleanSlug}`,
+        };
+      })
+      .filter(Boolean);
+  }, [cities]);
 
   return (
     <section className="w-full bg-transparent">
@@ -244,42 +254,30 @@ const CitySection = ({ loading, cities = [] }) => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {activeCities?.length > 0 ? (
-              activeCities.map((city) => {
-                const cleanSlug = city?.slug
-                  ?.replace("#", "")
-                  ?.replace("%23", "")
-                  ?.replace(/^\/+|\/+$/g, "")
-                  ?.trim()
-                  ?.toLowerCase();
+            {activeCities.length > 0 ? (
+              activeCities.map((city) => (
+                <Link
+                  key={city?._id}
+                  href={city.url}
+                  prefetch={true}
+                  scroll={true}
+                  className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md hover:border-[#00B9BE]/30 transition-all duration-300 active:scale-[0.98]"
+                >
+                  <div className="flex-shrink-0 flex items-center justify-center rounded-xl w-10 h-10 bg-gray-50 text-gray-400 group-hover:bg-[#00B9BE] group-hover:text-white transition-colors duration-300">
+                    <FiMapPin className="text-lg" />
+                  </div>
 
-                if (!cleanSlug) return null;
+                  <div className="overflow-hidden">
+                    <p className="text-sm font-bold text-gray-700 group-hover:text-[#00B9BE] transition-colors truncate">
+                      {city?.mainCity}
+                    </p>
 
-                const url = `/${cleanSlug}`;
-
-                return (
-                  <button
-                    key={city?._id}
-                    type="button"
-                    onClick={() => handleCityClick(url)}
-                    className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md hover:border-[#00B9BE]/30 transition-all duration-300 active:scale-[0.98] text-left cursor-pointer"
-                  >
-                    <div className="flex-shrink-0 flex items-center justify-center rounded-xl w-10 h-10 bg-gray-50 text-gray-400 group-hover:bg-[#00B9BE] group-hover:text-white transition-colors duration-300">
-                      <FiMapPin className="text-lg" />
-                    </div>
-
-                    <div className="overflow-hidden">
-                      <p className="text-sm font-bold text-gray-700 group-hover:text-[#00B9BE] transition-colors truncate">
-                        {city?.mainCity}
-                      </p>
-
-                      <p className="text-[11px] text-gray-400 uppercase tracking-wider group-hover:text-gray-500 transition-colors">
-                        View Profiles
-                      </p>
-                    </div>
-                  </button>
-                );
-              })
+                    <p className="text-[11px] text-gray-400 uppercase tracking-wider group-hover:text-gray-500 transition-colors">
+                      View Profiles
+                    </p>
+                  </div>
+                </Link>
+              ))
             ) : (
               <div className="col-span-full py-12 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
                 <p className="text-gray-400 font-medium italic">
