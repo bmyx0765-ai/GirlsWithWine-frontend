@@ -85,61 +85,61 @@ export default function CityGirlsPage({ params }) {
 
   /* ================= HELPERS ================= */
 
-  // // const cleanHTML = (html = "") =>
-  // //   html
-  // //     .replace(/<html.*?>/gi, "")
-  // //     .replace(/<\/html>/gi, "")
-  // //     .replace(/<body.*?>/gi, "")
-  // //     .replace(/<\/body>/gi, "");
+  const cleanHTML = (html = "") =>
+    html
+      .replace(/<html.*?>/gi, "")
+      .replace(/<\/html>/gi, "")
+      .replace(/<body.*?>/gi, "")
+      .replace(/<\/body>/gi, "");
 
-  // // const cleanNumber = (num) => num?.replace(/\D/g, "");
+  const cleanNumber = (num) => num?.replace(/\D/g, "");
 
-  // // const formatPhone = (num) => {
-  // //   if (!num) return "";
-  // //   const cleaned = cleanNumber(num);
-  // //   return cleaned.startsWith("91") ? `+${cleaned}` : `+91${cleaned}`;
-  // // };
+  const formatPhone = (num) => {
+    if (!num) return "";
+    const cleaned = cleanNumber(num);
+    return cleaned.startsWith("91") ? `+${cleaned}` : `+91${cleaned}`;
+  };
 
-  // // const createWhatsAppURL = (name, number) => {
-  // //   const msg = encodeURIComponent(
-  // //     `Hi ${name}, I saw your profile and want to connect.`
-  // //   );
-  // //   return `https://wa.me/${cleanNumber(number)}?text=${msg}`;
-  // // };
+  const createWhatsAppURL = (name, number) => {
+    const msg = encodeURIComponent(
+      `Hi ${name}, I saw your profile and want to connect.`
+    );
+    return `https://wa.me/${cleanNumber(number)}?text=${msg}`;
+  };
 
-  // // const safeGirls = useMemo(() => {
-  // //   if (Array.isArray(cityGirls)) return cityGirls;
-  // //   if (Array.isArray(cityGirls?.data)) return cityGirls.data;
-  // //   return [];
-  // // }, [cityGirls]);
+  const safeGirls = useMemo(() => {
+    if (Array.isArray(cityGirls)) return cityGirls;
+    if (Array.isArray(cityGirls?.data)) return cityGirls.data;
+    return [];
+  }, [cityGirls]);
 
-  // // const totalPages = Math.ceil(safeGirls.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(safeGirls.length / ITEMS_PER_PAGE);
 
-  // // const paginatedGirls = useMemo(() => {
-  // //   const start = (currentPage - 1) * ITEMS_PER_PAGE;
-  // //   return safeGirls.slice(start, start + ITEMS_PER_PAGE);
-  // // }, [safeGirls, currentPage]);
+  const paginatedGirls = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return safeGirls.slice(start, start + ITEMS_PER_PAGE);
+  }, [safeGirls, currentPage]);
 
-  // // const formatName = (slug = "") =>
-  // //   slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const formatName = (slug = "") =>
+    slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  // /* ================= CITY DATA ================= */
-  // // const cityObj = singleCity || {};
-  // // const finalName = cityObj?.mainCity || formatName(cityName);
+  /* ================= CITY DATA ================= */
+  const cityObj = singleCity || {};
+  const finalName = cityObj?.mainCity || formatName(cityName);
 
-  // // const cityHeading = cityObj?.heading || `${finalName} Call Girls`;
+  const cityHeading = cityObj?.heading || `${finalName} Call Girls`;
 
-  // // const finalDescription =
-  // //   cityObj?.description || `<p>No description available</p>`;
+  const finalDescription =
+    cityObj?.description || `<p>No description available</p>`;
 
-  // // const formattedDate = useMemo(() => {
-  // //   if (!cityObj?.updatedAt) return "";
-  // //   return new Date(cityObj.updatedAt).toLocaleDateString("en-IN", {
-  // //     day: "numeric",
-  // //     month: "long",
-  // //     year: "numeric",
-  // //   });
-  // // }, [cityObj?.updatedAt]);
+  const formattedDate = useMemo(() => {
+    if (!cityObj?.updatedAt) return "";
+    return new Date(cityObj.updatedAt).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }, [cityObj?.updatedAt]);
 
   useEffect(() => {
     // Force scroll to top on initial page load
