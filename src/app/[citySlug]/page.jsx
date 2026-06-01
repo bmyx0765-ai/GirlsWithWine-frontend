@@ -5,6 +5,479 @@ import Hash404 from "@/components/Hash404";
 
 
 
+
+export default async function Page({
+    params,
+}) {
+
+    const { citySlug } =
+        await params;
+
+    const decodedSlug =
+        decodeURIComponent(
+            citySlug || ""
+        );
+
+    /* ================= INVALID URL ================= */
+
+    if (
+        decodedSlug.includes("#") ||
+        decodedSlug.includes("%23") ||
+        decodedSlug.includes("?") ||
+        decodedSlug.includes("&")
+    ) {
+
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-white">
+                <h1 className="text-4xl md:text-6xl font-black text-slate-900">
+                    404 Not Found
+                </h1>
+            </div>
+        );
+
+    }
+
+    /* ================= CHECK CITY ================= */
+
+    const result =
+        await checkSlug(
+            decodedSlug
+        );
+
+    /* ================= NOT FOUND ================= */
+
+    if (!result) {
+
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-white">
+                <h1 className="text-4xl md:text-6xl font-black text-slate-900">
+                    404 Not Found
+                </h1>
+            </div>
+        );
+
+    }
+
+    const { city } =
+        result.data;
+
+    const faqSchema =
+        await getFaqSchema(
+            city?._id
+        );
+
+    let latitude =
+        city?.latitude;
+
+    let longitude =
+        city?.longitude;
+
+
+
+    const cityNameRaw =
+        city?.mainCity ||
+        city?.name ||
+        decodedSlug;
+
+    const cityName =
+        cityNameRaw
+            ?.split(" ")
+            ?.map(
+                (word) =>
+                    word.charAt(0).toUpperCase() +
+                    word.slice(1).toLowerCase()
+            )
+            ?.join(" ");
+
+    /* ================================================= */
+    /* ================= GET LAT LONG ================== */
+    /* ================================================= */
+
+    if (
+        !latitude ||
+        !longitude
+    ) {
+
+        const geo =
+            await getLatLong(
+                cityName
+            );
+
+        if (geo) {
+
+            latitude =
+                geo.latitude;
+
+            longitude =
+                geo.longitude;
+
+        }
+    }
+
+    /* ================================================= */
+    /* ================= PAGE URL ====================== */
+    /* ================================================= */
+
+    const pageUrl =
+        `https://girlswithwine.com/${decodedSlug}`;
+
+    /* ================================================= */
+    /* ================= IMAGE URL ===================== */
+    /* ================================================= */
+
+    const imageUrl =
+        "https://girlswithwine.com/images/girlswithwine.jpg";
+
+    /* ================================================= */
+    /* ================= SEO DATA ====================== */
+    /* ================================================= */
+
+    const canonicalUrl =
+        city?.seo?.canonical ||
+        city?.canonical ||
+        pageUrl;
+
+    const seoTitle =
+        city?.seo?.title ||
+        city?.seoTitle ||
+        city?.heading ||
+        `${cityName} Escort Service`;
+
+    const seoDescription =
+        city?.seo?.description ||
+        city?.seoDescription ||
+        city?.subDescription ||
+        `Book verified call girls and escorts in ${cityName}.`;
+
+    const seoKeywords =
+        city?.seo?.seoKeywords ||
+        city?.seoKeywords ||
+        "";
+
+    /* ================================================= */
+    /* ================= SERVICE TYPE ================== */
+    /* ================================================= */
+
+    const serviceTypes =
+        city?.serviceType ||
+        city?.seo?.serviceType ||
+        "";
+
+    /* ================================================= */
+    /* ================= FAQ JSON FIX ================== */
+    /* ================================================= */
+
+    const faqJson =
+        faqSchema?.schema ||
+        faqSchema ||
+        null;
+
+    /* ================================================= */
+    /* ================= BREADCRUMB ==================== */
+    /* ================================================= */
+
+    const breadcrumbSchema = {
+
+        "@context":
+            "https://schema.org",
+
+        "@type":
+            "BreadcrumbList",
+
+        itemListElement: [
+
+            {
+                "@type":
+                    "ListItem",
+
+                position: 1,
+
+                name:
+                    "Home",
+
+                item:
+                    "https://girlswithwine.com/",
+            },
+
+            {
+                "@type":
+                    "ListItem",
+
+                position: 2,
+
+                name:
+                    cityName,
+
+                item:
+                    canonicalUrl,
+            },
+
+        ],
+
+    };
+
+    /* ================================================= */
+    /* ================= LOCAL BUSINESS ================ */
+    /* ================================================= */
+
+    const localBusinessSchema = {
+
+        "@context":
+            "https://schema.org",
+
+        "@type":
+            "LocalBusiness",
+
+        name:
+            seoTitle,
+
+        url:
+            canonicalUrl,
+
+        image:
+            imageUrl,
+
+        telephone:
+            "+91-XXXXXXXXXX",
+
+        priceRange:
+            "₹2999 - ₹19999",
+
+        description:
+            seoDescription,
+
+        keywords:
+            seoKeywords,
+
+        address: {
+
+            "@type":
+                "PostalAddress",
+
+            addressLocality:
+                cityName,
+
+            addressRegion:
+                city?.state ||
+                city?.stateName ||
+                "",
+
+            addressCountry:
+                "IN",
+
+        },
+
+        ...(latitude &&
+            longitude && {
+
+            geo: {
+
+                "@type":
+                    "GeoCoordinates",
+
+                latitude,
+
+                longitude,
+
+            },
+
+        }),
+
+        openingHours:
+            "Mo-Su 00:00-23:59",
+
+        sameAs: [
+            canonicalUrl,
+        ],
+
+    };
+
+    /* ================================================= */
+    /* ================= SERVICE SCHEMA ================ */
+    /* ================================================= */
+
+    const serviceSchema = {
+
+        "@context":
+            "https://schema.org",
+
+        "@type":
+            "Service",
+
+        name:
+            seoTitle,
+
+        provider: {
+
+            "@type":
+                "Organization",
+
+            name:
+                "Girls With Wine",
+
+            url:
+                "https://girlswithwine.com/",
+
+        },
+
+        url:
+            canonicalUrl,
+
+        areaServed: {
+
+            "@type":
+                "City",
+
+            name:
+                cityName,
+
+        },
+
+        serviceType:
+            serviceTypes,
+
+        description:
+            seoDescription,
+
+        keywords:
+            seoKeywords,
+
+        offers: {
+
+            "@type":
+                "AggregateOffer",
+
+            priceCurrency:
+                "INR",
+
+            lowPrice:
+                "2999",
+
+            highPrice:
+                "19999",
+
+        },
+
+    };
+
+    return (
+
+        <>
+            <Hash404 />
+
+            {/* ================================================= */}
+            {/* ================= FAQ SCHEMA ==================== */}
+            {/* ================================================= */}
+
+            {faqJson && (
+
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html:
+                            JSON.stringify(
+                                faqJson
+                            ),
+                    }}
+                />
+
+            )}
+
+            {/* ================================================= */}
+            {/* ================= BREADCRUMB ==================== */}
+            {/* ================================================= */}
+
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html:
+                        JSON.stringify(
+                            breadcrumbSchema
+                        ),
+                }}
+            />
+
+            {/* ================================================= */}
+            {/* ================= LOCAL BUSINESS ================ */}
+            {/* ================================================= */}
+
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html:
+                        JSON.stringify(
+                            localBusinessSchema
+                        ),
+                }}
+            />
+
+            {/* ================================================= */}
+            {/* ================= SERVICE ======================= */}
+            {/* ================================================= */}
+
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html:
+                        JSON.stringify(
+                            serviceSchema
+                        ),
+                }}
+            />
+
+            {/* ================================================= */}
+            {/* ================= GEO META ====================== */}
+            {/* ================================================= */}
+
+            {latitude &&
+                longitude && (
+
+                    <>
+                        <meta
+                            name="geo.region"
+                            content="IN"
+                        />
+
+                        <meta
+                            name="geo.placename"
+                            content={
+                                cityName
+                            }
+                        />
+
+                        <meta
+                            name="geo.position"
+                            content={`${latitude};${longitude}`}
+                        />
+
+                        <meta
+                            name="ICBM"
+                            content={`${latitude}, ${longitude}`}
+                        />
+                    </>
+
+                )}
+
+            {/* ================================================= */}
+            {/* ================= PAGE ========================== */}
+            {/* ================================================= */}
+
+            <CityGirlsPage
+                params={{
+                    cityName:
+                        decodedSlug,
+                }}
+            />
+        </>
+
+    );
+
+}
+    
+
+
+
+
 function getApiUrl() {
 
   return (
@@ -537,476 +1010,3 @@ export async function generateMetadata({
     };
 
 }
-
-
-export default async function Page({
-    params,
-}) {
-
-    const { citySlug } =
-        await params;
-
-    const decodedSlug =
-        decodeURIComponent(
-            citySlug || ""
-        );
-
-    /* ================= INVALID URL ================= */
-
-    if (
-        decodedSlug.includes("#") ||
-        decodedSlug.includes("%23") ||
-        decodedSlug.includes("?") ||
-        decodedSlug.includes("&")
-    ) {
-
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-white">
-                <h1 className="text-4xl md:text-6xl font-black text-slate-900">
-                    404 Not Found
-                </h1>
-            </div>
-        );
-
-    }
-
-    /* ================= CHECK CITY ================= */
-
-    const result =
-        await checkSlug(
-            decodedSlug
-        );
-
-    /* ================= NOT FOUND ================= */
-
-    if (!result) {
-
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-white">
-                <h1 className="text-4xl md:text-6xl font-black text-slate-900">
-                    404 Not Found
-                </h1>
-            </div>
-        );
-
-    }
-
-    const { city } =
-        result.data;
-
-    const faqSchema =
-        await getFaqSchema(
-            city?._id
-        );
-
-    let latitude =
-        city?.latitude;
-
-    let longitude =
-        city?.longitude;
-
-
-
-    const cityNameRaw =
-        city?.mainCity ||
-        city?.name ||
-        decodedSlug;
-
-    const cityName =
-        cityNameRaw
-            ?.split(" ")
-            ?.map(
-                (word) =>
-                    word.charAt(0).toUpperCase() +
-                    word.slice(1).toLowerCase()
-            )
-            ?.join(" ");
-
-    /* ================================================= */
-    /* ================= GET LAT LONG ================== */
-    /* ================================================= */
-
-    if (
-        !latitude ||
-        !longitude
-    ) {
-
-        const geo =
-            await getLatLong(
-                cityName
-            );
-
-        if (geo) {
-
-            latitude =
-                geo.latitude;
-
-            longitude =
-                geo.longitude;
-
-        }
-    }
-
-    /* ================================================= */
-    /* ================= PAGE URL ====================== */
-    /* ================================================= */
-
-    const pageUrl =
-        `https://girlswithwine.com/${decodedSlug}`;
-
-    /* ================================================= */
-    /* ================= IMAGE URL ===================== */
-    /* ================================================= */
-
-    const imageUrl =
-        "https://girlswithwine.com/images/girlswithwine.jpg";
-
-    /* ================================================= */
-    /* ================= SEO DATA ====================== */
-    /* ================================================= */
-
-    const canonicalUrl =
-        city?.seo?.canonical ||
-        city?.canonical ||
-        pageUrl;
-
-    const seoTitle =
-        city?.seo?.title ||
-        city?.seoTitle ||
-        city?.heading ||
-        `${cityName} Escort Service`;
-
-    const seoDescription =
-        city?.seo?.description ||
-        city?.seoDescription ||
-        city?.subDescription ||
-        `Book verified call girls and escorts in ${cityName}.`;
-
-    const seoKeywords =
-        city?.seo?.seoKeywords ||
-        city?.seoKeywords ||
-        "";
-
-    /* ================================================= */
-    /* ================= SERVICE TYPE ================== */
-    /* ================================================= */
-
-    const serviceTypes =
-        city?.serviceType ||
-        city?.seo?.serviceType ||
-        "";
-
-    /* ================================================= */
-    /* ================= FAQ JSON FIX ================== */
-    /* ================================================= */
-
-    const faqJson =
-        faqSchema?.schema ||
-        faqSchema ||
-        null;
-
-    /* ================================================= */
-    /* ================= BREADCRUMB ==================== */
-    /* ================================================= */
-
-    const breadcrumbSchema = {
-
-        "@context":
-            "https://schema.org",
-
-        "@type":
-            "BreadcrumbList",
-
-        itemListElement: [
-
-            {
-                "@type":
-                    "ListItem",
-
-                position: 1,
-
-                name:
-                    "Home",
-
-                item:
-                    "https://girlswithwine.com/",
-            },
-
-            {
-                "@type":
-                    "ListItem",
-
-                position: 2,
-
-                name:
-                    cityName,
-
-                item:
-                    canonicalUrl,
-            },
-
-        ],
-
-    };
-
-    /* ================================================= */
-    /* ================= LOCAL BUSINESS ================ */
-    /* ================================================= */
-
-    const localBusinessSchema = {
-
-        "@context":
-            "https://schema.org",
-
-        "@type":
-            "LocalBusiness",
-
-        name:
-            seoTitle,
-
-        url:
-            canonicalUrl,
-
-        image:
-            imageUrl,
-
-        telephone:
-            "+91-XXXXXXXXXX",
-
-        priceRange:
-            "₹2999 - ₹19999",
-
-        description:
-            seoDescription,
-
-        keywords:
-            seoKeywords,
-
-        address: {
-
-            "@type":
-                "PostalAddress",
-
-            addressLocality:
-                cityName,
-
-            addressRegion:
-                city?.state ||
-                city?.stateName ||
-                "",
-
-            addressCountry:
-                "IN",
-
-        },
-
-        ...(latitude &&
-            longitude && {
-
-            geo: {
-
-                "@type":
-                    "GeoCoordinates",
-
-                latitude,
-
-                longitude,
-
-            },
-
-        }),
-
-        openingHours:
-            "Mo-Su 00:00-23:59",
-
-        sameAs: [
-            canonicalUrl,
-        ],
-
-    };
-
-    /* ================================================= */
-    /* ================= SERVICE SCHEMA ================ */
-    /* ================================================= */
-
-    const serviceSchema = {
-
-        "@context":
-            "https://schema.org",
-
-        "@type":
-            "Service",
-
-        name:
-            seoTitle,
-
-        provider: {
-
-            "@type":
-                "Organization",
-
-            name:
-                "Girls With Wine",
-
-            url:
-                "https://girlswithwine.com/",
-
-        },
-
-        url:
-            canonicalUrl,
-
-        areaServed: {
-
-            "@type":
-                "City",
-
-            name:
-                cityName,
-
-        },
-
-        serviceType:
-            serviceTypes,
-
-        description:
-            seoDescription,
-
-        keywords:
-            seoKeywords,
-
-        offers: {
-
-            "@type":
-                "AggregateOffer",
-
-            priceCurrency:
-                "INR",
-
-            lowPrice:
-                "2999",
-
-            highPrice:
-                "19999",
-
-        },
-
-    };
-
-    return (
-
-        <>
-            <Hash404 />
-
-            {/* ================================================= */}
-            {/* ================= FAQ SCHEMA ==================== */}
-            {/* ================================================= */}
-
-            {faqJson && (
-
-                <script
-                    type="application/ld+json"
-                    dangerouslySetInnerHTML={{
-                        __html:
-                            JSON.stringify(
-                                faqJson
-                            ),
-                    }}
-                />
-
-            )}
-
-            {/* ================================================= */}
-            {/* ================= BREADCRUMB ==================== */}
-            {/* ================================================= */}
-
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html:
-                        JSON.stringify(
-                            breadcrumbSchema
-                        ),
-                }}
-            />
-
-            {/* ================================================= */}
-            {/* ================= LOCAL BUSINESS ================ */}
-            {/* ================================================= */}
-
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html:
-                        JSON.stringify(
-                            localBusinessSchema
-                        ),
-                }}
-            />
-
-            {/* ================================================= */}
-            {/* ================= SERVICE ======================= */}
-            {/* ================================================= */}
-
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html:
-                        JSON.stringify(
-                            serviceSchema
-                        ),
-                }}
-            />
-
-            {/* ================================================= */}
-            {/* ================= GEO META ====================== */}
-            {/* ================================================= */}
-
-            {latitude &&
-                longitude && (
-
-                    <>
-                        <meta
-                            name="geo.region"
-                            content="IN"
-                        />
-
-                        <meta
-                            name="geo.placename"
-                            content={
-                                cityName
-                            }
-                        />
-
-                        <meta
-                            name="geo.position"
-                            content={`${latitude};${longitude}`}
-                        />
-
-                        <meta
-                            name="ICBM"
-                            content={`${latitude}, ${longitude}`}
-                        />
-                    </>
-
-                )}
-
-            {/* ================================================= */}
-            {/* ================= PAGE ========================== */}
-            {/* ================================================= */}
-
-            <CityGirlsPage
-                params={{
-                    cityName:
-                        decodedSlug,
-                }}
-            />
-        </>
-
-    );
-
-}
-    
-
-
-

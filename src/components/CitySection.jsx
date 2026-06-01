@@ -107,8 +107,11 @@ const CitySection = ({
                   cleanSlug
                 );
 
-                const url =
-                  `/${cleanSlug}`;
+                // const url =
+                //   `/${cleanSlug}`;
+
+                   const url =
+                  '/escort-agency-udaipur';
 
                 console.log(
                   "CITY URL =>",
