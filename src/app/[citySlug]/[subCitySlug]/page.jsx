@@ -1,5 +1,9 @@
+
+import { cache } from "react";
 import Hash404 from "@/components/Hash404";
 import SubCityGirlsPage from "@/components/SubCityGirlsPage";
+
+export const revalidate = 300;
 
 function getApiUrl() {
 
@@ -26,15 +30,14 @@ async function getFaqSchema(subCityId) {
     const falseUrl =
       `${getApiUrl()}/api/faqs/visibility?type=subcity&visible=false&subCityId=${subCityId}`;
 
-    const [trueRes, falseRes] =
-      await Promise.all([
-        fetch(trueUrl, {
-          cache: "no-store",
-        }),
-        fetch(falseUrl, {
-          cache: "no-store",
-        }),
-      ]);
+   const [trueRes, falseRes] = await Promise.all([
+  fetch(trueUrl, {
+    next: { revalidate: 300 },
+  }),
+  fetch(falseUrl, {
+    next: { revalidate: 300 },
+  }),
+]);
 
     if (
       !trueRes.ok &&
@@ -173,59 +176,37 @@ async function getFaqSchema(subCityId) {
   }
 }
 
-async function checkSlug(subCitySlug) {
-
-
-
+const checkSlug = cache(async (subCitySlug) => {
   try {
+    if (!subCitySlug) return null;
 
     const apiUrl =
       `${getApiUrl()}/api/subcities/${subCitySlug}`;
 
-
-
-    const subCityRes =
-      await fetch(
-        apiUrl,
-        {
-          cache: "no-store",
-        }
-      );
-
+    const subCityRes = await fetch(apiUrl, {
+      next: { revalidate: 300 },
+    });
 
     if (!subCityRes.ok) {
-
-
       return null;
     }
 
-    const subCityData =
-      await subCityRes.json();
+    const subCityData = await subCityRes.json();
 
-
-    if (
-      !subCityData?.subCity?._id
-    ) {
-
-
+    if (!subCityData?.subCity?._id) {
       return null;
     }
-
 
     return {
       type: "subcity",
       data: subCityData.subCity,
       seo: subCityData.seo,
     };
-
   } catch (err) {
-
-
+    console.error("SUBCITY SLUG ERROR:", err);
     return null;
-
   }
-
-}
+});
 
 export async function generateMetadata({
   params,

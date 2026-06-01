@@ -1,5 +1,9 @@
+import { cache } from "react";
 import GirlDetailsPage from "@/components/GirlDetailsPage";
 import Hash404 from "@/components/Hash404";
+
+
+export const revalidate = 300;
 
 function getApiUrl() {
 
@@ -31,25 +35,13 @@ async function getFaqSchema(girlId) {
     const falseUrl =
       `${getApiUrl()}/api/faqs/visibility?type=girl&visible=false&girlId=${girlId}`;
 
-    const [
-      trueRes,
-      falseRes,
-    ] = await Promise.all([
-
-      fetch(
-        trueUrl,
-        {
-          cache: "no-store",
-        }
-      ),
-
-      fetch(
-        falseUrl,
-        {
-          cache: "no-store",
-        }
-      ),
-
+   const [trueRes, falseRes] = await Promise.all([
+      fetch(trueUrl, {
+        next: { revalidate: 300 },
+      }),
+      fetch(falseUrl, {
+        next: { revalidate: 300 },
+      }),
     ]);
 
     if (
@@ -236,43 +228,34 @@ async function getFaqSchema(girlId) {
 
 }
 
-async function checkSlug(girlSlug) {
-
- 
-
+const checkSlug = cache(async (girlSlug) => {
   try {
+    if (!girlSlug) return null;
 
-    const url =
-      `${getApiUrl()}/api/girls/${girlSlug}`;
+    const girlRes = await fetch(
+      `${getApiUrl()}/api/girls/${girlSlug}`,
+      {
+        next: {
+          revalidate: 300,
+        },
+      }
+    );
 
+    if (!girlRes.ok) {
+      return null;
+    }
 
+    const girlData = await girlRes.json();
 
-    const girlRes =
-      await fetch(
-        url,
-        {
-          cache:
-            "no-store",
-        }
-      );
-
-
-
-    const girlData =
-      await girlRes.json();
-
-
+    if (!girlData?._id) {
+      return null;
+    }
 
     return girlData;
-
-  } catch (err) {
-
-
+  } catch {
     return null;
-
   }
-
-}
+});
 
 export async function generateMetadata({
   params,
@@ -539,10 +522,11 @@ const girl =
   result;
 
 
- const faqSchema =
-  await getFaqSchema(
-    girl?._id
-  );
+const faqPromise =
+  getFaqSchema(girl?._id);
+
+  const faqSchema =
+  await faqPromise;
 
   const faqJson =
     faqSchema?.schema ||

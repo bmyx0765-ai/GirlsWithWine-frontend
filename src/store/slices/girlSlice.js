@@ -43,12 +43,22 @@ export const getAllGirlsThunk = createAsyncThunk(
 // GET BY CITY (Caching removed inside thunk for fresh data on navigation)
 export const getGirlsByCityThunk = createAsyncThunk(
   "girls/getByCity",
-  async (cityId, { rejectWithValue }) => {
+  async ({ cityId, page = 1 }, { rejectWithValue }) => {
     try {
-      const res = await axiosInstance.get(`${GET_GIRLS_BY_CITY_URL}/${cityId}`);
-      return { cityId, data: normalizeArray(res.data) };
+      const res = await axiosInstance.get(
+        `${GET_GIRLS_BY_CITY_URL}/${cityId}?page=${page}`
+      );
+
+      return {
+        cityId,
+        page,
+        data: res.data,
+      };
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Failed to load city girls");
+      return rejectWithValue(
+        err.response?.data?.message ||
+        "Failed to load city girls"
+      );
     }
   }
 );
@@ -56,12 +66,24 @@ export const getGirlsByCityThunk = createAsyncThunk(
 // GET BY SUB-CITY
 export const getGirlsBySubCityThunk = createAsyncThunk(
   "girls/getBySubCity",
-  async (subCityId, { rejectWithValue }) => {
+  async (
+    { subCityId, page = 1 },
+    { rejectWithValue }
+  ) => {
     try {
-      const res = await axiosInstance.get(`${GET_GIRLS_BY_SUBCITY_URL}/${subCityId}`);
-      return normalizeArray(res.data);
+      const res = await axiosInstance.get(
+        `${GET_GIRLS_BY_SUBCITY_URL}/${subCityId}?page=${page}`
+      );
+
+      return {
+        subCityId,
+        page,
+        data: res.data,
+      };
     } catch (err) {
-      return rejectWithValue("Failed to load subcity girls");
+      return rejectWithValue(
+        "Failed to load subcity girls"
+      );
     }
   }
 );
@@ -156,6 +178,8 @@ const girlSlice = createSlice({
   initialState: {
     girls: [],
     cityGirls: [],
+    cityGirlsPagination: null,
+    subCityGirlsPagination: null,
     cityGirlsById: {},
     singleGirl: null,
     listLoading: false,
@@ -188,14 +212,29 @@ const girlSlice = createSlice({
 
       /* --- CITY/SUB-CITY --- */
       .addCase(getGirlsByCityThunk.pending, (state) => { state.cityLoading = true; })
+     
       .addCase(getGirlsByCityThunk.fulfilled, (state, action) => {
         state.cityLoading = false;
-        state.cityGirls = action.payload.data;
-        state.cityGirlsById[action.payload.cityId] = action.payload.data;
+
+        state.cityGirls =
+          action.payload.data.data;
+
+        state.cityGirlsPagination =
+          action.payload.data.pagination;
+
+        state.cityGirlsById[
+          action.payload.cityId
+        ] = action.payload.data.data;
       })
       .addCase(getGirlsBySubCityThunk.fulfilled, (state, action) => {
-        state.cityGirls = action.payload;
-      })
+  state.cityLoading = false;
+
+  state.cityGirls =
+    action.payload.data.data;
+
+  state.subCityGirlsPagination =
+    action.payload.data.pagination;
+})
 
       /* --- SINGLE GIRL (SLUG/ID) --- */
       .addCase(getGirlBySlugThunk.pending, (state) => { state.singleLoading = true; })

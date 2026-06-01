@@ -41,13 +41,17 @@ const createWhatsAppURL = (name, number) => {
 const SubCityGirlsPage = ({ data }) => {
 
   const [imageErrors, setImageErrors] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
 
   const router = useRouter();
   const dispatch = useDispatch();
 
   /* ================= REDUX SELECTORS ================= */
-  const { cityGirls = [], cityLoading = false } = useSelector((state) => {
-
+  const {
+    cityGirls = [],
+    cityLoading = false,
+    subCityGirlsPagination,
+  } = useSelector((state) => {
     return state.girls || {};
   });
 
@@ -88,17 +92,25 @@ const SubCityGirlsPage = ({ data }) => {
 
     if (_id) {
       // Fetch girls specific to this sub-city
-      dispatch(getGirlsBySubCityThunk(_id));
+      dispatch(
+        getGirlsBySubCityThunk({
+          subCityId: _id,
+          page: currentPage,
+        })
+      );
     }
 
     if (city?._id) {
 
       dispatch(fetchSubCitiesByCity(city._id));
     }
-  }, [_id, city?._id, dispatch]);
+  }, [_id, city?._id, currentPage, dispatch]);
 
   /* ================= DATA PROCESSING ================= */
   const finalGirls = cityGirls?.length ? cityGirls : initialGirls;
+
+  const totalPages =
+    subCityGirlsPagination?.totalPages || 1;
 
 
   const formattedDate = useMemo(() => {
@@ -168,7 +180,7 @@ const SubCityGirlsPage = ({ data }) => {
               return (
                 <div
                   key={girl?._id || `girl-${index}`}
-                  onClick={() => router.push(`/${girl?.permalink}`)}
+                  onClick={() => router.push(`/call-girls/${girl?.permalink}`)}
                   className="group cursor-pointer bg-white rounded-[2rem] p-5 shadow-sm hover:shadow-2xl hover:border-pink-200 transition-all duration-300 border flex flex-col md:flex-row gap-6 items-center md:items-stretch"
                 >
                   {/* PROFILE IMAGE */}
@@ -280,7 +292,50 @@ const SubCityGirlsPage = ({ data }) => {
                 </div>
               );
             })
+          )}{totalPages > 1 && (
+            <div className="flex justify-center gap-2 mt-10 flex-wrap">
+              <button
+                disabled={currentPage === 1}
+                onClick={() =>
+                  setCurrentPage((p) => p - 1)
+                }
+                className="px-4 py-2 border rounded-lg"
+              >
+                Prev
+              </button>
+
+              {Array.from(
+                { length: totalPages },
+                (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() =>
+                      setCurrentPage(i + 1)
+                    }
+                    className={`px-4 py-2 rounded-lg ${currentPage === i + 1
+                        ? "bg-[#B30059] text-white"
+                        : "border"
+                      }`}
+                  >
+                    {i + 1}
+                  </button>
+                )
+              )}
+
+              <button
+                disabled={
+                  currentPage === totalPages
+                }
+                onClick={() =>
+                  setCurrentPage((p) => p + 1)
+                }
+                className="px-4 py-2 border rounded-lg"
+              >
+                Next
+              </button>
+            </div>
           )}
+
         </div>
 
         {/* SEO DESCRIPTION CARD */}

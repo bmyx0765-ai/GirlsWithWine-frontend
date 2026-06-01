@@ -10,6 +10,7 @@ import { getCityPageThunk, getCitiesThunk } from "@/store/slices/citySlice";
 import { convertCloudinaryUrl } from "@/utils/convertCloudinaryUrl";
 import Image from "next/image";
 import { useInView } from "react-intersection-observer";
+import Link from "next/link";
 
 const CommonFaq = dynamic(
   () => import("./CommonFaq"),
@@ -49,14 +50,19 @@ export default function CityGirlsPage({ params }) {
   const router = useRouter();
 
   const { singleCity, cities } = useSelector((state) => state.city);
-  const { cityGirls } = useSelector((state) => state.girls);
+  const {
+  cityGirls,
+  cityGirlsPagination,
+} = useSelector(
+  (state) => state.girls
+);
 
   const [pageLoading, setPageLoading] = useState(true);
   const [imageErrors, setImageErrors] =
     useState({});
   const [currentPage, setCurrentPage] = useState(1);
 
-  const ITEMS_PER_PAGE = 5;
+  
 
   const { ref: faqRef, inView: faqInView } = useInView({
     triggerOnce: true,
@@ -70,14 +76,21 @@ export default function CityGirlsPage({ params }) {
   }, [cityName,]);
 
   /* ================= FETCH GIRLS ================= */
-  useEffect(() => {
-    if (!singleCity?._id) return;
+useEffect(() => {
+  if (!singleCity?._id) return;
 
-    dispatch(getGirlsByCityThunk(singleCity._id))
+  setPageLoading(true);
 
-      .unwrap()
-      .finally(() => setPageLoading(false));
-  }, [singleCity?._id]);
+  dispatch(
+    getGirlsByCityThunk({
+      cityId: singleCity._id,
+      page: currentPage,
+    })
+  )
+    .unwrap()
+    .finally(() => setPageLoading(false));
+
+}, [singleCity?._id, currentPage]);
 
 
 
@@ -113,12 +126,11 @@ export default function CityGirlsPage({ params }) {
     return [];
   }, [cityGirls]);
 
-  const totalPages = Math.ceil(safeGirls.length / ITEMS_PER_PAGE);
+ const totalPages =
+  cityGirlsPagination
+    ?.totalPages || 1;
 
-  const paginatedGirls = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return safeGirls.slice(start, start + ITEMS_PER_PAGE);
-  }, [safeGirls, currentPage]);
+  
 
   const formatName = (slug = "") =>
     slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -169,8 +181,8 @@ export default function CityGirlsPage({ params }) {
             Array.from({ length: 5 }).map((_, i) => (
               <GirlCardSkeleton key={i} />
             ))
-          ) : paginatedGirls.length ? (
-            paginatedGirls.map((girl) => {
+          ) :safeGirls.length  ? (
+           safeGirls.map((girl) => {
               const wp = formatPhone(
                 girl?.whatsappNumber || cityObj?.whatsappNumber
               );
@@ -180,11 +192,9 @@ export default function CityGirlsPage({ params }) {
               );
 
               return (
-                <div
+                <Link
                   key={girl._id}
-                  onClick={() =>
-                    router.push(`/call-girls/${girl.permalink}`)
-                  }
+                  href={`/call-girls/${girl.permalink}`}
                   className="cursor-pointer bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition border flex flex-col sm:flex-row gap-4"
                 >
                   
@@ -276,7 +286,7 @@ export default function CityGirlsPage({ params }) {
                       )}
                     </div>
                   </div>
-                </div>
+                </Link>
                 // <></>
               );
             })
