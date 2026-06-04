@@ -50,8 +50,9 @@ export default function Navbar() {
             </Link>
 
             <Link
-              href="https://blog.girlswithwine.com/"
-              target="_blank"
+              // href="https://blog.girlswithwine.com/"
+              href="/blog"
+              // target="_blank"
               className="text-white text-sm font-bold uppercase tracking-widest hover:text-white/80 transition-all relative group"
 
             >

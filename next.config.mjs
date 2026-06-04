@@ -1,51 +1,37 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
-
   reactStrictMode: true,
 
-  // ✅ Next.js 16 syntax
-  reactCompiler: true,
-
-  /* =========================================
-     CLOUDINARY REWRITE
-  ========================================= */
+  experimental: {
+    reactCompiler: true,
+  },
 
   async rewrites() {
-
     return [
-
+      // Cloudinary
       {
         source: "/uploads/:path*",
-
         destination:
           "https://res.cloudinary.com/dd8zulgom/image/upload/:path*",
       },
 
+      // WordPress Blog Images Proxy
+      {
+        source: "/blog-images/:path*",
+        destination:
+          "https://blog.girlswithwine.com/wp-content/uploads/:path*",
+      },
     ];
   },
 
-  /* =========================================
-     NEXT IMAGE CONFIG
-  ========================================= */
-
   images: {
-
     remotePatterns: [
-
-      /* =========================================
-         MAIN DOMAIN
-      ========================================= */
-
       {
         protocol: "https",
         hostname: "girlswithwine.com",
         pathname: "/uploads/**",
       },
-
-      /* =========================================
-         CLOUDINARY
-      ========================================= */
 
       {
         protocol: "https",
@@ -53,19 +39,11 @@ const nextConfig = {
         pathname: "/**",
       },
 
-      /* =========================================
-         WORDPRESS BLOG
-      ========================================= */
-
       {
         protocol: "https",
         hostname: "blog.girlswithwine.com",
         pathname: "/**",
       },
-
-      /* =========================================
-         WORDPRESS CDN
-      ========================================= */
 
       {
         protocol: "https",
@@ -73,41 +51,26 @@ const nextConfig = {
         pathname: "/**",
       },
 
-      /* =========================================
-         GRAVATAR
-      ========================================= */
-
       {
         protocol: "https",
         hostname: "secure.gravatar.com",
         pathname: "/**",
       },
 
-      /* =========================================
-         LOCALHOST DEV
-      ========================================= */
-
       {
         protocol: "http",
         hostname: "localhost",
         port: "3000",
-        pathname: "/uploads/**",
+        pathname: "/**",
       },
-
     ],
 
-    formats: [
-      "image/avif",
-      "image/webp",
-    ],
+    formats: ["image/avif", "image/webp"],
 
-    minimumCacheTTL:
-      60 * 60 * 24 * 30,
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+
+    dangerouslyAllowSVG: true,
   },
-
-  /* =========================================
-     PERFORMANCE
-  ========================================= */
 
   compress: true,
 
