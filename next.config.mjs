@@ -2,10 +2,7 @@
 
 const nextConfig = {
   reactStrictMode: true,
-
-  experimental: {
     reactCompiler: true,
-  },
 
   async rewrites() {
     return [

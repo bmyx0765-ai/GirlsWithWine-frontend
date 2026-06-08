@@ -20,70 +20,83 @@ export default function BlogDetails({ slug }) {
   // ✅ SHADOW REF
   const shadowRef = useRef(null);
 
-  useEffect(() => {
+  
 
-    const fetchBlog = async () => {
+ useEffect(() => {
+  const fetchBlog = async () => {
+    try {
+      const res = await fetch(
+        `https://blog.girlswithwine.com/wp-json/wp/v2/posts?slug=${slug}&_embed`
+      );
 
-      try {
+      const data = await res.json();
 
-        const res = await fetch(
-          `https://blog.girlswithwine.com/wp-json/wp/v2/posts?slug=${slug}&_embed`
+      console.log("BLOG API 👉", data);
+
+      if (data && data.length > 0) {
+        const post = data[0];
+
+        let content =
+          post?.full_content ||
+          post?.content?.rendered ||
+          "";
+
+        // Remove strong tags from headings
+        content = content.replace(
+          /<h([1-6])([^>]*)>\s*<strong>(.*?)<\/strong>\s*<\/h\1>/gi,
+          "<h$1$2>$3</h$1>"
         );
 
-        const data = await res.json();
+        // Convert WP image URLs to local images
+        content = content.replace(
+          /https:\/\/blog\.girlswithwine\.com\/wp-content\/uploads\//g,
+          "/blog-images/"
+        );
 
-        console.log("BLOG API 👉", data);
+        content = content.replace(
+          /https:\/\/girlswithwine\.com\/wp-content\/uploads\//g,
+          "/blog-images/"
+        );
 
-        // ✅ ARRAY CHECK
-        if (data && data.length > 0) {
+        // Debug
+        const imgMatch = content.match(
+          /<img[^>]+src="([^"]+)"/i
+        );
 
-          const post = data[0];
+        console.log(
+          "CONTENT IMAGE =>",
+          imgMatch?.[1]
+        );
 
-          let content =
-            post?.full_content ||
-            post?.content?.rendered ||
-            "";
+        // SEO Headings
+        const seoHeadingMatches = [
+          ...content.matchAll(
+            /<h([1-6])[^>]*>(.*?)<\/h\1>/gi
+          ),
+        ];
 
-          // ✅ REMOVE STRONG FROM H1-H6
-          content = content.replace(
-            /<h([1-6])([^>]*)>\s*<strong>(.*?)<\/strong>\s*<\/h\1>/gi,
-            "<h$1$2>$3</h$1>"
-          );
-
-          // ✅ CHANGE DOMAIN
-          content = content.replaceAll(
-            "https://blog.girlswithwine.com",
-            "https://girlswithwine.com"
-          );
-
-          // ✅ ALL HEADINGS FOR SEO
-          const seoHeadingMatches = [
-            ...content.matchAll(
-              /<h([1-6])[^>]*>(.*?)<\/h\1>/gi
-            ),
-          ];
-
-          const headings = seoHeadingMatches.map((item) => ({
+        const headings = seoHeadingMatches.map(
+          (item) => ({
             level: item[1],
             text: item[2]
               .replace(/<[^>]+>/g, "")
               .trim(),
-          }));
+          })
+        );
 
-          setSeoHeadings(headings);
+        setSeoHeadings(headings);
 
-          // ✅ ONLY H2 FOR TOC
-          const headingMatches = [
-            ...content.matchAll(
-              /<h2[^>]*>(.*?)<\/h2>/gi
-            ),
-          ];
+        // TOC Headings
+        const headingMatches = [
+          ...content.matchAll(
+            /<h2[^>]*>(.*?)<\/h2>/gi
+          ),
+        ];
 
-          // ✅ TOC HEADINGS
-          const tocHeadings = [];
+        const tocHeadings = [];
 
-          headingMatches.forEach((item, index) => {
-
+        headingMatches.forEach(
+          (item, index) => {
             const text = item[1]
               .replace(/<[^>]+>/g, "")
               .trim();
@@ -97,62 +110,69 @@ export default function BlogDetails({ slug }) {
 
             const original = item[0];
 
-            const updated = original.replace(
-              "<h2",
-              `<h2 id="${id}"`
-            );
+            const updated =
+              original.replace(
+                "<h2",
+                `<h2 id="${id}"`
+              );
 
             content = content.replace(
               original,
               updated
             );
+          }
+        );
 
-          });
+        setTableOfContents(
+          tocHeadings
+        );
 
-          setTableOfContents(tocHeadings);
+        // Featured Image
+        const featuredImage =
+          (
+            post?._embedded?.[
+              "wp:featuredmedia"
+            ]?.[0]?.source_url ||
+            "/images/default.jpg"
+          )
+            .replace(
+              "https://blog.girlswithwine.com/wp-content/uploads/",
+              "/blog-images/"
+            )
+            .replace(
+              "https://girlswithwine.com/wp-content/uploads/",
+              "/blog-images/"
+            );
 
-          setBlog({
+        console.log(
+          "FEATURED IMAGE =>",
+          featuredImage
+        );
 
-            title:
-              post?.title?.rendered || "",
-
-            fullContent:
-              content,
-
-            imageUrl:
-              (
-                post?._embedded?.["wp:featuredmedia"]?.[0]
-                  ?.source_url ||
-                "/images/default.jpg"
-              ).replaceAll(
-                "https://blog.girlswithwine.com",
-                "https://girlswithwine.com"
-              ),
-
-            createdAt:
-              post?.date || "",
-
-          });
-
-        }
-
-      } catch (error) {
-
-        console.log("BLOG ERROR 👉", error);
-
-      } finally {
-
-        setLoading(false);
-
+        setBlog({
+          title:
+            post?.title?.rendered ||
+            "",
+          fullContent: content,
+          imageUrl: featuredImage,
+          createdAt:
+            post?.date || "",
+        });
       }
-
-    };
-
-    if (slug) {
-      fetchBlog();
+    } catch (error) {
+      console.log(
+        "BLOG ERROR 👉",
+        error
+      );
+    } finally {
+      setLoading(false);
     }
+  };
 
-  }, [slug]);
+  if (slug) {
+    fetchBlog();
+  }
+}, [slug]);
 
   // ✅ LOADING
   if (loading) {
@@ -287,6 +307,8 @@ export default function BlogDetails({ slug }) {
 
           {/* ================= BLOG ================= */}
           <div>
+
+          
 
             {/* ✅ SEO HEADINGS */}
             <div className="hidden">

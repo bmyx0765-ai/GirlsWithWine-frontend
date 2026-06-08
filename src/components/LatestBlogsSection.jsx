@@ -161,8 +161,8 @@ export default function LatestBlogsSection() {
                 <article
                   key={blog.id}
                   onClick={() => {
-                    window.open(blog.link, "_blank");
-                  }}
+  window.location.href = `/blog/${blog.slug}`;
+}}
                   className="
                     group
                     bg-white
