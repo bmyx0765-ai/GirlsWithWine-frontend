@@ -210,100 +210,59 @@ export default function BlogDetails({ slug }) {
 
       <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10">
 
+      
+
+
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-10">
 
-          {/* ================= TOC ================= */}
-          <aside className="lg:sticky lg:top-24 h-fit">
+            {/* ================= TOC ================= */}
+        {/* Ensure your parent grid in the main component is set to: lg:grid-cols-[360px_1fr] */}
+<aside className="lg:sticky lg:top-24 h-fit w-full">
+  {/* Reduced padding (p-3) to make it feel less tall */}
+  <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-3">
+    
+    <div className="flex items-center justify-between gap-3 mb-2 px-1">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setShowTOC(!showTOC)}
+          className="w-8 h-8 rounded-full bg-pink-100 hover:bg-pink-600 hover:text-white flex items-center justify-center text-pink-600 font-bold transition-all text-xs"
+        >
+          {showTOC ? "−" : "☰"}
+        </button>
+        <h3 className="text-sm font-bold text-gray-900">Table of Contents</h3>
+      </div>
+    </div>
 
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6">
-
-              {/* HEADER */}
-              <div className="flex items-center justify-between gap-3 mb-6">
-
-                <div className="flex items-center gap-3">
-
-                  {/* TOGGLE BUTTON */}
-                  <button
-                    type="button"
-                    onClick={() => setShowTOC(!showTOC)}
-                    className="w-10 h-10 rounded-full bg-pink-100 hover:bg-pink-600 hover:text-white flex items-center justify-center text-pink-600 font-bold transition-all duration-300"
-                  >
-                    ☰
-                  </button>
-
-                  <div>
-
-                    <p className="text-sm text-gray-500">
-                      Quick Navigation
-                    </p>
-
-                    <h3 className="text-xl font-bold text-gray-900">
-                      Table of Contents
-                    </h3>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* TOC LIST */}
-              {
-                showTOC && (
-
-                  <div className="flex flex-col gap-3 animate-fadeIn">
-
-                    {tableOfContents.map((item, index) => (
-
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => {
-
-                          const shadowRoot =
-                            shadowRef.current?.shadowRoot;
-
-                          const element =
-                            shadowRoot?.getElementById(item.id);
-
-                          if (element) {
-
-                            const y =
-                              element.getBoundingClientRect().top +
-                              window.pageYOffset -
-                              100;
-
-                            window.scrollTo({
-                              top: y,
-                              behavior: "smooth",
-                            });
-
-                          }
-
-                        }}
-                        className="group flex items-start gap-3 p-3 rounded-2xl hover:bg-pink-50 transition-all duration-300 border border-transparent hover:border-pink-100 text-left w-full"
-                      >
-
-                        <div className="min-w-[30px] h-[30px] rounded-full bg-black text-white flex items-center justify-center text-sm font-semibold group-hover:bg-pink-600 transition-all duration-300">
-                          {index + 1}
-                        </div>
-
-                        <p className="text-sm font-medium text-gray-700 leading-relaxed group-hover:text-pink-600 transition-all duration-300">
-                          {item.text}
-                        </p>
-
-                      </button>
-
-                    ))}
-
-                  </div>
-
-                )
+    {/* Height reduced to 40vh for a shorter profile */}
+    <div className={`transition-all duration-500 ease-in-out ${showTOC ? "max-h-[40vh] opacity-100 overflow-y-auto" : "max-h-0 opacity-0 overflow-hidden"}`}>
+      <div className="flex flex-col gap-1 pt-1">
+        {tableOfContents.map((item, index) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => {
+              const element = shadowRef.current?.shadowRoot?.getElementById(item.id);
+              if (element) {
+                element.scrollIntoView({ behavior: "smooth", block: "start" });
               }
+            }}
+            className="group flex items-center gap-2 p-2 rounded-xl hover:bg-pink-50 text-left w-full"
+          >
+            <span className="min-w-[20px] h-[20px] rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-[9px] font-bold group-hover:bg-pink-600 group-hover:text-white">
+              {index + 1}
+            </span>
+            <span className="text-[12px] font-medium text-gray-600 group-hover:text-pink-700 line-clamp-1 leading-tight">
+              {item.text}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+    
+  </div>
+</aside>
 
-            </div>
-
-          </aside>
 
           {/* ================= BLOG ================= */}
           <div>
@@ -441,3 +400,8 @@ export default function BlogDetails({ slug }) {
   );
 
 }
+
+
+
+
+
