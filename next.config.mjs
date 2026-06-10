@@ -1,19 +1,24 @@
-/** @type {import('next').NextConfig} */
+import withPWAInit from "next-pwa";
 
+const withPWA = withPWAInit({
+  dest: "public",
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === "development",
+});
+
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-    reactCompiler: true,
+  reactCompiler: true,
 
   async rewrites() {
     return [
-      // Cloudinary
       {
         source: "/uploads/:path*",
         destination:
           "https://res.cloudinary.com/dd8zulgom/image/upload/:path*",
       },
-
-      // WordPress Blog Images Proxy
       {
         source: "/blog-images/:path*",
         destination:
@@ -29,31 +34,26 @@ const nextConfig = {
         hostname: "girlswithwine.com",
         pathname: "/uploads/**",
       },
-
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
         pathname: "/**",
       },
-
       {
         protocol: "https",
         hostname: "blog.girlswithwine.com",
         pathname: "/**",
       },
-
       {
         protocol: "https",
         hostname: "i0.wp.com",
         pathname: "/**",
       },
-
       {
         protocol: "https",
         hostname: "secure.gravatar.com",
         pathname: "/**",
       },
-
       {
         protocol: "http",
         hostname: "localhost",
@@ -63,17 +63,13 @@ const nextConfig = {
     ],
 
     formats: ["image/avif", "image/webp"],
-
     minimumCacheTTL: 60 * 60 * 24 * 30,
-
     dangerouslyAllowSVG: true,
   },
 
   compress: true,
-
   poweredByHeader: false,
-
   productionBrowserSourceMaps: false,
 };
 
-export default nextConfig;
+export default withPWA(nextConfig);

@@ -5,13 +5,20 @@ import { FaWhatsapp, FaUser } from "react-icons/fa";
 import Link from "next/link";
 
 const images = [
-  { src: "/images/call-girls-India.webp", alt: "Call girls in India" },
-  { src: "/images/call-girls-girlswithwine-banner.webp", alt: "Verified profiles" },
+  {
+    src: "/images/call-girls-India.webp",
+    alt: "Call girls in India",
+  },
+  {
+    src: "/images/call-girls-girlswithwine-banner.webp",
+    alt: "Verified profiles",
+  },
 ];
 
 export default function ZoomSlider() {
   const [index, setIndex] = useState(0);
-  const whatsappNumber = "917727937290"; 
+
+  const whatsappNumber = "917727937290";
   const whatsappLink = `https://wa.me/${whatsappNumber}`;
 
   useEffect(() => {
@@ -25,8 +32,7 @@ export default function ZoomSlider() {
   }, []);
 
   return (
-    <div className="relative w-full h-auto overflow-hidden flex items-center justify-center bg-black">
-
+    <div className="relative w-full overflow-hidden bg-black">
       {/* IMAGE */}
       <img
         key={index}
@@ -38,44 +44,49 @@ export default function ZoomSlider() {
       {/* OVERLAY */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
-      {/* BUTTONS */}
-      <div className="absolute bottom-6 right-4 md:bottom-12 md:left-16 md:right-auto flex flex-col sm:flex-row items-end sm:items-start gap-4">
-
-        {/* WHATSAPP */}
-        <a 
+      {/* MOBILE BOTTOM BAR */}
+      <div className="fixed bottom-0 left-0 right-0 z-[9999] flex sm:hidden shadow-lg">
+        <a
           href={whatsappLink}
-          target="_blank" 
+          target="_blank"
           rel="nofollow noopener noreferrer"
-          className="group flex items-center justify-center gap-3 w-14 h-14 sm:w-auto sm:h-auto sm:px-8 sm:py-4 bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold rounded-full transition-all shadow-[0_0_20px_rgba(37,211,102,0.4)] hover:scale-105 active:scale-95"
+          className="flex-1 flex items-center justify-center gap-2 py-4 bg-[#25D366] text-white font-semibold"
         >
-          <FaWhatsapp className="text-2xl" />
-          <span className="hidden sm:inline tracking-wide">
-            Chat on WhatsApp
-          </span>
+          <FaWhatsapp className="text-lg" />
+          <span>WhatsApp</span>
         </a>
 
-        {/* BROWSE PROFILES */}
-        <Link href="#featured-models" scroll={true}>
-          <button className="group flex items-center justify-center gap-3 w-14 h-14 sm:w-auto sm:h-auto sm:px-8 sm:py-4 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white hover:text-black text-white font-bold rounded-full transition-all hover:scale-105 active:scale-95">
-            <FaUser className="text-xl group-hover:text-pink-600 transition-colors" />
-            <span className="hidden sm:inline tracking-wide">
-              Browse Profiles
-            </span>
-          </button>
+        <Link
+          href="#featured-models"
+          scroll={true}
+          className="flex-1"
+        >
+          <div className="flex items-center justify-center gap-2 py-4 bg-pink-600 text-white font-semibold">
+            <FaUser className="text-lg" />
+            <span>Profiles</span>
+          </div>
         </Link>
-
       </div>
 
-      {/* ANIMATION */}
-      <style jsx>{`
-        @keyframes zoomFade {
-          0% { transform: scale(1.1); opacity: 0.8; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        .zoom-animation {
-          animation: zoomFade 4s ease-in-out forwards;
-        }
-      `}</style>
+      {/* DESKTOP BUTTONS */}
+      <div className="hidden sm:flex absolute bottom-12 left-16 gap-4 z-50">
+        <a
+          href={whatsappLink}
+          target="_blank"
+          rel="nofollow noopener noreferrer"
+          className="group flex items-center gap-3 px-8 py-4 bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold rounded-full transition-all shadow-[0_0_20px_rgba(37,211,102,0.4)] hover:scale-105"
+        >
+          <FaWhatsapp className="text-2xl" />
+          <span>Chat on WhatsApp</span>
+        </a>
+
+        <Link href="#featured-models" scroll={true}>
+          <button className="group flex items-center gap-3 px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white hover:text-black text-white font-bold rounded-full transition-all hover:scale-105">
+            <FaUser className="text-xl group-hover:text-pink-600 transition-colors" />
+            <span>Browse Profiles</span>
+          </button>
+        </Link>
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import Script from "next/script";
 
 export const metadata = {
   metadataBase: new URL("https://girlswithwine.com"),
+  manifest: "/manifest.json",
 
   title:
     "VIP Escort Girls in India | Professional Call Girls Services Across India| GirlsWithWine",
@@ -70,6 +71,8 @@ export default function RootLayout({ children }) {
     <html lang="en">
 
       <head>
+
+        <meta name="theme-color" content="#000000" />
 
         {/* CONTENT TYPE */}
         <meta
