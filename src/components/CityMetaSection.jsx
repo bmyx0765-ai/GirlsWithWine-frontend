@@ -18,10 +18,15 @@ const CityMetaSection = ({
   /* ================= REMOVE DUPLICATES ================= */
 
   const uniqueSubCities = Array.from(
-    new Map(
-      subCities.map((item) => [item._id, item])
-    ).values()
-  );
+  new Map(
+    subCities
+      .filter(
+        (item) =>
+          item?.status?.toLowerCase() === "active"
+      )
+      .map((item) => [item._id, item])
+  ).values()
+);
 
   const uniqueTags = [...new Set(tags)];
 

@@ -1,189 +1,91 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus } from "lucide-react";
 import {
-  getFaqsThunk,
   getFaqsByTypeThunk,
   getFaqsByCityThunk,
   getFaqsBySubCityThunk,
   getFaqsByGirlThunk,
 } from "@/store/slices/faqSlice";
 
-const CommonFaq = ({
-  type = "homepage",
-  cityId = null,
-  subCityId = null,
-  girlId = null,
-  title = "",
-  className = "",
-}) => {
-
+const CommonFaq = ({ type = "homepage", cityId = null, subCityId = null, girlId = null, title = "", className = "" }) => {
   const dispatch = useDispatch();
+  const [openIndex, setOpenIndex] = useState(null);
 
-  const {
-    faqs = [],
-    loading = false,
-    error = null,
-  } = useSelector((state) => state?.faq || {});
-
-  /* ================= FETCH FAQS ================= */
+  const { faqs = [], loading = false, error = null } = useSelector((state) => state?.faq || {});
 
   useEffect(() => {
-
-    if (type === "homepage") {
-
-      dispatch(getFaqsByTypeThunk("homepage"));
-
-    } else if (type === "city" && cityId) {
-
-      dispatch(getFaqsByCityThunk(cityId));
-
-    } else if (type === "subcity" && subCityId) {
-
-      dispatch(getFaqsBySubCityThunk(subCityId));
-
-    } else if (type === "girl" && girlId) {
-
-      dispatch(getFaqsByGirlThunk(girlId));
-
-    } 
-
+    if (type === "homepage") dispatch(getFaqsByTypeThunk("homepage"));
+    else if (type === "city" && cityId) dispatch(getFaqsByCityThunk(cityId));
+    else if (type === "subcity" && subCityId) dispatch(getFaqsBySubCityThunk(subCityId));
+    else if (type === "girl" && girlId) dispatch(getFaqsByGirlThunk(girlId));
   }, [dispatch, type, cityId, subCityId, girlId]);
 
-  /* ================= FAQ FILTER ================= */
-
   const faqList = useMemo(() => {
-
     if (!faqs) return [];
-
-    // CASE 1: API directly returns faq array
-    // Example:
-    // { success: true, faqs: [ {showOn:{}}, {showOn:{}} ] }
-
-    if (
-      Array.isArray(faqs) &&
-      faqs.length > 0 &&
-      faqs[0]?.showOn
-    ) {
-
-      return faqs.filter((faq) => {
-        return faq?.showOn?.[type] === true;
-      });
-
+    if (Array.isArray(faqs) && faqs.length > 0 && faqs[0]?.showOn) {
+      return faqs.filter((faq) => faq?.showOn?.[type] === true);
     }
-
-    // CASE 2: API returns grouped structure
-    // Example:
-    // [{ faqs:[...] }, { faqs:[...] }]
-
     if (Array.isArray(faqs)) {
-
-      const allFaqs = faqs.flatMap(
-        (item) => item?.faqs || []
-      );
-
-      return allFaqs.filter((faq) => {
-        return faq?.showOn?.[type] === true;
-      });
-
+      return faqs.flatMap((item) => item?.faqs || []).filter((faq) => faq?.showOn?.[type] === true);
     }
-
     return [];
-
   }, [faqs, type]);
 
-  /* ================= LOADING ================= */
-
-  if (loading) {
-    return (
-      <div className="w-full py-16 flex items-center justify-center">
-        <p className="text-lg text-gray-500 font-medium">
-          Loading FAQs...
-        </p>
-      </div>
-    );
-  }
-
-  /* ================= ERROR ================= */
-
-  if (error) {
-    return (
-      <div className="w-full py-16 text-center">
-        <p className="text-red-500 text-lg font-medium">
-          {error}
-        </p>
-      </div>
-    );
-  }
-
-  /* ================= HIDE SECTION ================= */
-
-  if (!faqList?.length) {
-    return null;
-  }
+  if (loading) return <div className="py-16 text-center text-[#735DA5]">Loading...</div>;
+  if (error || !faqList?.length) return null;
 
   return (
-    <section className={`w-full py-12 ${className}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-
+    <section className={`w-full py-16 bg-[#F9F9F9] ${className}`}>
+      <div className="max-w-7xl mx-auto px-6">
         {title && (
-          <div className="mb-14">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 leading-tight mb-5">
-              {title}
-            </h2>
-          </div>
+          <h2 className="text-4xl md:text-5xl font-black text-[#3D3948] mb-12 text-center">
+            {title}
+          </h2>
         )}
 
-        <div className="space-y-8">
-
+        <div className="space-y-6">
           {faqList.map((faq, index) => (
             <div
               key={faq?._id || index}
-              className="
-                bg-white
-                rounded-[28px]
-                shadow-md
-                border
-                border-gray-100
-                p-6
-                sm:p-8
-                transition-all
-                duration-300
-                hover:shadow-2xl
-                hover:-translate-y-1
-              "
+              className={`bg-white rounded-3xl shadow-sm border transition-all duration-300 ${
+                openIndex === index ? "border-[#735DA5] shadow-lg" : "border-[#6A5796]/10"
+              }`}
             >
-
-              <h3
-                className="
-                  text-2xl
-                  sm:text-3xl
-                  font-extrabold
-                  text-[#00B9BE]
-                  mb-5
-                  leading-snug
-                "
+              <button
+                onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                className="w-full flex justify-between items-center p-8 text-left"
               >
-                {faq?.question}
-              </h3>
+                <h3 className={`text-xl font-bold transition-colors ${openIndex === index ? "text-[#735DA5]" : "text-[#3D3948]"}`}>
+                  {faq?.question}
+                </h3>
+                <motion.div
+                  animate={{ rotate: openIndex === index ? 45 : 0 }}
+                  className={`flex-shrink-0 ml-4 p-1 rounded-full ${openIndex === index ? "bg-[#735DA5] text-white" : "bg-[#F9F9F9] text-[#4F4567]"}`}
+                >
+                  <Plus size={20} />
+                </motion.div>
+              </button>
 
-              <p
-                className="
-                  text-gray-600
-                  text-base
-                  sm:text-lg
-                  leading-[34px]
-                  whitespace-pre-line
-                "
-              >
-                {faq?.answer}
-              </p>
-
+              <AnimatePresence>
+                {openIndex === index && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <p className="px-8 pb-8 text-[#343338] text-lg leading-relaxed border-t border-[#6A5796]/5 pt-4">
+                      {faq?.answer}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ))}
-
         </div>
       </div>
     </section>

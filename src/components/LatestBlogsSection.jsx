@@ -75,7 +75,7 @@ export default function LatestBlogsSection() {
           </div>
 
           <a
-            href="https://blog.girlswithwine.com"
+            href=""
             target="_blank"
             className="
               hidden md:flex

@@ -49,6 +49,8 @@ export default function FeaturedModelsSection() {
 
   }, [dispatch]);
 
+  console.log("girls", girls)
+
   /* =========================================
      STAR RENDER
   ========================================= */
@@ -96,7 +98,7 @@ export default function FeaturedModelsSection() {
 
   return (
 
-    <section className="bg-white py-10 md:py-14">
+    <section className="bg-[#b299ed] py-10 md:py-14">
 
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-6">
 
@@ -106,7 +108,7 @@ export default function FeaturedModelsSection() {
 
         <div className="mb-10 text-center">
 
-          <h1 className="text-xl md:text-3xl font-bold text-[#A3195B] tracking-wide">
+          <h1 className="text-xl md:text-3xl font-bold text-[#6A5796] tracking-wide">
 
             Escort Services |
             100% Verified
@@ -220,7 +222,7 @@ export default function FeaturedModelsSection() {
                        INFO
                     ========================================= */}
 
-                    <div className="absolute bottom-0 left-0 right-0 bg-[#EFFAFF] px-4 py-3">
+                    <div className="absolute bottom-0 left-0 right-0 bg-[#8476a5] px-4 py-3">
 
                       {/* NAME */}
 

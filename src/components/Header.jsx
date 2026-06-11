@@ -16,7 +16,7 @@ export default function Navbar() {
   return (
     <>
       {/* NAVBAR */}
-      <nav className="fixed top-0 w-full z-50 bg-gradient-to-r from-[#00B9BE] to-[#7CC7EC] shadow-lg backdrop-blur-sm bg-opacity-95">
+      <nav className="fixed top-0 w-full z-50 bg-gradient-to-r from-[#615186] to-[#4F4567] shadow-lg backdrop-blur-sm bg-opacity-95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 sm:h-20">
 
           {/* LOGO */}
@@ -62,7 +62,7 @@ export default function Navbar() {
 
             <Link
               href="#"
-              className="bg-white text-[#00B9BE] px-6 py-2 rounded-full text-sm font-extrabold uppercase tracking-tighter hover:bg-opacity-90 shadow-md transition-all active:scale-95"
+              className="bg-white text-[#3D3948] px-6 py-2 rounded-full text-sm font-extrabold uppercase tracking-tighter hover:bg-opacity-90 shadow-md transition-all active:scale-95"
             >
               POST Your Ad
 

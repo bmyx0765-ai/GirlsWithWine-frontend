@@ -1,23 +1,9 @@
 "use client";
+import React from "react";
 
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-
-import CitySection from "@/components/CitySection";
-import Faq from "@/components/Faq";
-import GirlsPrice from "@/components/GirlsPrice";
-
-import { getCitiesThunk } from "@/store/slices/citySlice";
-import CommonFaq from "./CommonFaq";
 
 export default function AboutAndReviewsSection() {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(getCitiesThunk());
-  }, [dispatch]);
-
-  const { loading, cities } = useSelector((state) => state.city);
+  
 
   const aboutSections = [
     {
@@ -72,7 +58,7 @@ export default function AboutAndReviewsSection() {
 
         {/* --- HERO TEXT --- */}
         <div className="text-center mb-16">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 mb-6 uppercase tracking-tight leading-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#615186] mb-6 uppercase tracking-tight leading-tight">
             Why Choose Our Escort Service in India
           </h2>
           <p className="text-gray-600 text-base md:text-lg max-w-4xl mx-auto leading-relaxed">
@@ -90,7 +76,7 @@ export default function AboutAndReviewsSection() {
                 </div>
               </div>
 
-              <h3 className="text-lg font-bold text-red-600 mb-3 tracking-wide flex items-center justify-center">
+              <h3 className="text-lg font-bold text-[#735DA5  ] mb-3 tracking-wide flex items-center justify-center">
                 {item.title}
               </h3>
               <p className="text-gray-500 text-sm leading-relaxed ">
@@ -102,7 +88,7 @@ export default function AboutAndReviewsSection() {
 
         <div className="text-center mb-16">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 mb-6 uppercase tracking-tight leading-tight">
-            Girls With Wine Provide <span className="text-[#00B9BE]">Escort & Call Girls</span> Services Across India
+            Girls With Wine Provide <span className="text-[#9772ED]">Escort & Call Girls</span> Services Across India
           </h2>
           <p className="text-gray-600 text-base md:text-lg max-w-4xl mx-auto leading-relaxed">
             Girls With Wine provides premium escort & Call Girls service across all cities in India. Choose from independent call girls and VIP escorts for private meetings, travel companionship, and personalized experiences available anytime
@@ -127,7 +113,7 @@ export default function AboutAndReviewsSection() {
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {sec.bullets.map((li, index) => (
                     <li key={index} className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100 text-gray-700 font-medium hover:bg-[#00B9BE]/5 transition-colors">
-                      <span className="flex-shrink-0 w-2 h-2 bg-[#00B9BE] rounded-full" />
+                      <span className="flex-shrink-0 w-2 h-2 bg-[#615186] rounded-full" />
                       {li}
                     </li>
                   ))}
@@ -137,30 +123,7 @@ export default function AboutAndReviewsSection() {
           ))}
         </div>
 
-        {/* --- EXTERNAL COMPONENTS (FIXED SPACING) --- */}
-        <div className="mt-24 space-y-24">
-
-          {/* GirlsPrice Section */}
-          <div className="bg-white rounded-[2.5rem] p-6 sm:p-12 shadow-sm border border-gray-100">
-            <GirlsPrice />
-          </div>
-
-          {/* FAQ Section */}
-          <div className="bg-white rounded-[2.5rem] p-6 sm:p-12 shadow-sm border border-gray-100">
-            {/* <Faq /> */}
-            <CommonFaq
-              type="homepage"
-              title="FAQs – Girls With Wine Escort Services"
-            />
-          </div>
-
-          {/* CitySection Section */}
-          <div className="bg-white rounded-[2.5rem] p-6 sm:p-12 shadow-sm border border-gray-100">
-
-            <CitySection loading={loading} cities={cities || []} />
-          </div>
-
-        </div>
+       
 
       </div>
     </section>
