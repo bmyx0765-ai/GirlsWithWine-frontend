@@ -391,7 +391,7 @@ export default function TopReviewsSlider() {
                     router.push(`/call-girls/${review.girl.permalink}`);
                   }
                 }}
-                className="min-w-[300px] md:min-w-[380px] cursor-pointer snap-start bg-white rounded-3xl p-8 shadow-lg border border-[#6A5796]/10 hover:border-[#735DA5] transition-all flex flex-col"
+                className="min-w-75 md:min-w-95 cursor-pointer snap-start bg-white rounded-3xl p-8 shadow-lg border border-[#6A5796]/10 hover:border-[#735DA5] transition-all flex flex-col"
               >
                 <div className="flex flex-col grow gap-3 mb-6">
                   <Quote className="text-[#735DA5] w-8 h-8" />
@@ -400,7 +400,7 @@ export default function TopReviewsSlider() {
                   </p>
                 </div>
 
-                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#6A5796]/20 flex-shrink-0 bg-gray-100">
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#6A5796]/20 shrink-0 bg-gray-100">
                   {imageErrors[review._id] ? (
                     <div className="w-full h-full flex items-center justify-center text-[10px] text-[#4F4567] font-medium text-center px-1">
                       No Image

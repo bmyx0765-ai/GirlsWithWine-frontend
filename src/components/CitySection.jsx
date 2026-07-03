@@ -1,22 +1,37 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { memo, useMemo, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FiMapPin } from "react-icons/fi";
 
-const CitySection = ({ loading, cities = [] }) => {
-  const skeletonItems = new Array(12).fill(0);
+function CitySection({ loading = false, cities = [] }) {
+  const router = useRouter();
 
+  // Skeleton Array
+  const skeletonItems = useMemo(
+    () => Array.from({ length: 12 }),
+    []
+  );
+
+  // Clean & Active Cities
   const activeCities = useMemo(() => {
+    if (!Array.isArray(cities)) return [];
+
     return cities
-      .filter((city) => city?.status === "Active")
+      .filter(
+        (city) =>
+          city &&
+          city.status === "Active" &&
+          city.slug
+      )
       .map((city) => {
-        const cleanSlug = city?.slug
-          ?.replace("#", "")
-          ?.replace("%23", "")
-          ?.replace(/^\/+|\/+$/g, "")
-          ?.trim()
-          ?.toLowerCase();
+        const cleanSlug = city.slug
+          .replace(/#/g, "")
+          .replace(/%23/g, "")
+          .replace(/^\/+|\/+$/g, "")
+          .trim()
+          .toLowerCase();
 
         if (!cleanSlug) return null;
 
@@ -28,13 +43,23 @@ const CitySection = ({ loading, cities = [] }) => {
       .filter(Boolean);
   }, [cities]);
 
+  // Route Prefetch
+  const handlePrefetch = useCallback(
+    (url) => {
+      router.prefetch(url);
+    },
+    [router]
+  );
+
   return (
     <section className="w-full py-16 bg-[#F9F9F9]">
       <div className="max-w-7xl mx-auto px-6">
+
         <div className="mb-10 text-center md:text-left">
-          <h3 className="text-3xl md:text-4xl font-black text-[#3D3948] mb-4">
+          <h2 className="text-3xl md:text-4xl font-black text-[#3D3948] mb-4">
             Available Across India
-          </h3>
+          </h2>
+
           <p className="text-[#343338] text-base sm:text-lg max-w-2xl">
             Explore trusted services in major cities across the country.
           </p>
@@ -42,43 +67,64 @@ const CitySection = ({ loading, cities = [] }) => {
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {skeletonItems.map((_, i) => (
-              <div key={i} className="h-16 rounded-2xl bg-gray-200 animate-pulse" />
+            {skeletonItems.map((_, index) => (
+              <div
+                key={index}
+                className="h-16 rounded-2xl bg-gray-200 animate-pulse"
+              />
             ))}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+
             {activeCities.length > 0 ? (
+
               activeCities.map((city) => (
+
                 <Link
-                  key={city?._id}
+                  key={city._id}
                   href={city.url}
-                  className="group flex items-center gap-4 p-4 rounded-2xl border border-[#6A5796]/10 bg-white shadow-sm hover:shadow-lg hover:border-[#735DA5]/30 transition-all duration-300"
+                  prefetch={true}
+                  onMouseEnter={() => handlePrefetch(city.url)}
+                  aria-label={`Visit ${city.mainCity}`}
+                  className="group flex items-center gap-4 rounded-2xl border border-[#6A5796]/10 bg-white p-4 shadow-sm transition-all duration-300 hover:border-[#735DA5]/30 hover:shadow-lg"
                 >
-                  <div className="flex-shrink-0 flex items-center justify-center rounded-xl w-12 h-12 bg-[#F9F9F9] text-[#735DA5] group-hover:bg-[#735DA5] group-hover:text-white transition-all duration-300">
+
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[#F9F9F9] text-[#735DA5] transition-all duration-300 group-hover:bg-[#735DA5] group-hover:text-white">
                     <FiMapPin className="text-lg" />
                   </div>
 
                   <div className="overflow-hidden">
-                    <p className="text-sm font-bold text-[#3D3948] group-hover:text-[#735DA5] transition-colors truncate">
-                      {city?.mainCity}
-                    </p>
-                    <p className="text-[11px] text-[#6A5796] uppercase tracking-wider font-medium">
+
+                    <h3 className="truncate text-sm font-bold text-[#3D3948] transition-colors group-hover:text-[#735DA5]">
+                      {city.mainCity}
+                    </h3>
+
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-[#6A5796]">
                       View Profiles
                     </p>
+
                   </div>
+
                 </Link>
+
               ))
+
             ) : (
-              <div className="col-span-full py-12 text-center text-[#6A5796]">
-                <p>No cities available at the moment.</p>
+
+              <div className="col-span-full py-12 text-center">
+                <p className="text-[#6A5796]">
+                  No cities available at the moment.
+                </p>
               </div>
+
             )}
+
           </div>
         )}
       </div>
     </section>
   );
-};
+}
 
-export default CitySection;
+export default memo(CitySection);
