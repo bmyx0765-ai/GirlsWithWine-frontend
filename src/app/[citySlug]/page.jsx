@@ -1,46 +1,40 @@
 import { cache } from "react";
+import CityGirlsPage from "@/components/CityGirlsPage";
+import Hash404 from "@/components/Hash404";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://girlswithwinebackend.vercel.app";
+export const revalidate = 300;
 
-export const checkSlug = cache(async (slug) => {
-  if (!slug) return null;
+function getApiUrl() {
+  return (
+    process.env.NEXT_PUBLIC_API_URL ||
+    "https://girlswithwinebackend.vercel.app"
+  );
+}
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
 
+
+
+
+const checkSlug = cache(async (slug) => {
   try {
-    const response = await fetch(
-      `${API_URL}/api/cities/${encodeURIComponent(slug)}`,
-      {
-        next: {
-          revalidate: 300,
-        },
-        cache: "force-cache",
-        signal: controller.signal,
-      }
-    );
+    if (!slug) return null;
 
-    if (!response.ok) {
-      return null;
-    }
+    const cityRes = await fetch(`${getApiUrl()}/api/cities/${slug}`, {
+      next: { revalidate: 300 },
+    });
 
-    const data = await response.json();
+    if (!cityRes.ok) return null;
 
-    if (!data?.city?._id) {
-      return null;
-    }
+    const cityData = await cityRes.json();
+
+    if (!cityData?.city?._id) return null;
 
     return {
       type: "city",
-      data,
+      data: cityData,
     };
-  } catch (error) {
-    console.error("checkSlug Error:", error);
+  } catch (err) {
     return null;
-  } finally {
-    clearTimeout(timeout);
   }
 });
 
