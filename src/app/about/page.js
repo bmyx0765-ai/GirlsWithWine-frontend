@@ -36,7 +36,7 @@ export default function AboutUs() {
     <>
      
 
-      <div className="min-h-screen bg-gray-50 py-10 px-4">
+      {/* <div className="min-h-screen bg-gray-50 py-10 px-4">
         <div className="max-w-5xl mx-auto p-8">
 
           <h1 className="text-5xl font-bold text-[#A3195B] mb-6">
@@ -140,7 +140,7 @@ export default function AboutUs() {
           </p>
 
         </div>
-      </div>
+      </div> */}
 
 
     </>
