@@ -41,6 +41,39 @@ const normalizeFaqResponse = (data) => {
 };
 
 /* =========================================================
+   COMMON HELPERS
+========================================================= */
+
+const getErrorMessage = (
+  error,
+  fallback
+) =>
+  error?.response?.data?.message ||
+  error?.message ||
+  fallback;
+
+const updateFaqInList = (
+  faqs,
+  updatedFaq
+) => {
+  if (!updatedFaq?._id) return faqs;
+
+  return faqs.map((faq) =>
+    faq._id === updatedFaq._id
+      ? updatedFaq
+      : faq
+  );
+};
+
+const removeFaqFromList = (
+  faqs,
+  faqId
+) =>
+  faqs.filter(
+    (faq) => faq._id !== faqId
+  );
+
+/* =========================================================
    GET ALL FAQ
 ========================================================= */
 
@@ -49,20 +82,18 @@ export const getFaqsThunk = createAsyncThunk(
 
   async (_, { rejectWithValue }) => {
     try {
-
-      const res = await axiosInstance.get(
+      const { data } = await axiosInstance.get(
         GET_FAQS_URL
       );
 
-      return normalizeFaqResponse(
-        res.data
-      );
+      return normalizeFaqResponse(data);
 
-    } catch (err) {
-
+    } catch (error) {
       return rejectWithValue(
-        err?.response?.data?.message ||
-        "Failed to fetch FAQs"
+        getErrorMessage(
+          error,
+          "Failed to fetch FAQs"
+        )
       );
     }
   }
@@ -71,31 +102,37 @@ export const getFaqsThunk = createAsyncThunk(
 /* =========================================================
    GET HOMEPAGE FAQ
 ========================================================= */
+export const getHomepageFaqsThunk =
+  createAsyncThunk(
+    "faq/getHomepage",
 
-export const getHomepageFaqsThunk = createAsyncThunk(
-  "faq/getHomepage",
+    async (
+      _,
+      { rejectWithValue }
+    ) => {
+      try {
 
-  async (_, { rejectWithValue }) => {
-    try {
+        const { data } =
+          await axiosInstance.get(
+            GET_HOMEPAGE_FAQS_URL
+          );
 
-      const res = await axiosInstance.get(
-        GET_HOMEPAGE_FAQS_URL
-      );
+        return normalizeFaqResponse(
+          data
+        );
 
-      return normalizeFaqResponse(
-        res.data
-      );
+      } catch (error) {
 
-    } catch (err) {
+        return rejectWithValue(
+          getErrorMessage(
+            error,
+            "Failed to fetch homepage FAQs"
+          )
+        );
 
-      return rejectWithValue(
-        err?.response?.data?.message ||
-        "Failed to fetch homepage FAQs"
-      );
+      }
     }
-  }
-);
-
+  );
 /* =========================================================
    GET FAQ BY TYPE
 ========================================================= */
@@ -114,11 +151,13 @@ export const getFaqsByTypeThunk = createAsyncThunk(
         res.data
       );
 
-    } catch (err) {
+    } catch (error) {
 
       return rejectWithValue(
-        err?.response?.data?.message ||
-        "Failed to fetch FAQs by type"
+        getErrorMessage(
+          error,
+          "Failed to fetch FAQs by type"
+        )
       );
     }
   }
@@ -142,11 +181,13 @@ export const getFaqsByCityThunk = createAsyncThunk(
         res.data
       );
 
-    } catch (err) {
+    } catch (error) {
 
       return rejectWithValue(
-        err?.response?.data?.message ||
-        "Failed to fetch city FAQs"
+        getErrorMessage(
+          error,
+          "Failed to fetch city FAQs"
+        )
       );
     }
   }
@@ -170,11 +211,13 @@ export const getFaqsBySubCityThunk = createAsyncThunk(
         res.data
       );
 
-    } catch (err) {
+    } catch (error) {
 
       return rejectWithValue(
-        err?.response?.data?.message ||
-        "Failed to fetch subcity FAQs"
+        getErrorMessage(
+          error,
+          "Failed to fetch subcity FAQs"
+        )
       );
     }
   }
@@ -198,11 +241,13 @@ export const getFaqsByGirlThunk = createAsyncThunk(
         res.data
       );
 
-    } catch (err) {
+    } catch (error) {
 
       return rejectWithValue(
-        err?.response?.data?.message ||
-        "Failed to fetch girl FAQs"
+        getErrorMessage(
+          error,
+          "Failed to fetch girl FAQs"
+        )
       );
     }
   }
@@ -225,11 +270,13 @@ export const addFaqThunk = createAsyncThunk(
 
       return res.data?.faq;
 
-    } catch (err) {
+    } catch (error) {
 
       return rejectWithValue(
-        err?.response?.data?.message ||
-        "Failed to add FAQ"
+        getErrorMessage(
+          error,
+          "Failed to add FAQ"
+        )
       );
     }
   }
@@ -255,11 +302,13 @@ export const updateFaqThunk = createAsyncThunk(
 
       return res.data?.faq;
 
-    } catch (err) {
+    } catch (error) {
 
       return rejectWithValue(
-        err?.response?.data?.message ||
-        "Failed to update FAQ"
+        getErrorMessage(
+          error,
+          "Failed to update FAQ"
+        )
       );
     }
   }
@@ -281,11 +330,13 @@ export const deleteFaqThunk = createAsyncThunk(
 
       return id;
 
-    } catch (err) {
+    } catch (error) {
 
       return rejectWithValue(
-        err?.response?.data?.message ||
-        "Failed to delete FAQ"
+        getErrorMessage(
+          error,
+          "Failed to delete FAQ"
+        )
       );
     }
   }
@@ -308,11 +359,13 @@ export const toggleFaqStatusThunk =
 
         return res.data?.faq;
 
-      } catch (err) {
+      } catch (error) {
 
         return rejectWithValue(
-          err?.response?.data?.message ||
-          "Failed to toggle FAQ status"
+          getErrorMessage(
+            error,
+            "Failed to toggle FAQ status"
+          )
         );
       }
     }
@@ -391,13 +444,14 @@ export const getFaqsByVisibilityThunk =
           res.data
         );
 
-      } catch (err) {
+      } catch (error) {
 
         return rejectWithValue(
 
-          err?.response?.data?.message ||
-
-          "Failed to fetch FAQs by visibility"
+          getErrorMessage(
+            error,
+            "Failed to fetch FAQs by visibility"
+          )
 
         );
       }
@@ -643,11 +697,9 @@ const faqSlice = createSlice({
         updateFaqThunk.fulfilled,
         (state, action) => {
 
-          state.faqs = state.faqs.map(
-            (faq) =>
-              faq._id === action.payload._id
-                ? action.payload
-                : faq
+          state.faqs = updateFaqInList(
+            state.faqs,
+            action.payload
           );
         }
       )
@@ -660,9 +712,9 @@ const faqSlice = createSlice({
         deleteFaqThunk.fulfilled,
         (state, action) => {
 
-          state.faqs = state.faqs.filter(
-            (faq) =>
-              faq._id !== action.payload
+          state.faqs = removeFaqFromList(
+            state.faqs,
+            action.payload
           );
         }
       )
@@ -675,11 +727,9 @@ const faqSlice = createSlice({
         toggleFaqStatusThunk.fulfilled,
         (state, action) => {
 
-          state.faqs = state.faqs.map(
-            (faq) =>
-              faq._id === action.payload._id
-                ? action.payload
-                : faq
+          state.faqs = updateFaqInList(
+            state.faqs,
+            action.payload
           );
         }
       )

@@ -1,276 +1,318 @@
-// app/page.jsx
+// // app/page.jsx
 
-import ClientHome from "@/components/ClientHome";
-import Script from "next/script";
+// import ClientHome from "@/components/ClientHome";
+// import Script from "next/script";
 
-/* ================= API URL ================= */
+// /* ================= API URL ================= */
 
-function getApiUrl() {
+// function getApiUrl() {
 
-  return (
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    "http://127.0.0.1:5000"
-  );
+//   return (
+//     process.env.NEXT_PUBLIC_BASE_URL ||
+//     "http://127.0.0.1:5000"
+//   );
 
-}
+// }
 
-/* =========================================================
-   GET FAQ DATA
-========================================================= */
+// /* =========================================================
+//    GET FAQ DATA
+// ========================================================= */
 
-async function getFaqData() {
+// async function getFaqData() {
 
-  try {
+//   try {
 
-    /* =====================================================
-       TRUE FAQS
-       ONLY SHOW ON FRONTEND
-    ===================================================== */
+//     /* =====================================================
+//        TRUE FAQS
+//        ONLY SHOW ON FRONTEND
+//     ===================================================== */
 
-    const trueRes = await fetch(
+//     const trueRes = await fetch(
 
-      `${getApiUrl()}/api/faqs/visibility?type=homepage&visible=true`,
+//       `${getApiUrl()}/api/faqs/visibility?type=homepage&visible=true`,
 
-      {
-        cache: "no-store",
-      }
+//       {
+//         cache: "no-store",
+//       }
 
-    );
+//     );
 
-    /* =====================================================
-       FALSE FAQS
-       ONLY FOR SCHEMA
-    ===================================================== */
+//     /* =====================================================
+//        FALSE FAQS
+//        ONLY FOR SCHEMA
+//     ===================================================== */
 
-    const falseRes = await fetch(
+//     const falseRes = await fetch(
 
-      `${getApiUrl()}/api/faqs/visibility?type=homepage&visible=false`,
+//       `${getApiUrl()}/api/faqs/visibility?type=homepage&visible=false`,
 
-      {
-        cache: "no-store",
-      }
+//       {
+//         cache: "no-store",
+//       }
 
-    );
+//     );
 
-    /* =====================================================
-       RESPONSE JSON
-    ===================================================== */
+//     /* =====================================================
+//        RESPONSE JSON
+//     ===================================================== */
 
-    const trueData =
-      await trueRes.json();
+//     const trueData =
+//       await trueRes.json();
 
-    const falseData =
-      await falseRes.json();
+//     const falseData =
+//       await falseRes.json();
 
     
 
-    /* =====================================================
-       EXTRACT FAQS
-    ===================================================== */
+//     /* =====================================================
+//        EXTRACT FAQS
+//     ===================================================== */
 
-    const extractFaqs = (data) => {
+//     const extractFaqs = (data) => {
 
-      let faqList = [];
+//       let faqList = [];
 
-      // ARRAY
-      if (
-        Array.isArray(data)
-      ) {
+//       // ARRAY
+//       if (
+//         Array.isArray(data)
+//       ) {
 
-        faqList = data;
+//         faqList = data;
 
-      }
+//       }
 
-      // OBJECT
-      else if (
-        Array.isArray(data?.faqs)
-      ) {
+//       // OBJECT
+//       else if (
+//         Array.isArray(data?.faqs)
+//       ) {
 
-        faqList = data.faqs.flatMap(
-          (group) => {
+//         faqList = data.faqs.flatMap(
+//           (group) => {
 
-            // NESTED FAQS
-            if (
-              Array.isArray(group?.faqs)
-            ) {
+//             // NESTED FAQS
+//             if (
+//               Array.isArray(group?.faqs)
+//             ) {
 
-              return group.faqs;
+//               return group.faqs;
 
-            }
+//             }
 
-            // DIRECT FAQ
-            if (
-              group?.question &&
-              group?.answer
-            ) {
+//             // DIRECT FAQ
+//             if (
+//               group?.question &&
+//               group?.answer
+//             ) {
 
-              return [group];
+//               return [group];
 
-            }
+//             }
 
-            return [];
-          }
-        );
-      }
+//             return [];
+//           }
+//         );
+//       }
 
-      /* =========================================
-         REMOVE INVALID FAQ
-      ========================================= */
+//       /* =========================================
+//          REMOVE INVALID FAQ
+//       ========================================= */
 
-      faqList = faqList.filter(
-        (faq) => {
+//       faqList = faqList.filter(
+//         (faq) => {
 
-          return (
+//           return (
 
-            faq &&
+//             faq &&
 
-            typeof faq === "object" &&
+//             typeof faq === "object" &&
 
-            typeof faq.question ===
-              "string" &&
+//             typeof faq.question ===
+//               "string" &&
 
-            faq.question.trim() !==
-              "" &&
+//             faq.question.trim() !==
+//               "" &&
 
-            typeof faq.answer ===
-              "string" &&
+//             typeof faq.answer ===
+//               "string" &&
 
-            faq.answer.trim() !==
-              ""
+//             faq.answer.trim() !==
+//               ""
 
-          );
+//           );
 
-        }
-      );
+//         }
+//       );
 
-      return faqList;
-    };
+//       return faqList;
+//     };
 
-    /* =====================================================
-       TRUE FAQ LIST
-    ===================================================== */
+//     /* =====================================================
+//        TRUE FAQ LIST
+//     ===================================================== */
 
-    const visibleFaqs =
-      extractFaqs(trueData);
+//     const visibleFaqs =
+//       extractFaqs(trueData);
 
-    /* =====================================================
-       FALSE FAQ LIST
-    ===================================================== */
+//     /* =====================================================
+//        FALSE FAQ LIST
+//     ===================================================== */
 
-    const hiddenFaqs =
-      extractFaqs(falseData);
+//     const hiddenFaqs =
+//       extractFaqs(falseData);
 
-    /* =====================================================
-       ALL FAQ FOR SCHEMA
-    ===================================================== */
+//     /* =====================================================
+//        ALL FAQ FOR SCHEMA
+//     ===================================================== */
 
-    const allFaqs = [
+//     const allFaqs = [
 
-      ...visibleFaqs,
+//       ...visibleFaqs,
 
-      ...hiddenFaqs,
+//       ...hiddenFaqs,
 
-    ];
+//     ];
 
-    /* =====================================================
-       FAQ SCHEMA
-    ===================================================== */
+//     /* =====================================================
+//        FAQ SCHEMA
+//     ===================================================== */
 
-    const schema = {
+//     const schema = {
 
-      "@context":
-        "https://schema.org",
+//       "@context":
+//         "https://schema.org",
 
-      "@type":
-        "FAQPage",
+//       "@type":
+//         "FAQPage",
 
-      mainEntity:
-        allFaqs.map((faq) => ({
+//       mainEntity:
+//         allFaqs.map((faq) => ({
 
-          "@type":
-            "Question",
+//           "@type":
+//             "Question",
 
-          name:
-            faq.question,
+//           name:
+//             faq.question,
 
-          acceptedAnswer: {
+//           acceptedAnswer: {
 
-            "@type":
-              "Answer",
+//             "@type":
+//               "Answer",
 
-            text:
-              faq.answer,
+//             text:
+//               faq.answer,
 
-          },
+//           },
 
-        })),
+//         })),
 
-    };
+//     };
 
-    return {
+//     return {
 
-      visibleFaqs,
-      hiddenFaqs,
-      schema,
+//       visibleFaqs,
+//       hiddenFaqs,
+//       schema,
 
-    };
+//     };
 
-  } catch (error) {
+//   } catch (error) {
 
    
 
-    return {
+//     return {
 
-      visibleFaqs: [],
-      hiddenFaqs: [],
-      schema: null,
+//       visibleFaqs: [],
+//       hiddenFaqs: [],
+//       schema: null,
 
-    };
-  }
-}
+//     };
+//   }
+// }
 
-/* =========================================================
-   PAGE
-========================================================= */
+// /* =========================================================
+//    PAGE
+// ========================================================= */
 
-export default async function Home() {
+// export default async function Home() {
 
-  const {
-    schema,
-  } = await getFaqData();
+//   const {
+//     schema,
+//   } = await getFaqData();
 
  
 
+//   return (
+
+//     <>
+
+//       {/* ===================================================
+//          FAQ SCHEMA
+//       =================================================== */}
+
+//       {schema && (
+
+//         <Script
+//           id="homepage-faq-schema"
+//           type="application/ld+json"
+//           strategy="beforeInteractive"
+//           dangerouslySetInnerHTML={{
+//             __html:
+//               JSON.stringify(schema),
+//           }}
+//         />
+
+//       )}
+
+//       {/* ===================================================
+//          HOME
+//       =================================================== */}
+
+//       <ClientHome
+//       />
+
+//     </>
+
+//   );
+// }
+
+import React from 'react'
+
+const page = () => {
   return (
+ <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 px-6">
+      <div className="max-w-xl text-center">
+        <h1 className="text-8xl md:text-9xl font-extrabold text-blue-600">
+          404
+        </h1>
 
-    <>
+        <h2 className="mt-4 text-3xl md:text-4xl font-bold text-gray-900">
+          Page Not Found
+        </h2>
 
-      {/* ===================================================
-         FAQ SCHEMA
-      =================================================== */}
+        <p className="mt-4 text-gray-600 text-lg">
+          Oops! The page you're looking for doesn't exist or has been moved.
+        </p>
 
-      {schema && (
+        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-white font-semibold shadow-lg transition hover:bg-blue-700"
+          >
+            <Home size={20} />
+            Go to Home
+          </Link>
 
-        <Script
-          id="homepage-faq-schema"
-          type="application/ld+json"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html:
-              JSON.stringify(schema),
-          }}
-        />
-
-      )}
-
-      {/* ===================================================
-         HOME
-      =================================================== */}
-
-      <ClientHome
-      />
-
-    </>
-
-  );
+          <button
+            onClick={() => window.history.back()}
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-100"
+          >
+            <ArrowLeft size={20} />
+            Go Back
+          </button>
+        </div>
+      </div>
+    </main>
+  )
 }
+
+export default page

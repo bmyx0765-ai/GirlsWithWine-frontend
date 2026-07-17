@@ -61,7 +61,7 @@ export default function Navbar() {
             </Link>
 
             <Link
-              href="#"
+              href="/post-your-ad"
               className="bg-white text-[#3D3948] px-6 py-2 rounded-full text-sm font-extrabold uppercase tracking-tighter hover:bg-opacity-90 shadow-md transition-all active:scale-95"
             >
               POST Your Ad
@@ -131,7 +131,7 @@ export default function Navbar() {
             </Link>
 
             <Link
-              href="#"
+              href="/post-your-ad"
               className="bg-white text-[#00B9BE] px-6 py-2 rounded-full text-sm font-extrabold uppercase tracking-tighter hover:bg-opacity-90 shadow-md transition-all active:scale-95"
             >
               POST Your Ad

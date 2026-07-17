@@ -1,100 +1,178 @@
 "use client";
 
 /* ================= IMPORTS ================= */
-import { useEffect, useState, useMemo } from "react";
+
+import {
+  memo,
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+} from "react";
+
 import dynamic from "next/dynamic";
-import { useDispatch, useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
-import { getGirlsByCityThunk } from "@/store/slices/girlSlice";
-import { getCityPageThunk, getCitiesThunk } from "@/store/slices/citySlice";
-import { convertCloudinaryUrl } from "@/utils/convertCloudinaryUrl";
-import Image from "next/image";
+
+
+import {
+  useDispatch,
+  useSelector,
+  shallowEqual,
+} from "react-redux";
+
 import { useInView } from "react-intersection-observer";
-import Link from "next/link";
+
+import {
+  getGirlsByCityThunk,
+} from "@/store/slices/girlSlice";
+
+import {
+  getCityPageThunk,
+} from "@/store/slices/citySlice";
+
+import GirlCard from "./GirlCard";
+
+/* ================= DYNAMIC IMPORTS ================= */
 
 const CommonFaq = dynamic(
   () => import("./CommonFaq"),
   {
+    ssr: false,
     loading: () => (
-      <div className="py-10 text-center">
+      <div className="py-10 text-center text-gray-500">
         Loading FAQs...
       </div>
     ),
-    ssr: false,
   }
 );
 
 const CityMetaSection = dynamic(
   () => import("./CityMetaSection"),
   {
-    loading: () => null,
     ssr: false,
+    loading: () => null,
   }
 );
 
+
+
 /* ================= SKELETON ================= */
-const GirlCardSkeleton = () => (
-  <div className="bg-white rounded-2xl p-4 shadow-sm border animate-pulse flex gap-4">
-    <div className="w-28 h-32 sm:w-40 sm:h-40 bg-gray-200 rounded-xl" />
+
+const GirlCardSkeleton = memo(() => (
+  <div className="flex gap-4 rounded-2xl border bg-white p-4 shadow-sm animate-pulse">
+
+    <div className="h-32 w-28 rounded-xl bg-gray-200 sm:h-40 sm:w-40" />
+
     <div className="flex-1 space-y-3">
-      <div className="h-5 bg-gray-200 rounded w-3/4" />
-      <div className="h-4 bg-gray-100 rounded w-full" />
-      <div className="h-4 bg-gray-100 rounded w-2/3" />
+
+      <div className="h-5 w-3/4 rounded bg-gray-200" />
+
+      <div className="h-4 w-full rounded bg-gray-100" />
+
+      <div className="h-4 w-2/3 rounded bg-gray-100" />
+
+      <div className="mt-5 flex gap-3">
+        <div className="h-9 w-24 rounded-lg bg-gray-200" />
+        <div className="h-9 w-20 rounded-lg bg-gray-200" />
+      </div>
+
     </div>
+
   </div>
-);
+));
+
+GirlCardSkeleton.displayName = "GirlCardSkeleton";
+
 
 export default function CityGirlsPage({ params }) {
+  /* ================= PARAMS ================= */
+
   const { cityName } = params;
+
+  /* ================= HOOKS ================= */
+
   const dispatch = useDispatch();
-  const router = useRouter();
 
-  const { singleCity, cities } = useSelector((state) => state.city);
+  /* ================= REDUX ================= */
+
   const {
-  cityGirls,
-  cityGirlsPagination,
-} = useSelector(
-  (state) => state.girls
-);
+    singleCity,
+    loading: cityPageLoading,
+  } = useSelector(
+    (state) => ({
+      singleCity: state.city.singleCity,
+      loading: state.city.loading,
+    }),
+    shallowEqual
+  );
 
-  const [pageLoading, setPageLoading] = useState(true);
-  const [imageErrors, setImageErrors] =
-    useState({});
+  const {
+    cityGirls,
+    cityGirlsPagination,
+    cityLoading,
+    cityLoaded,
+  } = useSelector(
+    (state) => ({
+      cityGirls: state.girls.cityGirls,
+      cityGirlsPagination: state.girls.cityGirlsPagination,
+      cityLoading: state.girls.cityLoading,
+      cityLoaded: state.girls.cityLoaded,
+    }),
+    shallowEqual
+  );
+
+ 
+
+
   const [currentPage, setCurrentPage] = useState(1);
 
-  
+
+  /* ================= FAQ ================= */
 
   const { ref: faqRef, inView: faqInView } = useInView({
     triggerOnce: true,
     rootMargin: "200px",
   });
-  /* ================= FETCH CITY PAGE ================= */
+
   useEffect(() => {
+
     if (!cityName) return;
-    setPageLoading(true);
-    dispatch(getCityPageThunk(cityName));
-  }, [cityName,]);
 
-  /* ================= FETCH GIRLS ================= */
-useEffect(() => {
-  if (!singleCity?._id) return;
+    dispatch(
+      getCityPageThunk(cityName)
+    );
 
-  setPageLoading(true);
+  }, [
+    dispatch,
+    cityName,
+  ]);
 
-  dispatch(
-    getGirlsByCityThunk({
-      cityId: singleCity._id,
-      page: currentPage,
-    })
-  )
-    .unwrap()
-    .finally(() => setPageLoading(false));
+  useEffect(() => {
 
-}, [singleCity?._id, currentPage]);
+    if (!singleCity?._id) return;
 
+    dispatch(
 
+      getGirlsByCityThunk({
 
+        cityId:
+          singleCity._id,
 
+        page:
+          currentPage
+
+      })
+
+    );
+
+  }, [
+
+    dispatch,
+
+    singleCity?._id,
+
+    currentPage
+
+  ]);
 
   /* ================= HELPERS ================= */
 
@@ -105,20 +183,15 @@ useEffect(() => {
       .replace(/<body.*?>/gi, "")
       .replace(/<\/body>/gi, "");
 
-  const cleanNumber = (num) => num?.replace(/\D/g, "");
 
-  const formatPhone = (num) => {
-    if (!num) return "";
-    const cleaned = cleanNumber(num);
-    return cleaned.startsWith("91") ? `+${cleaned}` : `+91${cleaned}`;
-  };
 
-  const createWhatsAppURL = (name, number) => {
-    const msg = encodeURIComponent(
-      `Hi ${name}, I saw your profile and want to connect.`
-    );
-    return `https://wa.me/${cleanNumber(number)}?text=${msg}`;
-  };
+  const formatName = (slug = "") =>
+    slug
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (char) =>
+        char.toUpperCase()
+      );
+  /* ================= MEMO ================= */
 
   const safeGirls = useMemo(() => {
     if (Array.isArray(cityGirls)) return cityGirls;
@@ -126,44 +199,62 @@ useEffect(() => {
     return [];
   }, [cityGirls]);
 
- const totalPages =
-  cityGirlsPagination
-    ?.totalPages || 1;
+  const totalPages =
+    cityGirlsPagination?.totalPages || 1;
 
-  
+  const cityObj =
+    singleCity ?? {};
 
-  const formatName = (slug = "") =>
-    slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const finalName = useMemo(
+    () => cityObj.mainCity || formatName(cityName),
+    [cityObj.mainCity, cityName, formatName]
+  );
 
-  /* ================= CITY DATA ================= */
-  const cityObj = singleCity || {};
-  const finalName = cityObj?.mainCity || formatName(cityName);
+  const cityHeading = useMemo(
+    () => cityObj.heading || `${finalName} Call Girls`,
+    [cityObj.heading, finalName]
+  );
 
-  const cityHeading = cityObj?.heading || `${finalName} Call Girls`;
-
-  const finalDescription =
-    cityObj?.description || `<p>No description available</p>`;
+  const finalDescription = useMemo(
+    () =>
+      cityObj.description ||
+      "<p>No description available</p>",
+    [cityObj.description]
+  );
 
   const formattedDate = useMemo(() => {
-    if (!cityObj?.updatedAt) return "";
-    return new Date(cityObj.updatedAt).toLocaleDateString("en-IN", {
+    if (!cityObj.updatedAt) return "";
+
+    return new Intl.DateTimeFormat("en-IN", {
       day: "numeric",
       month: "long",
       year: "numeric",
-    });
-  }, [cityObj?.updatedAt]);
+    }).format(new Date(cityObj.updatedAt));
+  }, [cityObj.updatedAt]);
+
+  /* ================= SCROLL ================= */
 
   useEffect(() => {
-    // Force scroll to top on initial page load
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [currentPage]);
 
+  const pages = useMemo(
+    () =>
+      Array.from(
+        { length: totalPages },
+        (_, i) => i + 1
+      ),
+    [totalPages]
+  );
 
   return (
     <>
-       <div className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto mb-20">
+      <div className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto mb-20">
 
-       
+
         <div className="text-center mb-10">
           <h1 className="text-3xl md:text-5xl font-bold">
             {cityHeading}
@@ -177,127 +268,36 @@ useEffect(() => {
 
 
         <div className="space-y-6">
-          {pageLoading ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <GirlCardSkeleton key={i} />
+          {!cityLoaded ? (
+
+            Array.from({ length: 6 }).map((_, index) => (
+              <GirlCard
+                key={index}
+                loading
+              />
             ))
-          ) :safeGirls.length  ? (
-           safeGirls.map((girl) => {
-              const wp = formatPhone(
-                girl?.whatsappNumber || cityObj?.whatsappNumber
-              );
 
-              const call = formatPhone(
-                girl?.phoneNumber || cityObj?.phoneNumber
-              );
+          ) : safeGirls.length > 0 ? (
 
-              return (
-                <Link
-                  key={girl._id}
-                  href={`/call-girls/${girl.permalink}`}
-                  className="cursor-pointer bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition border flex flex-col sm:flex-row gap-4"
-                >
-                  
-                  <div className="relative w-full sm:w-40 h-52 sm:h-40 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+            safeGirls.map((girl) => (
+              <GirlCard
+                key={girl._id}
+                girl={girl}
+                cityObj={cityObj}
+                finalName={finalName}
+              />
+            ))
 
-                    {imageErrors[girl._id] ? (
-
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                        No Image
-                      </div>
-
-                    ) : (
-
-                      <Image
-                        src={
-                          girl?.imageUrl
-                            ? convertCloudinaryUrl(girl.imageUrl)
-                            : "/placeholder.jpg"
-                        }
-                        alt={
-                          girl?.imageAlt ||
-                          girl?.heading ||
-                          girl?.name ||
-                          "Girl Image"
-                        }
-                        fill
-                        sizes="(max-width: 640px) 100vw, 160px"
-                        className="object-cover"
-                        loading="lazy"
-                        onError={() => {
-                          setImageErrors((prev) => ({
-                            ...prev,
-                            [girl._id]: true,
-                          }));
-                        }}
-                      />
-
-                    )}
-
-                  </div>
-
-                 
-                  <div className="flex-1 flex flex-col justify-between">
-
-                    
-                    <div>
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                        {girl.heading}
-                      </h3>
-
-                      <div
-                        className="text-sm text-gray-600 mt-2 line-clamp-2"
-                        dangerouslySetInnerHTML={{
-                          __html: cleanHTML(girl.description),
-                        }}
-                      />
-
-                      <div className="flex flex-wrap gap-3 text-[15px] mt-3 font-semibold text-[#B30059]">
-                        {girl.age && <span>{girl.age} Years</span>}
-                        <span>|</span>
-                        <span>Call Girls</span>
-                        <span>|</span>
-                        <span>{finalName}</span>
-                      </div>
-                    </div>
-
-                   
-                    <div className="flex gap-3 mt-4 justify-end flex-wrap">
-                      {wp && (
-                        <a
-                          onClick={(e) => e.stopPropagation()}
-                          href={createWhatsAppURL(girl.name, wp)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-4 py-2 bg-[#25D366] text-white text-sm rounded-lg font-medium hover:opacity-90 whitespace-nowrap"
-                        >
-                          WhatsApp
-                        </a>
-                      )}
-
-                      {call && (
-                        <a
-                          onClick={(e) => e.stopPropagation()}
-                          href={`tel:${cleanNumber(call)}`}
-                          className="px-4 py-2 bg-[#B30059] text-white text-sm rounded-lg font-medium hover:opacity-90 whitespace-nowrap"
-                        >
-                          Call
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-                // <></>
-              );
-            })
           ) : (
-            <p className="text-center text-gray-400 py-10">
+
+            <p className="text-center py-10 text-gray-400">
               No results found
             </p>
+
           )}
         </div>
 
-        
+
         {totalPages > 1 && (
           <div className="flex justify-center gap-2 mt-10 flex-wrap">
             <button
@@ -308,16 +308,16 @@ useEffect(() => {
               Prev
             </button>
 
-            {Array.from({ length: totalPages }).map((_, i) => (
+            {pages.map((page) => (
               <button
-                key={i}
-                onClick={() => setCurrentPage(i + 1)}
-                className={`px-4 py-1 rounded-lg ${currentPage === i + 1
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-4 py-1 rounded-lg ${currentPage === page
                   ? "bg-[#B30059] text-white"
                   : "border"
                   }`}
               >
-                {i + 1}
+                {page}
               </button>
             ))}
 
@@ -331,7 +331,7 @@ useEffect(() => {
           </div>
         )}
 
-       
+
         <div className="mt-16 p-6 bg-white rounded-2xl shadow-sm">
           <div
             dangerouslySetInnerHTML={{
@@ -375,7 +375,7 @@ useEffect(() => {
           cityName={finalName.toLowerCase()}
 
         />
-      )} 
+      )}
     </>
   );
 }

@@ -4,105 +4,149 @@ import Hash404 from "@/components/Hash404";
 
 export const revalidate = 300;
 
-function getApiUrl() {
-  return (
-    process.env.NEXT_PUBLIC_API_URL ||
-    "https://girlswithwinebackend.vercel.app"
-  );
+const API_URL =
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  "https://girlswithwinebackend.vercel.app";
+
+const FETCH_OPTIONS = {
+  cache: "force-cache",
+  next: {
+    revalidate: 300,
+  },
+};
+
+/* ============================================
+   COMMON FETCH
+============================================ */
+
+async function fetchJSON(url) {
+  try {
+    const response = await fetch(url, FETCH_OPTIONS);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Fetch Error:", error);
+    return null;
+  }
 }
 
+/* ============================================
+   CHECK CITY SLUG
+============================================ */
 
-
-
-
-const checkSlug = cache(async (slug) => {
+export const checkSlug = cache(async (slug) => {
   try {
     if (!slug) return null;
 
-    const cityRes = await fetch(`${getApiUrl()}/api/cities/${slug}`, {
-      next: { revalidate: 300 },
-    });
+    let cleanSlug = slug;
 
-    if (!cityRes.ok) return null;
+    try {
+      cleanSlug = decodeURIComponent(slug);
+    } catch {
+      cleanSlug = slug;
+    }
 
-    const cityData = await cityRes.json();
+    cleanSlug = cleanSlug.trim().toLowerCase();
 
-    if (!cityData?.city?._id) return null;
+    if (!cleanSlug) {
+      return null;
+    }
+
+    const cityData = await fetchJSON(
+      `${API_URL}/api/cities/${encodeURIComponent(cleanSlug)}`
+    );
+
+    if (!cityData?.city?._id) {
+      return null;
+    }
 
     return {
       type: "city",
       data: cityData,
     };
-  } catch (err) {
+  } catch (error) {
+    console.error("checkSlug Error:", error);
     return null;
   }
 });
 
+/* ============================================
+   FAQ SCHEMA
+============================================ */
+
 async function getFaqSchema(cityId) {
+  if (!cityId) {
+    return {
+      visibleFaqs: [],
+      schema: null,
+    };
+  }
+
   try {
-    if (!cityId) {
-      return {
-        visibleFaqs: [],
-        schema: null,
-      };
-    }
+    const baseUrl = `${API_URL}/api/faqs/visibility?type=city&cityId=${cityId}`;
 
-    const trueUrl = `${getApiUrl()}/api/faqs/visibility?type=city&visible=true&cityId=${cityId}`;
-    const falseUrl = `${getApiUrl()}/api/faqs/visibility?type=city&visible=false&cityId=${cityId}`;
-
-    const [trueRes, falseRes] = await Promise.all([
-      fetch(trueUrl, {
-        next: { revalidate: 300 },
-      }),
-      fetch(falseUrl, {
-        next: { revalidate: 300 },
-      }),
+    const [visibleData, hiddenData] = await Promise.all([
+      fetchJSON(`${baseUrl}&visible=true`),
+      fetchJSON(`${baseUrl}&visible=false`),
     ]);
 
-    const trueData = trueRes.ok ? await trueRes.json() : {};
-    const falseData = falseRes.ok ? await falseRes.json() : {};
+    const extractFaqs = (data = {}) =>
+      (data.faqs ?? [])
+        .flatMap((group) => {
+          if (Array.isArray(group?.faqs)) {
+            return group.faqs;
+          }
 
-    const extractFaqs = (data) => {
-      let faqList = [];
+          return group?.question && group?.answer
+            ? [group]
+            : [];
+        })
+        .filter(
+          ({ question, answer }) =>
+            question?.trim() && answer?.trim()
+        );
 
-      if (Array.isArray(data?.faqs)) {
-        faqList = data.faqs.flatMap((group) => {
-          if (Array.isArray(group?.faqs)) return group.faqs;
-          if (group?.question && group?.answer) return [group];
-          return [];
-        });
-      }
-
-      return faqList.filter((faq) => faq?.question && faq?.answer);
-    };
-
-    const visibleFaqs = extractFaqs(trueData);
-    const hiddenFaqs = extractFaqs(falseData);
-    const allFaqs = [...visibleFaqs, ...hiddenFaqs];
+    const visibleFaqs = extractFaqs(visibleData);
+    const allFaqs = [
+      ...visibleFaqs,
+      ...extractFaqs(hiddenData),
+    ];
 
     if (!allFaqs.length) {
       return {
-        visibleFaqs: [],
+        visibleFaqs,
         schema: null,
       };
     }
 
     return {
       visibleFaqs,
+
       schema: {
         "@context": "https://schema.org",
         "@type": "FAQPage",
-        mainEntity: allFaqs.map((faq) => ({
-          "@type": "Question",
-          name: faq.question,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: faq.answer,
-          },
-        })),
+
+        mainEntity: allFaqs.map(
+          ({ question, answer }) => ({
+            "@type": "Question",
+
+            name: question,
+
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: answer,
+            },
+          })
+        ),
       },
     };
   } catch (error) {
+    console.error("FAQ Schema Error:", error);
+
     return {
       visibleFaqs: [],
       schema: null,
@@ -110,155 +154,224 @@ async function getFaqSchema(cityId) {
   }
 }
 
+/* ============================================
+   404 PAGE
+============================================ */
+
 function NotFoundPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <h1 className="text-4xl md:text-6xl font-black text-slate-900">
+    <main className="flex min-h-screen items-center justify-center bg-white">
+      <h1 className="text-4xl font-black text-slate-900 md:text-6xl">
         404 Not Found
       </h1>
-    </div>
+    </main>
   );
 }
 
-function formatCityName(city, decodedSlug) {
-  const cityNameRaw = city?.mainCity || city?.name || decodedSlug;
 
-  return cityNameRaw
-    ?.split(" ")
-    ?.map(
+/* ============================================
+   HELPER
+============================================ */
+
+function formatCityName(city, slug = "") {
+  const cityName = city?.mainCity || city?.name || slug;
+
+  return cityName
+    .trim()
+    .split(/\s+/)
+    .map(
       (word) =>
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        word.charAt(0).toUpperCase() +
+        word.slice(1).toLowerCase()
     )
-    ?.join(" ");
+    .join(" ");
 }
+
+/* ============================================
+   PAGE
+============================================ */
 
 export default async function Page({ params }) {
   const { citySlug } = await params;
 
-  const decodedSlug = decodeURIComponent(citySlug || "");
+  const slug = decodeURIComponent(citySlug || "")
+    .trim()
+    .toLowerCase();
 
-  if (
-    decodedSlug.includes("#") ||
-    decodedSlug.includes("%23") ||
-    decodedSlug.includes("?") ||
-    decodedSlug.includes("&")
-  ) {
+  if (!slug || /#|%23|\?|&/.test(slug)) {
     return <NotFoundPage />;
   }
 
-  const result = await checkSlug(decodedSlug);
+  /* ===========================
+     FETCH CITY
+  =========================== */
 
-  if (!result) {
+  const result = await checkSlug(slug);
+
+  if (!result?.data?.city) {
     return <NotFoundPage />;
   }
 
-  const { city } = result.data;
+  const city = result.data.city;
 
-  const faqPromise =
-  getFaqSchema(city?._id);
-  
-  const faqSchema =
-  await faqPromise;
+  /* ===========================
+     FETCH FAQ (Parallel)
+  =========================== */
 
-  const latitude = city?.latitude;
-  const longitude = city?.longitude;
+  const faqPromise = getFaqSchema(city._id);
 
-  const cityName = formatCityName(city, decodedSlug);
+  const {
+    _id,
+    latitude,
+    longitude,
+    seo = {},
+    canonical,
+    seoTitle,
+    seoDescription,
+    seoKeywords,
+    heading,
+    subDescription,
+    serviceType,
+    state,
+    stateName,
+  } = city;
 
-  const pageUrl = `https://girlswithwine.com/${decodedSlug}`;
-  const imageUrl = "https://girlswithwine.com/images/girlswithwine.jpg";
+  const cityName = formatCityName(city, slug);
 
-  const canonicalUrl = city?.seo?.canonical || city?.canonical || pageUrl;
+  const pageUrl = `https://girlswithwine.com/${slug}`;
 
-  const seoTitle =
-    city?.seo?.title ||
-    city?.seoTitle ||
-    city?.heading ||
+  const IMAGE_URL =
+    "https://girlswithwine.com/images/girlswithwine.jpg";
+
+  const canonicalUrl =
+    seo.canonical ||
+    canonical ||
+    pageUrl;
+
+  const finalTitle =
+    seo.title ||
+    seoTitle ||
+    heading ||
     `${cityName} Escort Service`;
 
-  const seoDescription =
-    city?.seo?.description ||
-    city?.seoDescription ||
-    city?.subDescription ||
+  const finalDescription =
+    seo.description ||
+    seoDescription ||
+    subDescription ||
     `Book verified call girls and escorts in ${cityName}.`;
 
-  const seoKeywords = city?.seo?.seoKeywords || city?.seoKeywords || "";
+  const finalKeywords =
+    seo.seoKeywords ||
+    seoKeywords ||
+    "";
 
-  const serviceTypes = city?.serviceType || city?.seo?.serviceType || "";
+  const finalServiceType =
+    seo.serviceType ||
+    serviceType ||
+    "";
 
-  const faqJson = faqSchema?.schema || null;
+  /* ===========================
+     WAIT FAQ
+  =========================== */
 
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: "https://girlswithwine.com/",
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: cityName,
-        item: canonicalUrl,
-      },
-    ],
-  };
+  const { schema: faqJson } =
+    await faqPromise;
 
-  const localBusinessSchema = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    name: seoTitle,
-    url: canonicalUrl,
-    image: imageUrl,
-    telephone: "+91-XXXXXXXXXX",
-    priceRange: "₹2999 - ₹19999",
-    description: seoDescription,
-    keywords: seoKeywords,
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: cityName,
-      addressRegion: city?.state || city?.stateName || "",
-      addressCountry: "IN",
-    },
-    ...(latitude &&
-      longitude && {
-        geo: {
-          "@type": "GeoCoordinates",
-          latitude,
-          longitude,
+  /* ===========================
+     JSON-LD
+  =========================== */
+
+  const schemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: "https://girlswithwine.com/",
         },
-      }),
-    openingHours: "Mo-Su 00:00-23:59",
-    sameAs: [canonicalUrl],
-  };
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: cityName,
+          item: canonicalUrl,
+        },
+      ],
+    },
 
-  const serviceSchema = {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    name: seoTitle,
-    provider: {
-      "@type": "Organization",
-      name: "Girls With Wine",
-      url: "https://girlswithwine.com/",
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+
+      name: finalTitle,
+      url: canonicalUrl,
+      image: IMAGE_URL,
+
+      telephone: "+91-XXXXXXXXXX",
+
+      description: finalDescription,
+
+      keywords: finalKeywords,
+
+      openingHours: "Mo-Su 00:00-23:59",
+
+      priceRange: "₹2999 - ₹19999",
+
+      sameAs: [canonicalUrl],
+
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: cityName,
+        addressRegion: state || stateName || "",
+        addressCountry: "IN",
+      },
+
+      ...(latitude &&
+        longitude && {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude,
+            longitude,
+          },
+        }),
     },
-    url: canonicalUrl,
-    areaServed: {
-      "@type": "City",
-      name: cityName,
+
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+
+      name: finalTitle,
+
+      url: canonicalUrl,
+
+      description: finalDescription,
+
+      keywords: finalKeywords,
+
+      serviceType: finalServiceType,
+
+      provider: {
+        "@type": "Organization",
+        name: "Girls With Wine",
+        url: "https://girlswithwine.com",
+      },
+
+      areaServed: {
+        "@type": "City",
+        name: cityName,
+      },
+
+      offers: {
+        "@type": "AggregateOffer",
+        priceCurrency: "INR",
+        lowPrice: "2999",
+        highPrice: "19999",
+      },
     },
-    serviceType: serviceTypes,
-    description: seoDescription,
-    keywords: seoKeywords,
-    offers: {
-      "@type": "AggregateOffer",
-      priceCurrency: "INR",
-      lowPrice: "2999",
-      highPrice: "19999",
-    },
-  };
+  ];
 
   return (
     <>
@@ -273,39 +386,43 @@ export default async function Page({ params }) {
         />
       )}
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbSchema),
-        }}
-      />
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(localBusinessSchema),
-        }}
-      />
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(serviceSchema),
-        }}
-      />
+      {schemas.map((schema, index) => (
+        <script
+          key={index}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(schema),
+          }}
+        />
+      ))}
 
       {latitude && longitude && (
         <>
-          <meta name="geo.region" content="IN" />
-          <meta name="geo.placename" content={cityName} />
-          <meta name="geo.position" content={`${latitude};${longitude}`} />
-          <meta name="ICBM" content={`${latitude}, ${longitude}`} />
+          <meta
+            name="geo.region"
+            content="IN"
+          />
+
+          <meta
+            name="geo.placename"
+            content={cityName}
+          />
+
+          <meta
+            name="geo.position"
+            content={`${latitude};${longitude}`}
+          />
+
+          <meta
+            name="ICBM"
+            content={`${latitude},${longitude}`}
+          />
         </>
       )}
 
       <CityGirlsPage
         params={{
-          cityName: decodedSlug,
+          cityName: slug,
         }}
       />
     </>
@@ -315,11 +432,11 @@ export default async function Page({ params }) {
 export async function generateMetadata({ params }) {
   const { citySlug } = await params;
 
-  const decodedSlug = decodeURIComponent(citySlug || "");
+  const slug = decodeURIComponent(citySlug || "")
+    .trim()
+    .toLowerCase();
 
-  const result = await checkSlug(decodedSlug);
-
-  if (!result) {
+  if (!slug || /#|%23|\?|&/.test(slug)) {
     return {
       title: "404 Not Found",
       description: "Page not found",
@@ -330,91 +447,140 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  const data = result.data.city;
+  const result = await checkSlug(slug);
 
-  const pageUrl = `https://girlswithwine.com/${decodedSlug}`;
+  if (!result?.data?.city) {
+    return {
+      title: "404 Not Found",
+      description: "Page not found",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const city = result.data.city;
+
+  const {
+    seo = {},
+    canonical,
+    seoTitle,
+    seoDescription,
+    seoKeywords,
+    heading,
+    subDescription,
+    ogTitle,
+    ogDescription,
+    facebookTitle,
+    facebookDescription,
+    twitterTitle,
+    twitterDescription,
+  } = city;
+
+  const pageUrl = `https://girlswithwine.com/${slug}`;
   const imageUrl = "https://girlswithwine.com/images/girlswithwine.jpg";
 
-  const seoTitle =
-    data?.seo?.title ||
-    data?.seoTitle ||
-    data?.heading ||
+  const title =
+    seo.title ||
+    seoTitle ||
+    heading ||
     "Girls With Wine";
 
-  const seoDescription =
-    data?.seo?.description ||
-    data?.seoDescription ||
-    data?.subDescription ||
-    data?.heading ||
+  const description =
+    seo.description ||
+    seoDescription ||
+    subDescription ||
+    heading ||
     "Premium escort service";
 
-  const ogTitle = data?.seo?.ogTitle || data?.ogTitle || seoTitle;
+  const finalOgTitle =
+    seo.ogTitle ||
+    ogTitle ||
+    title;
 
-  const ogDescription =
-    data?.seo?.ogDescription || data?.ogDescription || seoDescription;
+  const finalOgDescription =
+    seo.ogDescription ||
+    ogDescription ||
+    description;
 
-  const facebookTitle =
-    data?.seo?.facebookTitle || data?.facebookTitle || ogTitle;
+  const finalFacebookTitle =
+    seo.facebookTitle ||
+    facebookTitle ||
+    finalOgTitle;
 
-  const facebookDescription =
-    data?.seo?.facebookDescription ||
-    data?.facebookDescription ||
-    ogDescription;
+  const finalFacebookDescription =
+    seo.facebookDescription ||
+    facebookDescription ||
+    finalOgDescription;
 
-  const twitterTitle =
-    data?.seo?.twitterTitle || data?.twitterTitle || ogTitle;
+  const finalTwitterTitle =
+    seo.twitterTitle ||
+    twitterTitle ||
+    finalOgTitle;
 
-  const twitterDescription =
-    data?.seo?.twitterDescription ||
-    data?.twitterDescription ||
-    ogDescription;
+  const finalTwitterDescription =
+    seo.twitterDescription ||
+    twitterDescription ||
+    finalOgDescription;
 
-  const canonicalUrl = data?.seo?.canonical || data?.canonical || pageUrl;
+  const canonicalUrl =
+    seo.canonical ||
+    canonical ||
+    pageUrl;
 
   return {
-    title: seoTitle,
-    description: seoDescription,
+    title,
+    description,
+
+    keywords:
+      seo.seoKeywords ||
+      seoKeywords ||
+      undefined,
 
     alternates: {
       canonical: canonicalUrl,
     },
 
+    robots: {
+      index: true,
+      follow: true,
+    },
+
     openGraph: {
-      title: ogTitle,
-      description: ogDescription,
+      title: finalOgTitle,
+      description: finalOgDescription,
       url: canonicalUrl,
       siteName: "Girls With Wine",
       locale: "en_IN",
       type: "website",
+
       images: [
         {
           url: imageUrl,
           width: 1200,
           height: 630,
-          alt: ogTitle,
+          alt: finalOgTitle,
         },
       ],
     },
 
     twitter: {
       card: "summary_large_image",
-      title: twitterTitle,
-      description: twitterDescription,
+      title: finalTwitterTitle,
+      description: finalTwitterDescription,
       images: [imageUrl],
     },
 
     other: {
-      "og:title": ogTitle,
-      "og:description": ogDescription,
-      "facebook:title": facebookTitle,
-      "facebook:description": facebookDescription,
-      "twitter:title": twitterTitle,
-      "twitter:description": twitterDescription,
-    },
+      "og:title": finalOgTitle,
+      "og:description": finalOgDescription,
 
-    robots: {
-      index: true,
-      follow: true,
+      "facebook:title": finalFacebookTitle,
+      "facebook:description": finalFacebookDescription,
+
+      "twitter:title": finalTwitterTitle,
+      "twitter:description": finalTwitterDescription,
     },
   };
 }

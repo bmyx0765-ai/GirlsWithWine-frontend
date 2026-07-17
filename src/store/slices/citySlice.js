@@ -15,6 +15,52 @@ import {
   GET_CITY_PAGE_URL,
 } from "api/constant/constant";
 
+
+/* =======================================================
+   COMMON HELPERS
+======================================================= */
+
+const getErrorMessage = (
+  error,
+  fallback
+) =>
+  error?.response?.data?.message ||
+  error?.message ||
+  fallback;
+
+const getResponseData = (
+  response
+) =>
+  response?.data?.city ??
+  response?.data?.cities ??
+  response?.data?.data ??
+  response?.data;
+
+const updateCityInList = (
+  cities,
+  updatedCity
+) => {
+  if (!updatedCity?._id) return cities;
+
+  return cities.map((city) =>
+    city._id === updatedCity._id
+      ? {
+        ...city,
+        ...updatedCity,
+      }
+      : city
+  );
+};
+
+const removeCityFromList = (
+  cities,
+  cityId
+) => {
+  return cities.filter(
+    (city) => city._id !== cityId
+  );
+};
+
 /* =======================================================
    GET CITY PAGE
 ======================================================= */
@@ -29,35 +75,22 @@ export const getCityPageThunk =
     ) => {
       try {
 
-        console.log(
-          "CITY PAGE CALL :",
-          citySlug
-        );
-
-        const res =
+        const response =
           await axiosInstance.get(
             `${GET_CITY_PAGE_URL}/${citySlug}`
           );
 
-        console.log(
-          "CITY PAGE RESPONSE :",
-          res.data
-        );
-
-        return res.data;
+        return getResponseData(response);
 
       } catch (error) {
 
-        console.log(
-          "CITY PAGE ERROR :",
-          error.response?.data
+        return rejectWithValue(
+          getErrorMessage(
+            error,
+            "Failed to fetch city page"
+          )
         );
 
-        return rejectWithValue(
-          error.response?.data
-            ?.message ||
-            "Failed to fetch city page"
-        );
       }
     }
   );
@@ -74,22 +107,25 @@ export const getCityByIdThunk =
       cityId,
       { rejectWithValue }
     ) => {
+
       try {
 
-        const res =
+        const response =
           await axiosInstance.get(
             `${GET_CITY_BY_ID_URL}/${cityId}`
           );
 
-        return res.data;
+        return getResponseData(response);
 
       } catch (error) {
 
         return rejectWithValue(
-          error.response?.data
-            ?.message ||
+          getErrorMessage(
+            error,
             "Failed to fetch city"
+          )
         );
+
       }
     }
   );
@@ -106,9 +142,10 @@ export const addCityThunk =
       formData,
       { rejectWithValue }
     ) => {
+
       try {
 
-        const res =
+        const response =
           await axiosInstance.post(
             ADD_CITY_URL,
             formData,
@@ -120,35 +157,30 @@ export const addCityThunk =
             }
           );
 
-        return (
-          res.data?.data ||
-          res.data
-        );
+        return getResponseData(response);
 
       } catch (error) {
 
         let message =
-          error.response?.data
-            ?.message ||
-          error.message ||
-          "Failed to add city";
+          getErrorMessage(
+            error,
+            "Failed to add city"
+          );
 
-        // ✅ DUPLICATE ERROR
+        const duplicate =
+          error?.response?.data?.message
+            ?.toLowerCase();
+
         if (
-          error.response?.data?.message?.includes(
-            "E11000"
-          ) ||
-          error.response?.data?.message
-            ?.toLowerCase()
-            .includes("duplicate")
+          duplicate?.includes("duplicate") ||
+          duplicate?.includes("e11000")
         ) {
           message =
             "City already exists";
         }
 
-        return rejectWithValue(
-          message
-        );
+        return rejectWithValue(message);
+
       }
     }
   );
@@ -157,75 +189,51 @@ export const addCityThunk =
    GET ALL CITIES
 ======================================================= */
 
-export const getCitiesThunk =
-  createAsyncThunk(
-    "city/getAll",
+export const getCitiesThunk = createAsyncThunk(
+  "city/getAll",
 
-    async (
-      _,
-      { rejectWithValue }
-    ) => {
-      try {
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(
+        GET_CITIES_URL
+      );
 
-        const res =
-          await axiosInstance.get(
-            GET_CITIES_URL
-          );
-
-        console.log(
-          "ALL CITIES RESPONSE :",
-          res.data
-        );
-
-        // ✅ HANDLE ALL FORMATS
-        return (
-          res.data?.cities ||
-          res.data?.data ||
-          res.data ||
-          []
-        );
-
-      } catch (error) {
-
-        return rejectWithValue(
-          error.response?.data
-            ?.message ||
-            "Failed to fetch cities"
-        );
-      }
+      return getResponseData(response) || [];
+    } catch (error) {
+      return rejectWithValue(
+        getErrorMessage(
+          error,
+          "Failed to fetch cities"
+        )
+      );
     }
-  );
+  }
+);
 
 /* =======================================================
    DELETE CITY
 ======================================================= */
 
-export const deleteCityThunk =
-  createAsyncThunk(
-    "city/delete",
+export const deleteCityThunk = createAsyncThunk(
+  "city/delete",
 
-    async (
-      cityId,
-      { rejectWithValue }
-    ) => {
-      try {
+  async (cityId, { rejectWithValue }) => {
+    try {
+      await axiosInstance.delete(
+        `${DELETE_CITY_URL}/${cityId}`
+      );
 
-        await axiosInstance.delete(
-          `${DELETE_CITY_URL}/${cityId}`
-        );
-
-        return cityId;
-
-      } catch (error) {
-
-        return rejectWithValue(
-          error.response?.data
-            ?.message ||
-            "Failed to delete city"
-        );
-      }
+      return cityId;
+    } catch (error) {
+      return rejectWithValue(
+        getErrorMessage(
+          error,
+          "Failed to delete city"
+        )
+      );
     }
-  );
+  }
+);
 
 /* =======================================================
    UPDATE CITY
@@ -238,60 +246,32 @@ export const updateCityThunk = createAsyncThunk(
     { cityId, formData },
     { rejectWithValue }
   ) => {
-
     try {
-
-      // DEBUG
-      for (let pair of formData.entries()) {
-
-        console.log(
-          pair[0],
-          pair[1]
-        );
-      }
-
-      const res =
-        await axiosInstance.put(
-          `${UPDATE_CITY_URL}/${cityId}`,
-          formData
-        );
-
-      console.log(
-        "UPDATE RESPONSE :",
-        res.data
-      );
-
-      return (
-        res.data?.data ||
-        res.data?.city ||
-        res.data
-      );
-
-    } catch (error) {
-
-      console.log(
-        "UPDATE ERROR :",
-        error
-      );
-
-      console.log(
-        "ERROR RESPONSE :",
-        error.response?.data
-      );
-
-      return rejectWithValue(
-        error.response?.data ||
+      const response = await axiosInstance.put(
+        `${UPDATE_CITY_URL}/${cityId}`,
+        formData,
         {
-          message:
-            "Failed to update city",
+          headers: {
+            "Content-Type":
+              "multipart/form-data",
+          },
         }
+      );
+
+      return getResponseData(response);
+    } catch (error) {
+      return rejectWithValue(
+        getErrorMessage(
+          error,
+          "Failed to update city"
+        )
       );
     }
   }
 );
 
 /* =======================================================
-   UPDATE STATUS (FULL FIXED ✅)
+   UPDATE STATUS
 ======================================================= */
 
 export const updateCityStatusThunk =
@@ -303,44 +283,19 @@ export const updateCityStatusThunk =
       { rejectWithValue }
     ) => {
       try {
-
-        console.log(
-          "STATUS UPDATE :",
-          {
-            id,
-            status,
-          }
-        );
-
-        const res =
+        const response =
           await axiosInstance.patch(
             `${CITY_STATUS_URL}/${id}`,
             { status }
           );
 
-        console.log(
-          "STATUS RESPONSE :",
-          res.data
-        );
-
-        // ✅ HANDLE ALL RESPONSE TYPES
-        return (
-          res.data?.city ||
-          res.data?.data ||
-          res.data
-        );
-
+        return getResponseData(response);
       } catch (error) {
-
-        console.log(
-          "STATUS ERROR :",
-          error.response?.data
-        );
-
         return rejectWithValue(
-          error.response?.data
-            ?.message ||
+          getErrorMessage(
+            error,
             "Failed to update status"
+          )
         );
       }
     }
@@ -418,7 +373,7 @@ const citySlice = createSlice({
             action.payload
           );
 
-          state.success = true;
+          state.success = "City added successfully.";
         }
       )
 
@@ -498,12 +453,10 @@ const citySlice = createSlice({
 
           state.deleteLoading = false;
 
-          state.cities =
-            state.cities.filter(
-              (city) =>
-                city._id !==
-                action.payload
-            );
+          state.cities = removeCityFromList(
+            state.cities,
+            action.payload
+          );
         }
       )
 
@@ -537,28 +490,12 @@ const citySlice = createSlice({
           state.updateLoading = false;
 
           // ✅ CRASH PROTECTION
-          if (
-            !action.payload?._id
-          )
-            return;
+          if (!action.payload?._id) return;
 
-          state.cities =
-            state.cities.map(
-              (city) => {
-
-                if (
-                  city._id ===
-                  action.payload._id
-                ) {
-                  return {
-                    ...city,
-                    ...action.payload,
-                  };
-                }
-
-                return city;
-              }
-            );
+          state.cities = updateCityInList(
+            state.cities,
+            action.payload
+          );
         }
       )
 
@@ -591,34 +528,15 @@ const citySlice = createSlice({
 
           state.statusLoading = false;
 
-          console.log(
-            "UPDATED STATUS PAYLOAD :",
-            action.payload
-          );
+
 
           // ✅ CRASH PROTECTION
-          if (
-            !action.payload?._id
-          )
-            return;
+          if (!action.payload?._id) return;
 
-          state.cities =
-            state.cities.map(
-              (city) => {
-
-                if (
-                  city._id ===
-                  action.payload._id
-                ) {
-                  return {
-                    ...city,
-                    ...action.payload,
-                  };
-                }
-
-                return city;
-              }
-            );
+          state.cities = updateCityInList(
+            state.cities,
+            action.payload
+          );
         }
       )
 
@@ -651,10 +569,7 @@ const citySlice = createSlice({
 
           state.listLoading = false;
 
-          console.log(
-            "CITY PAGE PAYLOAD :",
-            action.payload
-          );
+
 
           // ✅ HANDLE ALL RESPONSE TYPES
           state.singleCity =

@@ -12,61 +12,133 @@ import {
 
 import { axiosInstance } from "api/axiosInstance";
 
+/* =======================================================
+    🔵 COMMON HELPERS
+======================================================= */
+
+const normalizeArray = (data) => {
+  if (Array.isArray(data)) return data;
+
+  if (Array.isArray(data?.data))
+    return data.data;
+
+  if (Array.isArray(data?.subCities))
+    return data.subCities;
+
+  return [];
+};
+
+const getErrorMessage = (
+  error,
+  fallback
+) =>
+  error?.response?.data?.message ||
+  error?.message ||
+  fallback;
+
+const getResponseData = (
+  response
+) =>
+  response?.data?.subCity ??
+  response?.data?.subCities ??
+  response?.data?.data ??
+  response?.data;
+
+const updateSubCityInList = (
+  list,
+  updated
+) =>
+  list.map((item) =>
+    item._id === updated._id
+      ? updated
+      : item
+  );
+
+const removeSubCityFromList = (
+  list,
+  id
+) =>
+  list.filter(
+    (item) => item._id !== id
+  );
+
 /* ================================================= */
 /* ================= CREATE ======================== */
 /* ================================================= */
 
-export const createSubCity = createAsyncThunk(
-  "subCity/create",
+export const createSubCity =
+  createAsyncThunk(
+    "subCity/create",
 
-  async (formData, { rejectWithValue }) => {
+    async (
+      formData,
+      { rejectWithValue }
+    ) => {
 
-    try {
+      try {
 
-      const res = await axiosInstance.post(
-        ADD_SUBCITY_URL,
-        formData,
-        true
-      );
+        const response =
+          await axiosInstance.post(
+            ADD_SUBCITY_URL,
+            formData,
+            true
+          );
 
-      return res.data;
+        return getResponseData(
+          response
+        );
 
-    } catch (err) {
+      } catch (error) {
 
-      return rejectWithValue(
-        err.response?.data || err.message
-      );
+        return rejectWithValue(
+          getErrorMessage(
+            error,
+            "Failed to create subcity"
+          )
+        );
+
+      }
 
     }
-  }
-);
+  );
 
 /* ================================================= */
 /* ================= GET ALL ======================= */
 /* ================================================= */
 
-export const fetchSubCities = createAsyncThunk(
-  "subCity/fetchAll",
+export const fetchSubCities =
+  createAsyncThunk(
+    "subCity/fetchAll",
 
-  async (_, { rejectWithValue }) => {
+    async (
+      _,
+      { rejectWithValue }
+    ) => {
 
-    try {
+      try {
 
-      const res = await axiosInstance.get(
-        GET_SUBCITIES_URL
-      );
+        const { data } =
+          await axiosInstance.get(
+            GET_SUBCITIES_URL
+          );
 
-      return res.data;
+        return normalizeArray(
+          data
+        );
 
-    } catch (err) {
+      } catch (error) {
 
-      return rejectWithValue(
-        err.response?.data || err.message
-      );
+        return rejectWithValue(
+          getErrorMessage(
+            error,
+            "Failed to fetch subcities"
+          )
+        );
+
+      }
 
     }
-  }
-);
+  );
 
 /* ================================================= */
 /* ============= GET SUBCITY BY CITY ============== */
@@ -80,17 +152,22 @@ export const fetchSubCitiesByCity =
 
       try {
 
-        const res =
+        const { data } =
           await axiosInstance.get(
             `${GET_SUBCITIES_BY_CITY_URL}/${cityId}`
           );
 
-        return res.data;
+        return normalizeArray(
+          data
+        );
 
-      } catch (err) {
+      } catch (error) {
 
         return rejectWithValue(
-          err.response?.data || err.message
+          getErrorMessage(
+            error,
+            "Failed to fetch subcities by city"
+          )
         );
 
       }
@@ -117,15 +194,18 @@ export const fetchSubCityById =
           url
         );
 
-        const res =
+        const { data } =
           await axiosInstance.get(url);
 
-        return res.data;
+        return data;
 
-      } catch (err) {
+      } catch (error) {
 
         return rejectWithValue(
-          err.response?.data || err.message
+          getErrorMessage(
+            error,
+            "Failed to fetch subcity by ID"
+          )
         );
 
       }
@@ -144,25 +224,28 @@ export const fetchSubCityBySlug =
 
       try {
 
-        const res =
+        const { data } =
           await axiosInstance.get(
             `/api/subcities/page/${slug}`
           );
 
         console.log(
           "SUBCITY SLUG RESPONSE 👉",
-          res.data
+          data
         );
 
         return (
-          res.data?.subCity ||
-          res.data
+          data?.subCity ||
+          data
         );
 
-      } catch (err) {
+      } catch (error) {
 
         return rejectWithValue(
-          err.response?.data || err.message
+          getErrorMessage(
+            error,
+            "Failed to fetch subcity by slug"
+          )
         );
 
       }
@@ -184,19 +267,22 @@ export const updateSubCity =
 
       try {
 
-        const res =
+        const { data } =
           await axiosInstance.put(
             `${UPDATE_SUBCITY_URL}/${id}`,
             formData,
             true
           );
 
-        return res.data;
+        return data;
 
-      } catch (err) {
+      } catch (error) {
 
         return rejectWithValue(
-          err.response?.data || err.message
+          getErrorMessage(
+            error,
+            "Failed to update subcity"
+          )
         );
 
       }
@@ -222,10 +308,13 @@ export const deleteSubCity =
 
         return id;
 
-      } catch (err) {
+      } catch (error) {
 
         return rejectWithValue(
-          err.response?.data || err.message
+          getErrorMessage(
+            error,
+            "Failed to delete subcity"
+          )
         );
 
       }
@@ -256,10 +345,13 @@ export const toggleSubCityStatus =
           status: res.data.status
         };
 
-      } catch (err) {
+      } catch (error) {
 
         return rejectWithValue(
-          err.response?.data || err.message
+          getErrorMessage(
+            error,
+            "Failed to toggle subcity status"
+          )
         );
 
       }
@@ -298,211 +390,192 @@ const subCitySlice = createSlice({
 
   extraReducers: (builder) => {
 
-    /* ================= CREATE ================= */
+    builder
 
-    builder.addCase(
-      createSubCity.pending,
-      (state) => {
+      /* ================= CREATE ================= */
 
-        state.loading = true;
-
-      }
-    );
-
-    builder.addCase(
-      createSubCity.fulfilled,
-      (state, action) => {
-
-        state.loading = false;
-
-        state.subCities.unshift(
-          action.payload?.data ||
-          action.payload
-        );
-
-      }
-    );
-
-    builder.addCase(
-      createSubCity.rejected,
-      (state, action) => {
-
-        state.loading = false;
-
-        state.error = action.payload;
-
-      }
-    );
-
-    /* ================= GET ALL ================= */
-
-    builder.addCase(
-      fetchSubCities.fulfilled,
-      (state, action) => {
-
-        state.subCities =
-          action.payload;
-
-      }
-    );
-
-    /* ================= GET BY CITY ================= */
-
-    builder.addCase(
-      fetchSubCitiesByCity.fulfilled,
-      (state, action) => {
-
-        state.subCities =
-          action.payload;
-
-      }
-    );
-
-    /* ================= GET BY ID ================= */
-
-    builder.addCase(
-      fetchSubCityById.pending,
-      (state) => {
-
+      .addCase(createSubCity.pending, (state) => {
         state.loading = true;
         state.error = null;
+      })
 
-      }
-    );
-
-    builder.addCase(
-      fetchSubCityById.fulfilled,
-      (state, action) => {
-
-        console.log(
-          "API RESPONSE 👉",
-          action.payload
-        );
-
+      .addCase(createSubCity.fulfilled, (state, action) => {
         state.loading = false;
 
-        state.selectedSubCity =
-          action.payload?.data ||
-          action.payload ||
-          null;
-
-      }
-    );
-
-    builder.addCase(
-      fetchSubCityById.rejected,
-      (state, action) => {
-
-        state.loading = false;
-
-        state.error = action.payload;
-
-      }
-    );
-
-    /* ================= GET BY SLUG ================= */
-
-    builder.addCase(
-      fetchSubCityBySlug.pending,
-      (state) => {
-
-        state.loading = true;
-
-        state.error = null;
-
-      }
-    );
-
-    builder.addCase(
-      fetchSubCityBySlug.fulfilled,
-      (state, action) => {
-
-        console.log(
-          "SLUG DATA 👉",
-          action.payload
-        );
-
-        state.loading = false;
-
-        state.selectedSubCity =
-          action.payload || null;
-
-      }
-    );
-
-    builder.addCase(
-      fetchSubCityBySlug.rejected,
-      (state, action) => {
-
-        state.loading = false;
-
-        state.error = action.payload;
-
-      }
-    );
-
-    /* ================= UPDATE ================= */
-
-    builder.addCase(
-      updateSubCity.fulfilled,
-      (state, action) => {
-
-        const updated =
-          action.payload?.data ||
-          action.payload;
-
-        const index =
-          state.subCities.findIndex(
-            item =>
-              item._id === updated._id
-          );
-
-        if (index !== -1) {
-
-          state.subCities[index] =
-            updated;
-
+        if (action.payload?._id) {
+          state.subCities.unshift(action.payload);
         }
+      })
 
-      }
-    );
+      .addCase(createSubCity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
 
-    /* ================= DELETE ================= */
+      /* ================= GET ALL ================= */
 
-    builder.addCase(
-      deleteSubCity.fulfilled,
-      (state, action) => {
+      .addCase(fetchSubCities.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(fetchSubCities.fulfilled, (state, action) => {
+        state.loading = false;
+        state.subCities = action.payload;
+      })
+
+      .addCase(fetchSubCities.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      /* ================= GET BY CITY ================= */
+
+      .addCase(fetchSubCitiesByCity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(fetchSubCitiesByCity.fulfilled, (state, action) => {
+        state.loading = false;
+        state.subCities = action.payload;
+      })
+
+      .addCase(fetchSubCitiesByCity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      /* ================= GET BY ID ================= */
+
+      .addCase(fetchSubCityById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(fetchSubCityById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedSubCity = action.payload;
+      })
+
+      .addCase(fetchSubCityById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      /* ================= GET BY SLUG ================= */
+
+      .addCase(fetchSubCityBySlug.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(fetchSubCityBySlug.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedSubCity = action.payload;
+      })
+
+      .addCase(fetchSubCityBySlug.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      /* ================= UPDATE ================= */
+
+      .addCase(updateSubCity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(updateSubCity.fulfilled, (state, action) => {
+        state.loading = false;
+
+        state.subCities = updateSubCityInList(
+          state.subCities,
+          action.payload
+        );
+
+        if (
+          state.selectedSubCity?._id ===
+          action.payload._id
+        ) {
+          state.selectedSubCity =
+            action.payload;
+        }
+      })
+
+      .addCase(updateSubCity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      /* ================= DELETE ================= */
+
+      .addCase(deleteSubCity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(deleteSubCity.fulfilled, (state, action) => {
+        state.loading = false;
 
         state.subCities =
-          state.subCities.filter(
-            item =>
-              item._id !== action.payload
+          removeSubCityFromList(
+            state.subCities,
+            action.payload
           );
 
-      }
-    );
-
-    /* ================= STATUS ================= */
-
-    builder.addCase(
-      toggleSubCityStatus.fulfilled,
-      (state, action) => {
-
-        const item =
-          state.subCities.find(
-            i =>
-              i._id === action.payload.id
-          );
-
-        if (item) {
-
-          item.status =
-            action.payload.status;
-
+        if (
+          state.selectedSubCity?._id ===
+          action.payload
+        ) {
+          state.selectedSubCity = null;
         }
+      })
 
-      }
-    );
+      .addCase(deleteSubCity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      /* ================= STATUS ================= */
+
+      .addCase(toggleSubCityStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(toggleSubCityStatus.fulfilled, (state, action) => {
+        state.loading = false;
+
+        const { id, status } =
+          action.payload;
+
+        state.subCities =
+          state.subCities.map((item) =>
+            item._id === id
+              ? {
+                ...item,
+                status,
+              }
+              : item
+          );
+
+        if (
+          state.selectedSubCity?._id ===
+          id
+        ) {
+          state.selectedSubCity = {
+            ...state.selectedSubCity,
+            status,
+          };
+        }
+      })
+
+      .addCase(toggleSubCityStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
 
   }
 
