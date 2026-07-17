@@ -1,8 +1,6 @@
 User-agent: *
-Allow: /
-<meta name="robots" content="noindex, nofollow">
-Disallow: /admin
-Disallow: /api
-Disallow: /_next
+
+# Block all crawling
+Disallow: /
 
 Sitemap: https://girlswithwine.in/sitemap.xml
