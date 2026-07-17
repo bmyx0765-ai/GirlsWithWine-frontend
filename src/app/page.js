@@ -274,12 +274,14 @@
 
 //   );
 // }
+"use client";
 
-import React from 'react'
+import Link from "next/link";
+import { Home, ArrowLeft } from "lucide-react";
 
-const page = () => {
+const Page = () => {
   return (
- <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 px-6">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 px-6">
       <div className="max-w-xl text-center">
         <h1 className="text-8xl md:text-9xl font-extrabold text-blue-600">
           404
@@ -312,7 +314,7 @@ const page = () => {
         </div>
       </div>
     </main>
-  )
-}
+  );
+};
 
-export default page
+export default Page;
