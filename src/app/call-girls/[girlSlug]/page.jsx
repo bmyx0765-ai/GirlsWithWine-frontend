@@ -551,9 +551,9 @@ const faqPromise =
 
       )}
 
-      <GirlDetailsPage
+      {/* <GirlDetailsPage
         data={girl}
-      />
+      /> */}
 
     </>
 

@@ -420,11 +420,11 @@ export default async function Page({ params }) {
         </>
       )}
 
-      <CityGirlsPage
+      {/* <CityGirlsPage
         params={{
           cityName: slug,
         }}
-      />
+      /> */}
     </>
   );
 }
