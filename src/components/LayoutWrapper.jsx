@@ -12,11 +12,12 @@ export default function LayoutWrapper({ children }) {
 
   return (
     <>
-      {!isAdminRoute && <Header />}
+      {/* {!isAdminRoute && <Header />} */}
+      
 
       {children}
 
-      {!isAdminRoute && <Footer />}
+      {/* {!isAdminRoute && <Footer />} */}
     </>
   );
 }
