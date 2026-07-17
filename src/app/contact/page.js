@@ -82,14 +82,14 @@ export default function ContactPage() {
 
   return (
     <>
-    <div className="w-full bg-gray-200 py-10 px-6 md:px-16">
+    {/* <div className="w-full bg-gray-200 py-10 px-6 md:px-16">
   <h1 className="text-5xl md:text-7xl font-extrabold text-[#9C0A3D]">
     Contact Us
   </h1>
-</div>
-    <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-2 gap-10">
+</div> */}
+    {/* <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-2 gap-10">
 
-      {/* LEFT INFO BOX */}
+      
       <div className="bg-gray-100 p-8 rounded-xl shadow-md">
         <h2 className="text-2xl font-bold text-[#B30059] mb-5">
           Telegram
@@ -102,7 +102,7 @@ export default function ContactPage() {
           </button>
         </div>
 
-        {/* Email */}
+        
         <h3 className="text-xl font-bold text-[#B30059]">
           Email
         </h3>
@@ -124,7 +124,7 @@ export default function ContactPage() {
           </span>
         </div>
 
-        {/* Phone */}
+       
         <h3 className="text-xl font-bold text-[#B30059]">
           Phone
         </h3>
@@ -134,7 +134,7 @@ export default function ContactPage() {
         </p>
       </div>
 
-      {/* CONTACT FORM */}
+      
       <form
         onSubmit={handleSubmit}
         className="bg-gradient-to-r from-[#00B9BE] to-[#7CC7EC] p-8 rounded-xl shadow-lg"
@@ -180,7 +180,7 @@ export default function ContactPage() {
           placeholder="Write your message"
         />
 
-        {/* CAPTCHA */}
+        
         <div className="mb-4">
           <label className="text-white font-semibold text-lg tracking-widest">
             {captcha}
@@ -213,7 +213,7 @@ export default function ContactPage() {
           {loading ? "Submitting..." : "Submit"}
         </button>
       </form>
-    </div>
+    </div> */}
     </>
     
   );
